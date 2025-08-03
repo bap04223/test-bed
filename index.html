@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Consultation Training - AI Patient Simulator</title>
+    
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- D-ID SDK Integration - Alternative approach -->
+    <script>
+        // Load D-ID SDK dynamically with fallback
+        (function loadDIDSDK() {
+            const script = document.createElement('script');
+            script.src = 'https://d-id-public-bucket.s3.us-west-2.amazonaws.com/api-studio-sdk/0.0.4/d-id-client.js';
+            script.onload = function() {
+                console.log('D-ID SDK loaded successfully');
+                window.didSDKLoaded = true;
+            };
+            script.onerror = function() {
+                console.warn('Primary D-ID SDK failed, trying fallback...');
+                // Fallback to REST API approach
+                window.didSDKLoaded = false;
+                window.didUseFallback = true;
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header section with title and description -->
+        <div class="header">
+            <h1>Pharmacy Consultation Training</h1>
+            <p>Practice your consultation skills with an AI-powered patient simulator</p>
+        </div>
+        
+        <!-- Instructions box -->
+        <div class="header">
+            <h2>📋 Instructions</h2>
+            <div class="instructions-container">
+                <div class="instructions-column">
+                    <ol>
+                        <li>Enter your n8n webhook URLs in the Configuration section</li>
+                        <li>Load your Google Sheet with patient scenarios</li>
+                        <li>Select a patient scenario from the dropdown (or choose random)</li>
+                    </ol>
+                </div>
+                <div class="instructions-column">
+                    <ol start="4">
+                        <li>Initialize your D-ID avatar with your API key</li>
+                        <li>Hold down the "Push to Talk" button and speak your consultation</li>
+                        <li>The AI patient will respond with both text and avatar video</li>
+                    </ol>
+                </div>
+                <div class="instructions-column">
+                    <ol start="7">
+                        <li>Continue the conversation by speaking your responses</li>
+                        <li>Use "Submit Conversation" to get evaluation feedback</li>
+                        <li>Refresh the browser after each scenario for a new session</li>
+                    </ol>
+                </div>
+            </div>
+            <p><strong>Tips:</strong> Speak clearly, ask open-ended questions, and practice active listening skills!</p>
+        </div>
+        
+        <!-- Main content grid -->
+        <div class="grid">
+            <!-- Configuration section -->
+            <div class="card">
+                <h2>⚙️ Configuration</h2>
+                
+                <!-- n8n webhook URL input -->
+                <div class="form-group">
+                    <label for="webhookUrl">n8n Webhook URL (Chat):</label>
+                    <input 
+                        type="url" 
+                        id="webhookUrl" 
+                        placeholder="https://your-n8n-instance.com/webhook/..."
+                        title="Enter your n8n webhook URL that will receive the messages"
+                    >
+                </div>
+                
+                <!-- Submit webhook URL input -->
+                <div class="form-group">
+                    <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
+                    <input 
+                        type="url" 
+                        id="submitWebhookUrl" 
+                        placeholder="https://your-n8n-instance.com/webhook/submit..."
+                        title="Enter your n8n webhook URL for submitting conversation history"
+                    >
+                </div>
+                
+                <!-- Google Sheets configuration -->
+                <div class="form-group">
+                    <label for="sheetId">Google Sheet ID:</label>
+                    <input 
+                        type="text" 
+                        id="sheetId" 
+                        placeholder="1ABC...xyz"
+                        title="The ID from your Google Sheets URL"
+                    >
+                    <button 
+                        class="btn-secondary" 
+                        onclick="loadSheetNames()" 
+                        style="margin-top: 10px; width: 100%;"
+                    >
+                        📋 Get Sheet Names
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sheetName">Sheet Name:</label>
+                    <select id="sheetName" disabled>
+                        <option value="">Get sheet names first...</option>
+                    </select>
+                </div>
+                
+                <!-- Scenario selection dropdown -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="scenarioSelect">Select Scenario:</label>
+                    <select id="scenarioSelect" disabled>
+                        <option value="">Load sheet data first...</option>
+                    </select>
+                </div>
+                
+                <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
+                    🎲 Random Scenario
+                </button>
+                
+                <!-- D-ID Configuration -->
+                <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Avatar Settings</h3>
+                    
+                    <form style="margin: 0;" onsubmit="return false;">
+                        <input type="text" name="username" style="display: none;" autocomplete="username">
+                        <label for="didApiKey">D-ID API Key:</label>
+                        <input 
+                            type="password" 
+                            id="didApiKey" 
+                            name="password"
+                            placeholder="Enter your D-ID API key"
+                            title="Get your API key from studio.d-id.com"
+                            autocomplete="current-password"
+                        >
+                        <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
+                            Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
+                        </small>
+                        
+                        <button 
+                            type="button"
+                            class="btn-primary" 
+                            onclick="initializeDID()" 
+                            style="margin-top: 10px; width: 100%;"
+                        >
+                            🚀 Initialize Avatar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Voice control section -->
+            <div class="card">
+                <h2 style="margin-bottom: 40px;">🎙️ Voice Control</h2>
+                
+                <!-- Live transcription -->
+                <div class="form-group">
+                    <label for="transcriptionBox">📝 Live Transcription:</label>
+                    <div id="transcriptionBox" style="
+                        min-height: 60px;
+                        max-height: 100px;
+                        overflow-y: auto;
+                        padding: 12px;
+                        background-color: #f9fafb;
+                        border: 1px solid var(--border-color);
+                        border-radius: 6px;
+                        font-size: 14px;
+                        line-height: 1.4;
+                        margin-bottom: 40px;
+                    ">
+                        <span style="color: var(--text-secondary);">Transcription will appear here when you speak...</span>
+                    </div>
+                </div>
+                
+                <!-- Push to talk button -->
+                <button 
+                    class="talk-button btn-danger" 
+                    id="talkButton"
+                    onmousedown="startRecording()"
+                    onmouseup="stopRecording()"
+                    onmouseleave="stopRecording()"
+                    ontouchstart="startRecording()"
+                    ontouchend="stopRecording()"
+                    style="margin: 15px auto;"
+                >
+                    Push to Talk
+                </button>
+                
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 80px;">
+                    Hold down the button to speak
+                </p>
+                
+                <!-- Conversation History moved here -->
+                <div class="form-group">
+                    <label for="chatContainer">💬 Conversation History:</label>
+                    <div class="chat-container" id="chatContainer" style="height: 300px;">
+                        <p style="text-align: center; color: var(--text-secondary);">
+                            Select a scenario and hold the talk button to begin the consultation...
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Control buttons -->
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="clearChat()">
+                        🔄 Clear Chat
+                    </button>
+                    <button class="btn-danger" onclick="submitConversation()">
+                        📋 Submit for Evaluation
+                    </button>
+                    <button class="btn-info" onclick="exportConversation()">
+                        📥 Export Chat
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Avatar display area -->
+            <div class="card">
+                <h2>🎭 AI Patient Avatar</h2>
+                
+                <!-- D-ID Avatar Video Container - Enlarged -->
+                <div class="avatar-container" id="avatarContainer" style="height: calc(100vh - 200px); display: flex; flex-direction: column; justify-content: center;">
+                    <video 
+                        id="avatarVideo" 
+                        width="100%" 
+                        height="auto"
+                        autoplay 
+                        controls
+                        style="
+                            border-radius: 12px; 
+                            background-color: #f0f0f0; 
+                            max-height: 80vh;
+                            object-fit: cover;
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                        "
+                    >
+                        Your browser does not support the video element.
+                    </video>
+                    <div id="avatarStatus" class="avatar-status" style="text-align: center; margin-top: 15px; font-size: 16px; font-weight: 500;">
+                        Avatar ready
+                    </div>
+                </div>
+                
+                <!-- Status display area for system messages -->
+                <div id="status" class="status info" style="display: none; margin-top: 15px;"></div>
+            </div>    
+                
+            <!-- Status display area for system messages -->
+            <div id="status" class="status info" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Link to external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
