@@ -195,6 +195,10 @@
             display: block;
             position: relative;
             overflow: hidden;
+            user-select: none; /* Prevent text selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
         
         .talk-button.recording {
@@ -362,7 +366,6 @@
         <!-- Instructions box -->
         <div class="header">
             <h2>📋 Instructions</h2>
-            <p><strong>Getting Started:</strong></p>
             <div class="instructions-container">
                 <div class="instructions-column">
                     <ol>
@@ -505,11 +508,6 @@
                 <button 
                     class="talk-button btn-danger" 
                     id="talkButton"
-                    onmousedown="startRecording()"
-                    onmouseup="stopRecording()"
-                    onmouseleave="stopRecording()"
-                    ontouchstart="startRecording()"
-                    ontouchend="stopRecording()"
                     style="margin-top: 60px;"
                 >
                     Push to Talk
@@ -559,6 +557,7 @@
         let sessionId = '';              // Unique session identifier for this training session
         let fullTranscript = '';         // Store the complete transcript during recording
         let forceStopRecognition = false; // Flag to force stop recognition
+        let isPushToTalkActive = false;   // Track if push-to-talk is currently active
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -581,7 +580,105 @@
             
             // Display session info
             displaySessionInfo();
+            
+            // Set up push-to-talk button event listeners
+            setupPushToTalkButton();
         };
+        
+        // ===== PUSH-TO-TALK BUTTON SETUP =====
+        // Set up proper push-to-talk functionality
+        
+        function setupPushToTalkButton() {
+            const talkButton = document.getElementById('talkButton');
+            
+            // Prevent context menu on right click
+            talkButton.oncontextmenu = function(e) {
+                e.preventDefault();
+                return false;
+            };
+            
+            // Mouse events
+            talkButton.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                if (e.button === 0) { // Only left mouse button
+                    handlePushToTalkStart();
+                }
+            });
+            
+            talkButton.addEventListener('mouseup', function(e) {
+                e.preventDefault();
+                if (e.button === 0) { // Only left mouse button
+                    handlePushToTalkStop();
+                }
+            });
+            
+            talkButton.addEventListener('mouseleave', function(e) {
+                e.preventDefault();
+                handlePushToTalkStop();
+            });
+            
+            // Touch events for mobile
+            talkButton.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                handlePushToTalkStart();
+            });
+            
+            talkButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                handlePushToTalkStop();
+            });
+            
+            talkButton.addEventListener('touchcancel', function(e) {
+                e.preventDefault();
+                handlePushToTalkStop();
+            });
+            
+            // Keyboard events for accessibility (Space bar)
+            talkButton.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && !isPushToTalkActive) {
+                    e.preventDefault();
+                    handlePushToTalkStart();
+                }
+            });
+            
+            talkButton.addEventListener('keyup', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    handlePushToTalkStop();
+                }
+            });
+            
+            // Global keyboard listeners for space bar (when button is focused)
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && document.activeElement === talkButton && !isPushToTalkActive) {
+                    e.preventDefault();
+                    handlePushToTalkStart();
+                }
+            });
+            
+            document.addEventListener('keyup', function(e) {
+                if (e.code === 'Space' && document.activeElement === talkButton) {
+                    e.preventDefault();
+                    handlePushToTalkStop();
+                }
+            });
+        }
+        
+        function handlePushToTalkStart() {
+            console.log('Push-to-talk START triggered');
+            if (!isPushToTalkActive) {
+                isPushToTalkActive = true;
+                startRecording();
+            }
+        }
+        
+        function handlePushToTalkStop() {
+            console.log('Push-to-talk STOP triggered');
+            if (isPushToTalkActive) {
+                isPushToTalkActive = false;
+                stopRecording();
+            }
+        }
         
         // ===== SESSION MANAGEMENT =====
         // Generate and manage unique session IDs
@@ -617,7 +714,7 @@
                 recognition = new SpeechRecognition();
                 
                 // Configure recognition settings
-                recognition.continuous = true;       // CHANGED: Keep listening until manually stopped
+                recognition.continuous = true;       // Keep listening until manually stopped
                 recognition.interimResults = true;   // Show interim results for live transcription
                 recognition.lang = 'en-US';         // Set language
                 
@@ -673,12 +770,13 @@
                     }
                     
                     isRecording = false;
+                    isPushToTalkActive = false;
                     updateTalkButton();
                 };
                 
                 // Handle when recognition ends
                 recognition.onend = function() {
-                    console.log('Recognition ended. Force stop:', forceStopRecognition);
+                    console.log('Recognition ended. Force stop:', forceStopRecognition, 'Has transcript:', fullTranscript.trim());
                     
                     // If we're forcing a stop (user released button), process the transcript
                     if (forceStopRecognition && fullTranscript.trim()) {
@@ -689,17 +787,9 @@
                     
                     // Reset state
                     isRecording = false;
+                    isPushToTalkActive = false;
                     forceStopRecognition = false;
                     updateTalkButton();
-                    
-                    // If recording should still be active (continuous mode), restart
-                    if (isRecording && !forceStopRecognition) {
-                        try {
-                            recognition.start();
-                        } catch (e) {
-                            console.log('Could not restart recognition:', e);
-                        }
-                    }
                 };
             } else {
                 showStatus('Speech recognition not supported in this browser', 'error');
@@ -750,6 +840,8 @@
         // Handle push-to-talk functionality
         
         function startRecording() {
+            console.log('Starting recording...');
+            
             if (!recognition) {
                 showStatus('Speech recognition not available', 'error');
                 return;
@@ -762,6 +854,12 @@
             
             if (!currentScenario) {
                 showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Prevent multiple simultaneous recordings
+            if (isRecording) {
+                console.log('Already recording, ignoring start request');
                 return;
             }
             
@@ -778,20 +876,37 @@
             try {
                 recognition.start();
                 showStatus('Listening...', 'info');
+                console.log('Speech recognition started successfully');
             } catch (error) {
                 console.error('Error starting recognition:', error);
                 showStatus('Error starting recording', 'error');
                 isRecording = false;
+                isPushToTalkActive = false;
                 updateTalkButton();
             }
         }
         
         function stopRecording() {
+            console.log('Stopping recording...');
+            
             if (isRecording && recognition) {
-                console.log('Stopping recording...');
+                console.log('Force stopping recognition...');
                 forceStopRecognition = true;
-                recognition.stop();
-                showStatus('Processing...', 'info');
+                
+                try {
+                    recognition.stop();
+                    showStatus('Processing...', 'info');
+                } catch (error) {
+                    console.error('Error stopping recognition:', error);
+                    // Reset state even if stop fails
+                    isRecording = false;
+                    isPushToTalkActive = false;
+                    forceStopRecognition = false;
+                    updateTalkButton();
+                }
+            } else {
+                console.log('Not currently recording, ignoring stop request');
+                isPushToTalkActive = false;
             }
         }
         
@@ -1635,3 +1750,4 @@
     </script>
 </body>
 </html>
+
