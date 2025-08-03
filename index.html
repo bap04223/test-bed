@@ -1,3 +1,7 @@
+ content
+81.98 KB •1,941 lines
+•
+Formatting may be inconsistent from source
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -341,13 +345,14 @@
         
         /* Remove old input group styles since we're using push-to-talk */
         
-        /* Avatar video container styling - UPDATED FOR SMALLER SIZE AND TOP POSITIONING */
+        /* Avatar video container styling - Enhanced for larger display */
         .avatar-container {
             margin-bottom: 20px;
             text-align: center;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            justify-content: center;
         }
 
         #avatarVideo {
@@ -355,16 +360,15 @@
             border-radius: 12px;
             background-color: #f8f9fa;
             width: 100%;
-            max-width: 300px;  /* Reduced from 100% to limit width */
-            max-height: 250px; /* Reduced from 75vh to smaller height */
+            max-height: 75vh;
             object-fit: cover;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .avatar-status {
-            font-size: 14px;  /* Slightly smaller font */
+            font-size: 16px;
             color: var(--text-secondary);
-            margin-top: 10px;  /* Reduced margin */
+            margin-top: 15px;
             font-weight: 500;
         }
 
@@ -393,12 +397,6 @@
             border-top-color: var(--primary-color);
             animation: spin 1s ease-in-out infinite;
             margin-right: 8px;
-        }
-
-        /* Additional space below avatar for other content */
-        .avatar-content {
-            margin-top: 20px;
-            flex-grow: 1;
         }
     </style>
 </head>
@@ -599,44 +597,39 @@
                 </div>
             </div>
             
-            <!-- Avatar display area - UPDATED LAYOUT -->
+            <!-- Avatar display area -->
             <div class="card">
                 <h2>🎭 AI Patient Avatar</h2>
                 
-                <!-- D-ID Avatar Video Container - NOW AT TOP WITH SMALLER SIZE -->
-                <div class="avatar-container" id="avatarContainer">
+                <!-- D-ID Avatar Video Container - Enlarged -->
+                <div class="avatar-container" id="avatarContainer" style="height: calc(100vh - 200px); display: flex; flex-direction: column; justify-content: center;">
                     <video 
                         id="avatarVideo" 
-                        width="300" 
-                        height="250"
+                        width="100%" 
+                        height="auto"
                         autoplay 
                         controls
                         style="
                             border-radius: 12px; 
                             background-color: #f0f0f0; 
-                            max-width: 300px;
-                            max-height: 250px;
+                            max-height: 80vh;
                             object-fit: cover;
                             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                         "
                     >
                         Your browser does not support the video element.
                     </video>
-                    <div id="avatarStatus" class="avatar-status">
+                    <div id="avatarStatus" class="avatar-status" style="text-align: center; margin-top: 15px; font-size: 16px; font-weight: 500;">
                         Avatar ready
                     </div>
                 </div>
                 
-                <!-- Additional content area below avatar -->
-                <div class="avatar-content">
-                    <!-- Status display area for system messages -->
-                    <div id="status" class="status info" style="display: none;"></div>
-                    
-                    <!-- Additional space for future content -->
-                    <div style="padding: 20px; text-align: center; color: var(--text-secondary);">
-                        <p>Additional avatar controls or information can be added here</p>
-                    </div>
-                </div>
+                <!-- Status display area for system messages -->
+                <div id="status" class="status info" style="display: none; margin-top: 15px;"></div>
+            </div>    
+                
+                <!-- Status display area for system messages -->
+                <div id="status" class="status info" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -1948,6 +1941,12 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
