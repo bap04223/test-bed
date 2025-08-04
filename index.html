@@ -942,39 +942,8 @@
             if (startStreamBtn) startStreamBtn.disabled = !isConnected || isStreaming;
             if (stopStreamBtn) stopStreamBtn.disabled = !isStreaming;
         }
-
         
-        // ===== LLM INTEGRATION AND AVATAR SPEECH (NEW SECTION) =====
-        
-        async function processLLMResponse(fullResponse) {
-            if (!isConnected || !isStreaming) {
-                console.log('Avatar not ready for speech');
-                return;
-            }
-            
-            try {
-                isProcessingResponse = true;
-                updateLLMStatus('Processing LLM response...');
                 
-                if (streamingMode) {
-                    // Split response into chunks and stream
-                    const chunks = splitTextIntoChunks(fullResponse, chunkSize);
-                    await streamChunks(chunks);
-                } else {
-                    // Send entire response at once
-                    await sendToAvatar(fullResponse);
-                }
-                
-            } catch (error) {
-                console.error('Error processing LLM response:', error);
-                updateLLMStatus('Error processing response', false);
-            } finally {
-                isProcessingResponse = false;
-                updateLLMStatus('Response complete', false);
-                updateCurrentResponseText('', false);
-            }
-        }
-
         // ===== D-ID STREAMING FUNCTIONS (NEW SECTION) =====
         
         function convertImageUrl(url) {
@@ -1581,6 +1550,415 @@
             } catch (error) {
                 console.error('Failed to send text to avatar:', error);
                 throw error;
+            }
+        }
+
+        // ===== LLM INTEGRATION AND AVATAR SPEECH (NEW SECTION) =====
+        
+        async function processLLMResponse(fullResponse) {
+            if (!isConnected || !isStreaming) {
+                console.log('Avatar not ready for speech');
+                updateLLMStatus('Avatar not streaming - connect and start first', true);
+                return;
+            }
+            
+            try {
+                isProcessingResponse = true;
+                updateLLMStatus('Processing LLM response...');
+                updateAvatarStatus('Generating speech...', 'speaking');
+                
+                if (streamingMode) {
+                    // Split response into chunks and stream
+                    const chunks = splitTextIntoChunks(fullResponse, chunkSize);
+                    console.log(`Processing ${chunks.length} text chunks for avatar speech`);
+                    await streamChunks(chunks);
+                } else {
+                    // Send entire response at once
+                    updateCurrentResponseText(fullResponse);
+                    await sendToAvatar(fullResponse);
+                    updateLLMStatus('Avatar speaking...', true);
+                    
+                    // Estimate speech duration and update status
+                    const estimatedDuration = estimateSpeechDuration(fullResponse);
+                    setTimeout(() => {
+                        updateLLMStatus('Response complete', false);
+                        updateAvatarStatus('🎭 Avatar ready - speaking enabled!', 'connected');
+                    }, estimatedDuration);
+                }
+                
+            } catch (error) {
+                console.error('Error processing LLM response:', error);
+                updateLLMStatus(`Speech error: ${error.message}`, true);
+                
+                // Show helpful error message to user
+                if (error.message.includes('500')) {
+                    showStatus('Avatar speech failed due to server error. The text response is still available above.', 'warning');
+                } else {
+                    showStatus('Avatar speech failed. The conversation continues with text only.', 'warning');
+                }
+                
+                // Clear status after delay
+                setTimeout(() => {
+                    updateLLMStatus('', false);
+                    updateAvatarStatus('🎭 Avatar ready - text only mode', 'connected');
+                }, 5000);
+                
+            } finally {
+                isProcessingResponse = false;
+                updateCurrentResponseText('', false);
+            }
+        }
+        
+        function estimateSpeechDuration(text) {
+            // Estimate speech duration based on text length
+            const wordsPerMinute = 150;
+            const words = text.split(' ').length;
+            const estimatedSeconds = (words / wordsPerMinute) * 60;
+            return Math.max(estimatedSeconds * 1000, 3000); // Minimum 3 seconds
+        }
+        
+        function splitTextIntoChunks(text, chunkSize) {
+            const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+            const chunks = [];
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if (currentChunk.length + sentence.length <= chunkSize) {
+                    currentChunk += sentence;
+                } else {
+                    if (currentChunk) {
+                        chunks.push(currentChunk.trim());
+                    }
+                    currentChunk = sentence;
+                }
+            }
+            
+            if (currentChunk) {
+                chunks.push(currentChunk.trim());
+            }
+            
+            return chunks.filter(chunk => chunk.length > 0);
+        }
+        
+        async function streamChunks(chunks) {
+            updateLLMStatus(`Speaking ${chunks.length} chunks...`);
+            
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                
+                // Update UI to show current chunk
+                updateLLMStatus(`<span class="chunk-indicator speaking"></span>Speaking chunk ${i + 1}/${chunks.length}`);
+                updateCurrentResponseText(chunk);
+                updateAvatarStatus('Speaking...', 'speaking');
+                
+                // Send chunk to avatar
+                await sendToAvatar(chunk);
+                
+                // Wait for speech completion (estimated)
+                await waitForSpeechCompletion(chunk);
+                
+                // Small delay between chunks for natural flow
+                if (i < chunks.length - 1) {
+                    await delay(500);
+                }
+            }
+            
+            updateAvatarStatus('Avatar ready', 'connected');
+        }
+        
+        async function sendToAvatar(text, retryCount = 0) {
+            const maxRetries = 2;
+            
+            try {
+                if (!isConnected || !isStreaming || !streamId || !sessionIdDID) {
+                    throw new Error('Avatar stream not ready');
+                }
+                
+                console.log(`Sending text to avatar (attempt ${retryCount + 1}): "${text.substring(0, 50)}..."`);
+                
+                // Add a small delay between requests to avoid overwhelming D-ID
+                if (retryCount > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                }
+                
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: text.trim(),
+                            provider: {
+                                type: 'microsoft',
+                                voice_id: 'en-US-AriaNeural'
+                            }
+                        },
+                        config: {
+                            fluent: true,
+                            pad_audio: 0.1,
+                            align_driver: true,
+                            auto_match: true,
+                            result_format: 'mp4'
+                        }
+                    })
+                });
+                
+                console.log(`Avatar speech response: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Avatar speech error:', errorText);
+                    
+                    // Retry on server errors
+                    if (response.status >= 500 && retryCount < maxRetries) {
+                        console.log(`Server error, retrying avatar speech...`);
+                        return await sendToAvatar(text, retryCount + 1);
+                    }
+                    
+                    // For 400 errors, try with simplified request
+                    if (response.status === 400 && retryCount === 0) {
+                        console.log('Trying simplified request...');
+                        return await sendToAvatarSimple(text);
+                    }
+                    
+                    throw new Error(`Failed to send text to avatar: ${response.status} - ${errorText}`);
+                }
+                
+                const responseData = await response.json();
+                console.log('Avatar speech sent successfully:', responseData);
+                return responseData;
+                
+            } catch (error) {
+                console.error('Avatar speech error:', error);
+                
+                // Try fallback approach on final retry
+                if (retryCount >= maxRetries) {
+                    console.log('Trying fallback speech method...');
+                    try {
+                        return await sendToAvatarSimple(text);
+                    } catch (fallbackError) {
+                        console.error('Fallback also failed:', fallbackError);
+                        updateAvatarStatus('Speech failed - try reconnecting', 'error');
+                    }
+                }
+                
+                throw error;
+            }
+        }
+        
+        async function sendToAvatarSimple(text) {
+            // Simplified request format for troubleshooting
+            try {
+                console.log('Sending simplified avatar request...');
+                
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: text.trim()
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Simple request failed: ${response.status} - ${errorText}`);
+                }
+                
+                const responseData = await response.json();
+                console.log('Simple avatar speech successful:', responseData);
+                return responseData;
+                
+            } catch (error) {
+                console.error('Simple avatar speech failed:', error);
+                throw error;
+            }
+        }
+        
+        async function waitForSpeechCompletion(text) {
+            // Estimate speech duration based on text length (rough calculation)
+            const wordsPerMinute = 150;
+            const words = text.split(' ').length;
+            const estimatedDuration = (words / wordsPerMinute) * 60 * 1000; // Convert to milliseconds
+            const minDelay = 2000; // Minimum 2 seconds
+            const maxDelay = 8000; // Maximum 8 seconds
+            
+            const delay = Math.min(Math.max(estimatedDuration, minDelay), maxDelay);
+            
+            return new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // ===== SPEECH RECOGNITION SETUP =====
+        // Configure the browser's speech recognition API
+        
+        function initializeSpeechRecognition() {
+            // Check if browser supports speech recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                // Use webkit prefix for Chrome, standard for others
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                // Configure recognition settings
+                recognition.continuous = true;       // Keep listening until manually stopped
+                recognition.interimResults = true;   // Show interim results for live transcription
+                recognition.lang = 'en-US';         // Set language
+                
+                // Handle speech recognition results
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    // Process all results
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    
+                    // Update the full transcript with any new final results
+                    if (finalTranscript) {
+                        fullTranscript += finalTranscript;
+                    }
+                    
+                    // Update live transcription display
+                    const transcriptionBox = document.getElementById('transcriptionBox');
+                    let displayText = '';
+                    
+                    // Show accumulated final transcript in black
+                    if (fullTranscript) {
+                        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
+                    }
+                    
+                    // Show interim transcript in gray
+                    if (interimTranscript) {
+                        if (fullTranscript) {
+                            displayText += ' ';
+                        }
+                        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
+                    }
+                    
+                    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
+                    
+                    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
+                };
+                
+                // Handle recognition errors
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    
+                    // Don't show error for aborted recognition (expected when we stop)
+                    if (event.error !== 'aborted') {
+                        showStatus('Speech recognition error: ' + event.error, 'error');
+                    }
+                    
+                    isRecording = false;
+                    updateTalkButton();
+                };
+                
+                // Handle when recognition ends
+                recognition.onend = function() {
+                    console.log('Recognition ended. Force stop:', forceStopRecognition);
+                    
+                    // If we're forcing a stop (user released button), process the transcript
+                    if (forceStopRecognition && fullTranscript.trim()) {
+                        console.log('Sending full transcript:', fullTranscript);
+                        addMessage(fullTranscript.trim(), 'user');
+                        sendToWebhook(fullTranscript.trim());
+                    }
+                    
+                    // Reset state
+                    isRecording = false;
+                    forceStopRecognition = false;
+                    updateTalkButton();
+                    
+                    // If recording should still be active (continuous mode), restart
+                    if (isRecording && !forceStopRecognition) {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.log('Could not restart recognition:', e);
+                        }
+                    }
+                };
+            } else {
+                showStatus('Speech recognition not supported in this browser', 'error');
+            }
+        }
+        
+        // ===== RECORDING FUNCTIONS =====
+        // Handle push-to-talk functionality
+        
+        function startRecording() {
+            if (!recognition) {
+                showStatus('Speech recognition not available', 'error');
+                return;
+            }
+            
+            if (!document.getElementById('webhookUrl').value) {
+                showStatus('Please enter webhook URL first', 'error');
+                return;
+            }
+            
+            if (!currentScenario) {
+                showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Clear previous transcript and reset state
+            fullTranscript = '';
+            forceStopRecognition = false;
+            
+            // Clear transcription box
+            document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+            
+            isRecording = true;
+            updateTalkButton();
+            
+            try {
+                recognition.start();
+                showStatus('Listening...', 'info');
+            } catch (error) {
+                console.error('Error starting recognition:', error);
+                showStatus('Error starting recording', 'error');
+                isRecording = false;
+                updateTalkButton();
+            }
+        }
+        
+        function stopRecording() {
+            if (isRecording && recognition) {
+                console.log('Stopping recording...');
+                forceStopRecognition = true;
+                recognition.stop();
+                showStatus('Processing...', 'info');
+            }
+        }
+        
+        function updateTalkButton() {
+            const button = document.getElementById('talkButton');
+            if (isRecording) {
+                button.classList.add('recording');
+                button.innerHTML = '🔴 Recording...';
+            } else {
+                button.classList.remove('recording');
+                button.innerHTML = 'Push to Talk';
             }
         }
         
@@ -2466,6 +2844,7 @@
     </script>
 </body>
 </html>
+
 
 
 
