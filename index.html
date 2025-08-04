@@ -970,6 +970,59 @@
 
         // ===== D-ID STREAMING FUNCTIONS (NEW SECTION) =====
         
+        function convertGoogleDriveUrl(url) {
+            // Convert Google Drive sharing URLs to direct image URLs
+            if (url.includes('drive.google.com')) {
+                // Extract file ID from various Google Drive URL formats
+                let fileId = null;
+                
+                // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+                const match1 = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+                if (match1) {
+                    fileId = match1[1];
+                }
+                
+                // Format: https://drive.google.com/open?id=FILE_ID
+                const match2 = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                if (match2) {
+                    fileId = match2[1];
+                }
+                
+                if (fileId) {
+                    console.log('Converting Google Drive URL, File ID:', fileId);
+                    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+                }
+            }
+            
+            return url;
+        }
+        
+        async function validateImageUrl(url) {
+            try {
+                console.log('Validating image URL:', url);
+                
+                // Convert Google Drive URLs
+                const convertedUrl = convertGoogleDriveUrl(url);
+                if (convertedUrl !== url) {
+                    console.log('Converted URL:', convertedUrl);
+                }
+                
+                // Test if the URL is accessible
+                const response = await fetch(convertedUrl, { 
+                    method: 'HEAD',
+                    mode: 'no-cors' // This allows us to test accessibility without CORS issues
+                });
+                
+                console.log('Image URL validation response:', response.status);
+                return convertedUrl;
+                
+            } catch (error) {
+                console.warn('Image URL validation failed:', error);
+                // Return the converted URL anyway - let D-ID handle the validation
+                return convertGoogleDriveUrl(url);
+            }
+        }
+        
         async function connectAvatar() {
             try {
                 // Get configuration values
@@ -989,9 +1042,12 @@
                     if (!sourceUrl) {
                         throw new Error('Source image URL is required for talks service');
                     }
-                    // Validate URL format
+                    // Validate and convert URL format
                     try {
                         new URL(sourceUrl);
+                        // Convert Google Drive URLs to direct access format
+                        sourceUrl = await validateImageUrl(sourceUrl);
+                        console.log('Using image URL:', sourceUrl);
                     } catch (urlError) {
                         throw new Error('Please enter a valid image URL');
                     }
@@ -1022,9 +1078,13 @@
                 
                 // Show helpful suggestions based on error type
                 if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
-                    showStatus('D-ID server error. Try a different presenter or switch to Talks service with a custom image.', 'error');
+                    if (serviceType === 'talks') {
+                        showStatus('Image URL error. Make sure your image is publicly accessible. Try uploading to imgur.com or use a direct image URL.', 'error');
+                    } else {
+                        showStatus('D-ID server error. Try a different presenter or switch to Talks service with a custom image.', 'error');
+                    }
                 } else if (error.message.includes('400')) {
-                    showStatus('Configuration error. Check your API key and presenter selection.', 'error');
+                    showStatus('Configuration error. Check your API key and image URL format.', 'error');
                 } else if (error.message.includes('401') || error.message.includes('403')) {
                     showStatus('Authentication error. Check your D-ID API key.', 'error');
                 } else {
@@ -2277,6 +2337,7 @@
     </script>
 </body>
 </html>
+
 
 
 
