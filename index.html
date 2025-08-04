@@ -1123,8 +1123,13 @@
                 const data = JSON.parse(responseText);
                 console.log('D-ID session created successfully:', data);
                 
+                // Store session data globally
                 streamId = data.id;
                 sessionIdDID = data.session_id;
+                
+                // Store the offer and ICE servers for WebRTC setup
+                window.didSessionOffer = data.offer;
+                window.didSessionIceServers = data.ice_servers;
                 
                 return data;
                 
@@ -1140,9 +1145,11 @@
         }
         
         async function setupWebRTC() {
-            // Create peer connection
+            // Create peer connection with the ICE servers from the session creation response
+            const sessionData = await getSessionDataFromCreation();
+            
             peerConnection = new RTCPeerConnection({
-                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                iceServers: sessionData.ice_servers
             });
             
             // Handle incoming stream
@@ -1164,13 +1171,20 @@
                 console.log('Connection state:', peerConnection.connectionState);
                 if (peerConnection.connectionState === 'connected') {
                     updateAvatarStatus('WebRTC connected', 'connected');
+                } else if (peerConnection.connectionState === 'failed') {
+                    updateAvatarStatus('WebRTC connection failed', 'error');
                 }
             };
             
-            // Get session data
-            const sessionData = await getSessionData();
+            // Handle ICE connection state changes
+            peerConnection.oniceconnectionstatechange = () => {
+                console.log('ICE connection state:', peerConnection.iceConnectionState);
+                if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+                    updateAvatarStatus('Avatar connected and ready', 'connected');
+                }
+            };
             
-            // Set remote description
+            // Set remote description from the session creation response
             await peerConnection.setRemoteDescription(sessionData.offer);
             
             // Create and set local description
@@ -1181,20 +1195,13 @@
             await sendAnswer(answer);
         }
         
-        async function getSessionData() {
-            const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Basic ${didApiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Failed to get session data: ${response.status}`);
-            }
-            
-            return await response.json();
+        async function getSessionDataFromCreation() {
+            // We don't need to make another API call - we already have the data from createDIDSession
+            // This is stored in the global variables after successful session creation
+            return {
+                offer: window.didSessionOffer,
+                ice_servers: window.didSessionIceServers
+            };
         }
         
         async function sendAnswer(answer) {
@@ -1326,7 +1333,6 @@
                 console.error('Error during disconnect:', error);
             }
         }
-
         
         function splitTextIntoChunks(text, chunkSize) {
             const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
@@ -2271,5 +2277,6 @@
     </script>
 </body>
 </html>
+
 
 
