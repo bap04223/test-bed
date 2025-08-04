@@ -496,55 +496,59 @@
             <p><strong>Tips:</strong> Speak clearly, ask open-ended questions, and practice active listening skills!</p>
         </div>
 
-        <!-- Main content grid -->
+       <!-- Main content grid -->
         <div class="grid">
             <!-- Configuration section -->
             <div class="card">
                 <h2>⚙️ Configuration</h2>
                 <div class="card-content">
                     <div class="scrollable-section">
-                        <!-- n8n webhook URL input -->
-                        <div class="form-group">
-                            <label for="webhookUrl">n8n Webhook URL (Chat):</label>
-                            <input 
-                                type="password" 
-                                id="webhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/..."
-                                title="Enter your n8n webhook URL that will receive the messages"
-                                autocomplete="new-password"
-                            >
-                        </div>
-                        
-                        <!-- Submit webhook URL input -->
-                        <div class="form-group">
-                            <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
-                            <input 
-                                type="password"
-                                id="submitWebhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/submit..."
-                                title="Enter your n8n webhook URL for submitting conversation history"
-                                autocomplete="new-password"
-                            >
-                        </div>
-                        
-                        <!-- Google Sheets configuration -->
-                        <div class="form-group">
-                            <label for="sheetId">Google Sheet ID:</label>
-                            <input 
-                                type="password" 
-                                id="sheetId" 
-                                placeholder="1ABC...xyz"
-                                title="The ID from your Google Sheets URL"
-                                autocomplete="new-password"
-                            >
-                            <button 
-                                class="btn-secondary" 
-                                onclick="loadSheetNames()" 
-                                style="margin-top: 10px; width: 100%;"
-                            >
-                                📋 Get Sheet Names
-                            </button>
-                        </div>
+                        <!-- Configuration Form -->
+                        <form onsubmit="return false;" autocomplete="off">
+                            <!-- n8n webhook URL input -->
+                            <div class="form-group">
+                                <label for="webhookUrl">n8n Webhook URL (Chat):</label>
+                                <input 
+                                    type="password" 
+                                    id="webhookUrl" 
+                                    placeholder="https://your-n8n-instance.com/webhook/..."
+                                    title="Enter your n8n webhook URL that will receive the messages"
+                                    autocomplete="new-password"
+                                >
+                            </div>
+                            
+                            <!-- Submit webhook URL input -->
+                            <div class="form-group">
+                                <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
+                                <input 
+                                    type="password"
+                                    id="submitWebhookUrl" 
+                                    placeholder="https://your-n8n-instance.com/webhook/submit..."
+                                    title="Enter your n8n webhook URL for submitting conversation history"
+                                    autocomplete="new-password"
+                                >
+                            </div>
+                            
+                            <!-- Google Sheets configuration -->
+                            <div class="form-group">
+                                <label for="sheetId">Google Sheet ID:</label>
+                                <input 
+                                    type="password" 
+                                    id="sheetId" 
+                                    placeholder="1ABC...xyz"
+                                    title="The ID from your Google Sheets URL"
+                                    autocomplete="new-password"
+                                >
+                                <button 
+                                    type="button"
+                                    class="btn-secondary" 
+                                    onclick="loadSheetNames()" 
+                                    style="margin-top: 10px; width: 100%;"
+                                >
+                                    📋 Get Sheet Names
+                                </button>
+                            </div>
+                        </form>
                         
                         <div class="form-group">
                             <label for="sheetName">Sheet Name:</label>
@@ -601,10 +605,11 @@
                                     <label for="presenterId">Presenter (for Clips):</label>
                                     <select id="presenterId">
                                         <option value="">Select presenter...</option>
-                                        <option value="amy-jcwCkr1grs">Amy</option>
-                                        <option value="eric-2UHNp4HyMt">Eric</option>
-                                        <option value="stacey-G6mPtqx8eS">Stacey</option>
-                                        <option value="sara-2Ktfn8ZHiZ">Sara</option>
+                                        <option value="amy-Aq6OmGZnMt">Amy (Professional)</option>
+                                        <option value="eric-2UHNp4HyMt">Eric (Casual)</option>
+                                        <option value="stacey-G6mPtqx8eS">Stacey (Friendly)</option>
+                                        <option value="sara-2Ktfn8ZHiZ">Sara (Confident)</option>
+                                        <option value="wayne_20240711">Wayne (Default)</option>
                                     </select>
                                 </div>
                                 
@@ -626,7 +631,7 @@
                 </div>
             </div>
 
-            <!-- Voice control section -->
+      <!-- Voice control section -->
             <div class="card">
                 <h2>🎙️ Voice Control</h2>
                 <div class="card-content">
@@ -652,11 +657,6 @@
                     <button 
                         class="talk-button btn-danger" 
                         id="talkButton"
-                        onmousedown="startRecording()"
-                        onmouseup="stopRecording()"
-                        onmouseleave="stopRecording()"
-                        ontouchstart="startRecording()"
-                        ontouchend="stopRecording()"
                     >
                         Push to Talk
                     </button>
@@ -749,7 +749,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>      
 
     <!-- JavaScript code for functionality -->
     <script>
@@ -844,6 +844,22 @@
             
             // D-ID service type change
             document.getElementById('serviceType').addEventListener('change', updateServiceFields);
+            
+            // Setup push-to-talk button with passive event listeners
+            const talkButton = document.getElementById('talkButton');
+            if (talkButton) {
+                // Mouse events
+                talkButton.addEventListener('mousedown', startRecording);
+                talkButton.addEventListener('mouseup', stopRecording);
+                talkButton.addEventListener('mouseleave', stopRecording);
+                
+                // Touch events with passive option
+                talkButton.addEventListener('touchstart', startRecording, { passive: false });
+                talkButton.addEventListener('touchend', stopRecording, { passive: true });
+                
+                // Prevent context menu on long press
+                talkButton.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
             
             // Update service fields on page load
             updateServiceFields();
@@ -966,7 +982,8 @@
                 payload.source_url = sourceUrl;
             } else {
                 payload.presenter_id = presenterId;
-                payload.driver_id = 'mXra4jY38i'; // Default driver
+                // Use a valid driver ID for clips - remove the driver_id or use a different one
+                // Many clips work without specifying a driver_id
             }
             
             console.log('Creating D-ID session with payload:', payload);
@@ -982,6 +999,7 @@
             
             if (!response.ok) {
                 const errorData = await response.text();
+                console.error('D-ID API Error:', errorData);
                 throw new Error(`Session creation failed: ${response.status} - ${errorData}`);
             }
             
@@ -2156,3 +2174,4 @@
     </script>
 </body>
 </html>
+
