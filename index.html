@@ -5,29 +5,460 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Consultation Training - AI Patient Simulator</title>
     
-    <!-- Link to external CSS file -->
-    <link rel="stylesheet" href="styles.css">
-    
-    <!-- D-ID SDK Integration - Alternative approach -->
-    <script>
-        // Load D-ID SDK dynamically with fallback
-        (function loadDIDSDK() {
-            const script = document.createElement('script');
-            script.src = 'https://d-id-public-bucket.s3.us-west-2.amazonaws.com/api-studio-sdk/0.0.4/d-id-client.js';
-            script.onload = function() {
-                console.log('D-ID SDK loaded successfully');
-                window.didSDKLoaded = true;
-            };
-            script.onerror = function() {
-                console.warn('Primary D-ID SDK failed, trying fallback...');
-                // Fallback to REST API approach
-                window.didSDKLoaded = false;
-                window.didUseFallback = true;
-            };
-            document.head.appendChild(script);
-        })();
-    </script>
+    <!-- Modern styling for the interface -->
+    <style>
+        /* Reset default browser styles and set custom properties for colors */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* CSS Variables for easy color scheme changes */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
+            --background: #1e3a8a;
+            --card-background: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --success-color: #059669;
+            --warning-color: #f59e0b;
+        }
+        
+        /* Main body styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Container for centering content */
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header section styling */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        /* Improved instructions styling for better centering */
+        .instructions-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .instructions-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .instructions-column ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions-column li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        /* Grid layout for main content - 3 COLUMNS RESTORED with full height */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: 20px;
+            flex: 1;
+            align-items: stretch;
+        }
+        
+        /* Card component for sections - Full height */
+        .card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        /* Card content area */
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Form input styling */
+        .form-group {
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Push to talk button special styling - Smaller for more space */
+        .talk-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            font-size: 16px;
+            margin: 15px auto;
+            display: block;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .talk-button.recording {
+            animation: pulse 1.5s infinite;
+            background-color: var(--danger-color);
+        }
+        
+        /* Animation for recording state */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        
+        /* Button styling */
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #047857;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        /* New button style for export */
+        .btn-info {
+            background-color: #0ea5e9;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #0284c7;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+        
+        /* Chat display area - Flexible height */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fafafa;
+            margin-bottom: 15px;
+            min-height: 300px;
+        }
+        
+        /* Individual message styling */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.ai {
+            background-color: #e5e7eb;
+            color: var(--text-primary);
+        }
+        
+        .message.system {
+            background-color: #f3f4f6;
+            color: var(--text-secondary);
+            font-style: italic;
+            border-left: 4px solid var(--success-color);
+            max-width: 100%;
+        }
+        
+        /* Status indicator */
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .status.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Button group styling for control buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+        
+        .button-group button {
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        /* Avatar video container styling - Enhanced for larger display */
+        .avatar-container {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #avatarVideo {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            width: 80%;
+            max-height: 75vh;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin: 0 auto;
+        }
+
+        .avatar-status {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .avatar-status.loading {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .avatar-status.error {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .avatar-status.connected {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .avatar-status.speaking {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        /* Avatar loading animation */
+        .avatar-loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(37, 99, 235, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        /* Scrollable sections within cards */
+        .scrollable-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* D-ID Streaming specific styles */
+        .streaming-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .streaming-controls button {
+            min-width: 100px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .llm-response-status {
+            background: #fff3cd;
+            border: 1px solid #ffeaa0;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .speaking-indicator {
+            background: #d4edda !important;
+            border: 1px solid #c3e6cb !important;
+            color: #155724 !important;
+        }
+
+        .chunk-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff9800;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse-chunk 1s infinite;
+        }
+
+        .chunk-indicator.speaking {
+            background: #4caf50;
+        }
+
+        @keyframes pulse-chunk {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header section with title and description -->
@@ -49,220 +480,1679 @@
                 </div>
                 <div class="instructions-column">
                     <ol start="4">
-                        <li>Initialize your D-ID avatar with your API key</li>
+                        <li>Initialize your D-ID streaming avatar with your API key</li>
                         <li>Hold down the "Push to Talk" button and speak your consultation</li>
-                        <li>The AI patient will respond with both text and avatar video</li>
+                        <li>The AI patient will respond with streaming avatar video and speech</li>
                     </ol>
                 </div>
                 <div class="instructions-column">
                     <ol start="7">
                         <li>Continue the conversation by speaking your responses</li>
-                        <li>Use "Submit Conversation" to get evaluation feedback</li>
+                        <li>Use "Submit Chat" to get evaluation feedback</li>
                         <li>Refresh the browser after each scenario for a new session</li>
                     </ol>
                 </div>
             </div>
             <p><strong>Tips:</strong> Speak clearly, ask open-ended questions, and practice active listening skills!</p>
         </div>
-        
+
         <!-- Main content grid -->
         <div class="grid">
             <!-- Configuration section -->
             <div class="card">
                 <h2>⚙️ Configuration</h2>
-                
-                <!-- n8n webhook URL input -->
-                <div class="form-group">
-                    <label for="webhookUrl">n8n Webhook URL (Chat):</label>
-                    <input 
-                        type="url" 
-                        id="webhookUrl" 
-                        placeholder="https://your-n8n-instance.com/webhook/..."
-                        title="Enter your n8n webhook URL that will receive the messages"
-                    >
-                </div>
-                
-                <!-- Submit webhook URL input -->
-                <div class="form-group">
-                    <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
-                    <input 
-                        type="url" 
-                        id="submitWebhookUrl" 
-                        placeholder="https://your-n8n-instance.com/webhook/submit..."
-                        title="Enter your n8n webhook URL for submitting conversation history"
-                    >
-                </div>
-                
-                <!-- Google Sheets configuration -->
-                <div class="form-group">
-                    <label for="sheetId">Google Sheet ID:</label>
-                    <input 
-                        type="text" 
-                        id="sheetId" 
-                        placeholder="1ABC...xyz"
-                        title="The ID from your Google Sheets URL"
-                    >
-                    <button 
-                        class="btn-secondary" 
-                        onclick="loadSheetNames()" 
-                        style="margin-top: 10px; width: 100%;"
-                    >
-                        📋 Get Sheet Names
-                    </button>
-                </div>
-                
-                <div class="form-group">
-                    <label for="sheetName">Sheet Name:</label>
-                    <select id="sheetName" disabled>
-                        <option value="">Get sheet names first...</option>
-                    </select>
-                </div>
-                
-                <!-- Scenario selection dropdown -->
-                <div class="form-group" style="margin-top: 20px;">
-                    <label for="scenarioSelect">Select Scenario:</label>
-                    <select id="scenarioSelect" disabled>
-                        <option value="">Load sheet data first...</option>
-                    </select>
-                </div>
-                
-                <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
-                    🎲 Random Scenario
-                </button>
-                
-                <!-- D-ID Configuration -->
-                <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Avatar Settings</h3>
-                    
-                    <form style="margin: 0;" onsubmit="return false;">
-                        <input type="text" name="username" style="display: none;" autocomplete="username">
-                        <label for="didApiKey">D-ID API Key:</label>
-                        <input 
-                            type="password" 
-                            id="didApiKey" 
-                            name="password"
-                            placeholder="Enter your D-ID API key"
-                            title="Get your API key from studio.d-id.com"
-                            autocomplete="current-password"
-                        >
-                        <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
-                            Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
-                        </small>
+                <div class="card-content">
+                    <div class="scrollable-section">
+                        <!-- n8n webhook URL input -->
+                        <div class="form-group">
+                            <label for="webhookUrl">n8n Webhook URL (Chat):</label>
+                            <input 
+                                type="password" 
+                                id="webhookUrl" 
+                                placeholder="https://your-n8n-instance.com/webhook/..."
+                                title="Enter your n8n webhook URL that will receive the messages"
+                                autocomplete="new-password"
+                            >
+                        </div>
                         
-                        <button 
-                            type="button"
-                            class="btn-primary" 
-                            onclick="initializeDID()" 
-                            style="margin-top: 10px; width: 100%;"
-                        >
-                            🚀 Initialize Avatar
+                        <!-- Submit webhook URL input -->
+                        <div class="form-group">
+                            <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
+                            <input 
+                                type="password"
+                                id="submitWebhookUrl" 
+                                placeholder="https://your-n8n-instance.com/webhook/submit..."
+                                title="Enter your n8n webhook URL for submitting conversation history"
+                                autocomplete="new-password"
+                            >
+                        </div>
+                        
+                        <!-- Google Sheets configuration -->
+                        <div class="form-group">
+                            <label for="sheetId">Google Sheet ID:</label>
+                            <input 
+                                type="password" 
+                                id="sheetId" 
+                                placeholder="1ABC...xyz"
+                                title="The ID from your Google Sheets URL"
+                                autocomplete="new-password"
+                            >
+                            <button 
+                                class="btn-secondary" 
+                                onclick="loadSheetNames()" 
+                                style="margin-top: 10px; width: 100%;"
+                            >
+                                📋 Get Sheet Names
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="sheetName">Sheet Name:</label>
+                            <select id="sheetName" disabled>
+                                <option value="">Get sheet names first...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Scenario selection dropdown -->
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="scenarioSelect">Select Scenario:</label>
+                            <select id="scenarioSelect" disabled>
+                                <option value="">Load sheet data first...</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
+                            🎲 Random Scenario
                         </button>
-                    </form>
+                        
+                        <!-- D-ID Streaming Configuration (UPDATED SECTION) -->
+                        <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Streaming Avatar</h3>
+                            
+                            <form style="margin: 0;" onsubmit="return false;">
+                                <input type="text" name="username" style="display: none;" autocomplete="username">
+                                <label for="didApiKey">D-ID API Key:</label>
+                                <input 
+                                    type="password" 
+                                    id="didApiKey" 
+                                    name="password"
+                                    placeholder="Enter your D-ID API key"
+                                    title="Get your API key from studio.d-id.com"
+                                    autocomplete="current-password"
+                                >
+                                <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
+                                    Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
+                                </small>
+                                
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label for="serviceType">Avatar Service:</label>
+                                    <select id="serviceType">
+                                        <option value="talks">Talks (Custom Image)</option>
+                                        <option value="clips">Clips (Preset Avatars)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="imageUrlGroup">
+                                    <label for="sourceUrl">Source Image URL (for Talks):</label>
+                                    <input type="url" id="sourceUrl" placeholder="https://example.com/your-image.jpg">
+                                </div>
+                                
+                                <div class="form-group" id="presenterGroup" style="display: none;">
+                                    <label for="presenterId">Presenter (for Clips):</label>
+                                    <select id="presenterId">
+                                        <option value="">Select presenter...</option>
+                                        <option value="amy-jcwCkr1grs">Amy</option>
+                                        <option value="eric-2UHNp4HyMt">Eric</option>
+                                        <option value="stacey-G6mPtqx8eS">Stacey</option>
+                                        <option value="sara-2Ktfn8ZHiZ">Sara</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label for="chunkSize">Text Chunk Size:</label>
+                                    <input type="number" id="chunkSize" value="200" min="50" max="500">
+                                    <small style="color: var(--text-secondary); font-size: 11px;">
+                                        Smaller = more natural speech, larger = fewer API calls
+                                    </small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <input type="checkbox" id="streamingMode" checked style="width: auto; margin-right: 8px;">
+                                    <label for="streamingMode" style="display: inline;">Enable Streaming Mode</label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
+
             <!-- Voice control section -->
             <div class="card">
-                <h2 style="margin-bottom: 40px;">🎙️ Voice Control</h2>
-                
-                <!-- Live transcription -->
-                <div class="form-group">
-                    <label for="transcriptionBox">📝 Live Transcription:</label>
-                    <div id="transcriptionBox" style="
-                        min-height: 60px;
-                        max-height: 100px;
-                        overflow-y: auto;
-                        padding: 12px;
-                        background-color: #f9fafb;
-                        border: 1px solid var(--border-color);
-                        border-radius: 6px;
-                        font-size: 14px;
-                        line-height: 1.4;
-                        margin-bottom: 40px;
-                    ">
-                        <span style="color: var(--text-secondary);">Transcription will appear here when you speak...</span>
+                <h2>🎙️ Voice Control</h2>
+                <div class="card-content">
+                    <!-- Live transcription -->
+                    <div class="form-group">
+                        <label for="transcriptionBox">📝 Live Transcription:</label>
+                        <div id="transcriptionBox" style="
+                            min-height: 60px;
+                            max-height: 100px;
+                            overflow-y: auto;
+                            padding: 12px;
+                            background-color: #f9fafb;
+                            border: 1px solid var(--border-color);
+                            border-radius: 6px;
+                            font-size: 14px;
+                            line-height: 1.4;
+                        ">
+                            <span style="color: var(--text-secondary);">Transcription will appear here when you speak...</span>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Push to talk button -->
-                <button 
-                    class="talk-button btn-danger" 
-                    id="talkButton"
-                    onmousedown="startRecording()"
-                    onmouseup="stopRecording()"
-                    onmouseleave="stopRecording()"
-                    ontouchstart="startRecording()"
-                    ontouchend="stopRecording()"
-                    style="margin: 15px auto;"
-                >
-                    Push to Talk
-                </button>
-                
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 80px;">
-                    Hold down the button to speak
-                </p>
-                
-                <!-- Conversation History moved here -->
-                <div class="form-group">
-                    <label for="chatContainer">💬 Conversation History:</label>
-                    <div class="chat-container" id="chatContainer" style="height: 300px;">
-                        <p style="text-align: center; color: var(--text-secondary);">
-                            Select a scenario and hold the talk button to begin the consultation...
-                        </p>
+                    
+                    <!-- Push to talk button -->
+                    <button 
+                        class="talk-button btn-danger" 
+                        id="talkButton"
+                        onmousedown="startRecording()"
+                        onmouseup="stopRecording()"
+                        onmouseleave="stopRecording()"
+                        ontouchstart="startRecording()"
+                        ontouchend="stopRecording()"
+                    >
+                        Push to Talk
+                    </button>
+                    
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
+                        Hold down the button to speak
+                    </p>
+                    
+                    <!-- Conversation History -->
+                    <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                        <label for="chatContainer">💬 Conversation History:</label>
+                        <div class="chat-container" id="chatContainer">
+                            <p style="text-align: center; color: var(--text-secondary);">
+                                Select a scenario and hold the talk button to begin the consultation...
+                            </p>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Control buttons -->
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="clearChat()">
-                        🔄 Clear Chat
-                    </button>
-                    <button class="btn-danger" onclick="submitConversation()">
-                        📋 Submit for Evaluation
-                    </button>
-                    <button class="btn-info" onclick="exportConversation()">
-                        📥 Export Chat
-                    </button>
+                    
+                    <!-- Control buttons -->
+                    <div class="button-group">
+                        <button class="btn-secondary" onclick="clearChat()">
+                            🔄 Clear Chat
+                        </button>
+                        <button class="btn-danger" onclick="submitConversation()">
+                            📋 Submit Chat
+                        </button>
+                        <button class="btn-info" onclick="exportConversation()">
+                            📥 Export Chat
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- Avatar display area -->
+            <!-- Avatar display area (UPDATED SECTION) -->
             <div class="card">
                 <h2>🎭 AI Patient Avatar</h2>
-                
-                <!-- D-ID Avatar Video Container - Enlarged -->
-                <div class="avatar-container" id="avatarContainer" style="height: calc(100vh - 200px); display: flex; flex-direction: column; justify-content: center;">
-                    <video 
-                        id="avatarVideo" 
-                        width="100%" 
-                        height="auto"
-                        autoplay 
-                        controls
-                        style="
-                            border-radius: 12px; 
-                            background-color: #f0f0f0; 
-                            max-height: 80vh;
-                            object-fit: cover;
-                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        "
-                    >
-                        Your browser does not support the video element.
-                    </video>
-                    <div id="avatarStatus" class="avatar-status" style="text-align: center; margin-top: 15px; font-size: 16px; font-weight: 500;">
-                        Avatar ready
+                <div class="card-content">
+                    <!-- D-ID Streaming Avatar Container -->
+                    <div class="avatar-container" id="avatarContainer">
+                        <video 
+                            id="avatarVideo" 
+                            width="100%" 
+                            height="auto"
+                            autoplay 
+                            playsinline
+                            muted
+                            style="
+                                border-radius: 12px; 
+                                background-color: #f0f0f0; 
+                                max-height: 70vh;
+                                object-fit: cover;
+                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                            "
+                        >
+                            Your browser does not support the video element.
+                        </video>
+                        <div id="avatarStatus" class="avatar-status">
+                            Enter D-ID API key and connect to initialize avatar
+                        </div>
+                        
+                        <!-- LLM Response Status -->
+                        <div id="llmResponseStatus" class="llm-response-status" style="display: none;">
+                            Processing response...
+                        </div>
+                        
+                        <!-- Current Response Text Display -->
+                        <div id="currentResponseText" class="llm-response-status" style="display: none; text-align: left; background: #f8f9fa; border: 1px solid #dee2e6;">
+                            Current response text...
+                        </div>
                     </div>
+                    
+                    <!-- Streaming Controls (NEW SECTION) -->
+                    <div class="streaming-controls">
+                        <button id="connectBtn" class="btn-primary" onclick="connectAvatar()">
+                            🔗 Connect
+                        </button>
+                        <button id="disconnectBtn" class="btn-secondary" onclick="disconnectAvatar()" disabled>
+                            🔌 Disconnect
+                        </button>
+                        <button id="startStreamBtn" class="btn-success" onclick="startStream()" disabled>
+                            ▶️ Start
+                        </button>
+                        <button id="stopStreamBtn" class="btn-danger" onclick="stopStream()" disabled>
+                            ⏹️ Stop
+                        </button>
+                    </div>
+                    
+                    <!-- Status display area for system messages -->
+                    <div id="status" class="status info" style="display: none;"></div>
                 </div>
-                
-                <!-- Status display area for system messages -->
-                <div id="status" class="status info" style="display: none; margin-top: 15px;"></div>
-            </div>    
-                
-            <!-- Status display area for system messages -->
-            <div id="status" class="status info" style="display: none;"></div>
+            </div>
         </div>
     </div>
-    
-    <!-- Link to external JavaScript file -->
-    <script src="script.js"></script>
+
+    <!-- JavaScript code for functionality -->
+    <script>
+        // ===== GLOBAL VARIABLES =====
+        // These store the state of our application
+        
+        let currentScenario = null;       // Store the selected patient scenario
+        let conversationHistory = [];     // Store all messages in the conversation
+        let sheetData = [];              // Store data loaded from Google Sheets
+        let sessionId = '';              // Unique session identifier for this training session
+        
+        // ===== SPEECH RECOGNITION VARIABLES =====
+        let recognition = null;           // Speech recognition object
+        let isRecording = false;          // Track if we're currently recording
+        let fullTranscript = '';         // Store the complete transcript during recording
+        let forceStopRecognition = false; // Flag to force stop recognition
+        
+        // ===== D-ID STREAMING VARIABLES (UPDATED SECTION) =====
+        let didApiKey = '';               // D-ID API key
+        let serviceType = 'talks';        // Service type (talks or clips)
+        let sourceUrl = '';               // Source image URL for talks
+        let presenterId = '';             // Presenter ID for clips
+        let streamId = null;              // Current stream ID
+        let sessionIdDID = null;          // D-ID session ID
+        let peerConnection = null;        // WebRTC peer connection
+        let isConnected = false;          // Connection status
+        let isStreaming = false;          // Streaming status
+        let chunkSize = 200;              // Text chunk size for streaming
+        let streamingMode = true;         // Enable streaming mode
+        let currentResponse = '';         // Current LLM response being processed
+        let isProcessingResponse = false; // Flag to track response processing
+        let responseQueue = [];           // Queue for response chunks
+        let isProcessingQueue = false;    // Flag to track queue processing
+        
+        // ===== INITIALIZATION =====
+        // This runs when the page loads
+        
+        window.onload = function() {
+            // Generate unique session ID for this training session
+            generateSessionId();
+            
+            // Initialize speech recognition if available
+            initializeSpeechRecognition();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load saved configuration from localStorage
+            loadSavedConfig();
+            
+            // Display session info
+            displaySessionInfo();
+            
+            // Initialize D-ID streaming setup
+            initializeDIDElements();
+            
+            console.log('Pharmacy Training System initialized with D-ID streaming');
+        };
+        
+        // ===== SESSION MANAGEMENT =====
+        // Generate and manage unique session IDs
+        
+        function generateSessionId() {
+            // Generate a unique session ID using timestamp and random string
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substring(2, 15);
+            sessionId = `session_${timestamp}_${randomStr}`;
+            
+            console.log('New session started:', sessionId);
+        }
+        
+        function displaySessionInfo() {
+            // Add session ID display to the page
+            const header = document.querySelector('.header');
+            const sessionInfo = document.createElement('p');
+            sessionInfo.style.fontSize = '0.9em';
+            sessionInfo.style.color = 'var(--text-secondary)';
+            sessionInfo.style.marginTop = '10px';
+            sessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
+            header.appendChild(sessionInfo);
+        }
+        
+        // ===== EVENT LISTENERS =====
+        // Set up various UI interactions
+        
+        function setupEventListeners() {
+            // Save configuration when changed
+            document.getElementById('webhookUrl').addEventListener('change', saveConfig);
+            document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
+            document.getElementById('sheetId').addEventListener('change', saveConfig);
+            document.getElementById('didApiKey').addEventListener('change', saveConfig);
+            
+            // D-ID service type change
+            document.getElementById('serviceType').addEventListener('change', updateServiceFields);
+            
+            // Update service fields on page load
+            updateServiceFields();
+        }
+        
+        // ===== D-ID STREAMING SETUP (NEW SECTION) =====
+        
+        function initializeDIDElements() {
+            updateServiceFields();
+        }
+        
+        function updateServiceFields() {
+            const serviceTypeValue = document.getElementById('serviceType').value;
+            const imageUrlGroup = document.getElementById('imageUrlGroup');
+            const presenterGroup = document.getElementById('presenterGroup');
+            
+            if (serviceTypeValue === 'talks') {
+                imageUrlGroup.style.display = 'block';
+                presenterGroup.style.display = 'none';
+            } else {
+                imageUrlGroup.style.display = 'none';
+                presenterGroup.style.display = 'block';
+            }
+        }
+        
+        function updateAvatarStatus(message, type = 'info') {
+            const statusElement = document.getElementById('avatarStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `avatar-status ${type}`;
+            }
+        }
+        
+        function updateLLMStatus(message, show = true) {
+            const statusElement = document.getElementById('llmResponseStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.style.display = show ? 'block' : 'none';
+                
+                if (message.includes('Speaking')) {
+                    statusElement.className = 'llm-response-status speaking-indicator';
+                } else {
+                    statusElement.className = 'llm-response-status';
+                }
+            }
+        }
+        
+        function updateCurrentResponseText(text, show = true) {
+            const textElement = document.getElementById('currentResponseText');
+            if (textElement) {
+                textElement.textContent = text;
+                textElement.style.display = show ? 'block' : 'none';
+            }
+        }
+        
+        function updateButtonStates() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const startStreamBtn = document.getElementById('startStreamBtn');
+            const stopStreamBtn = document.getElementById('stopStreamBtn');
+            
+            if (connectBtn) connectBtn.disabled = isConnected;
+            if (disconnectBtn) disconnectBtn.disabled = !isConnected;
+            if (startStreamBtn) startStreamBtn.disabled = !isConnected || isStreaming;
+            if (stopStreamBtn) stopStreamBtn.disabled = !isStreaming;
+        }
+
+        // ===== D-ID STREAMING FUNCTIONS (NEW SECTION) =====
+        
+        async function connectAvatar() {
+            try {
+                // Get configuration values
+                didApiKey = document.getElementById('didApiKey').value.trim();
+                serviceType = document.getElementById('serviceType').value;
+                sourceUrl = document.getElementById('sourceUrl').value.trim();
+                presenterId = document.getElementById('presenterId').value;
+                chunkSize = parseInt(document.getElementById('chunkSize').value);
+                streamingMode = document.getElementById('streamingMode').checked;
+                
+                // Validate configuration
+                if (!didApiKey) {
+                    throw new Error('D-ID API key is required');
+                }
+                
+                if (serviceType === 'talks' && !sourceUrl) {
+                    throw new Error('Source image URL is required for talks service');
+                }
+                
+                if (serviceType === 'clips' && !presenterId) {
+                    throw new Error('Presenter selection is required for clips service');
+                }
+                
+                updateAvatarStatus('Connecting to D-ID...', 'loading');
+                
+                // Create session
+                await createDIDSession();
+                
+                // Setup WebRTC
+                await setupWebRTC();
+                
+                isConnected = true;
+                updateButtonStates();
+                updateAvatarStatus('Connected successfully!', 'connected');
+                
+            } catch (error) {
+                console.error('Connection failed:', error);
+                updateAvatarStatus(`Connection failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createDIDSession() {
+            const apiUrl = `https://api.d-id.com/${serviceType}/streams`;
+            
+            // Prepare request payload
+            let payload = {
+                stream_warmup: true
+            };
+            
+            if (serviceType === 'talks') {
+                payload.source_url = sourceUrl;
+            } else {
+                payload.presenter_id = presenterId;
+                payload.driver_id = 'mXra4jY38i'; // Default driver
+            }
+            
+            console.log('Creating D-ID session with payload:', payload);
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Session creation failed: ${response.status} - ${errorData}`);
+            }
+            
+            const data = await response.json();
+            console.log('D-ID session created:', data);
+            
+            streamId = data.id;
+            sessionIdDID = data.session_id;
+            
+            return data;
+        }
+        
+        async function setupWebRTC() {
+            // Create peer connection
+            peerConnection = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+            
+            // Handle incoming stream
+            peerConnection.ontrack = (event) => {
+                console.log('Received remote stream');
+                const avatarVideo = document.getElementById('avatarVideo');
+                avatarVideo.srcObject = event.streams[0];
+            };
+            
+            // Handle ICE candidates
+            peerConnection.onicecandidate = async (event) => {
+                if (event.candidate) {
+                    await sendIceCandidate(event.candidate);
+                }
+            };
+            
+            // Handle connection state changes
+            peerConnection.onconnectionstatechange = () => {
+                console.log('Connection state:', peerConnection.connectionState);
+                if (peerConnection.connectionState === 'connected') {
+                    updateAvatarStatus('WebRTC connected', 'connected');
+                }
+            };
+            
+            // Get session data
+            const sessionData = await getSessionData();
+            
+            // Set remote description
+            await peerConnection.setRemoteDescription(sessionData.offer);
+            
+            // Create and set local description
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            
+            // Send answer to D-ID
+            await sendAnswer(answer);
+        }
+        
+        async function getSessionData() {
+            const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to get session data: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+        
+        async function sendAnswer(answer) {
+            const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}/sdp`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    answer: answer,
+                    session_id: sessionIdDID
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to send SDP answer: ${response.status}`);
+            }
+            
+            console.log('SDP answer sent successfully');
+        }
+        
+        async function sendIceCandidate(candidate) {
+            try {
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}/ice`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        candidate: candidate.candidate,
+                        sdpMid: candidate.sdpMid,
+                        sdpMLineIndex: candidate.sdpMLineIndex,
+                        session_id: sessionIdDID
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.warn('Failed to send ICE candidate:', response.status);
+                }
+            } catch (error) {
+                console.warn('Error sending ICE candidate:', error);
+            }
+        }
+        
+        async function startStream() {
+            try {
+                updateAvatarStatus('Starting stream...', 'loading');
+                
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: 'Hello! I am your AI patient avatar. I\'m ready to begin our consultation.'
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to start stream: ${response.status}`);
+                }
+                
+                isStreaming = true;
+                updateButtonStates();
+                updateAvatarStatus('Stream started successfully!', 'connected');
+                
+            } catch (error) {
+                console.error('Failed to start stream:', error);
+                updateAvatarStatus(`Failed to start stream: ${error.message}`, 'error');
+            }
+        }
+        
+        async function stopStream() {
+            try {
+                if (streamId) {
+                    const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Basic ${didApiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            session_id: sessionIdDID
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn('Failed to stop stream:', response.status);
+                    }
+                }
+                
+                isStreaming = false;
+                updateButtonStates();
+                updateAvatarStatus('Stream stopped', 'info');
+                
+            } catch (error) {
+                console.error('Error stopping stream:', error);
+            }
+        }
+        
+        async function disconnectAvatar() {
+            try {
+                await stopStream();
+                
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+                
+                const avatarVideo = document.getElementById('avatarVideo');
+                avatarVideo.srcObject = null;
+                
+                isConnected = false;
+                isStreaming = false;
+                streamId = null;
+                sessionIdDID = null;
+                
+                updateButtonStates();
+                updateAvatarStatus('Disconnected', 'info');
+                
+            } catch (error) {
+                console.error('Error during disconnect:', error);
+            }
+        }
+
+        // ===== LLM INTEGRATION AND AVATAR SPEECH (NEW SECTION) =====
+        
+        async function processLLMResponse(fullResponse) {
+            if (!isConnected || !isStreaming) {
+                console.log('Avatar not ready for speech');
+                return;
+            }
+            
+            try {
+                isProcessingResponse = true;
+                updateLLMStatus('Processing LLM response...');
+                
+                if (streamingMode) {
+                    // Split response into chunks and stream
+                    const chunks = splitTextIntoChunks(fullResponse, chunkSize);
+                    await streamChunks(chunks);
+                } else {
+                    // Send entire response at once
+                    await sendToAvatar(fullResponse);
+                }
+                
+            } catch (error) {
+                console.error('Error processing LLM response:', error);
+                updateLLMStatus('Error processing response', false);
+            } finally {
+                isProcessingResponse = false;
+                updateLLMStatus('Response complete', false);
+                updateCurrentResponseText('', false);
+            }
+        }
+        
+        function splitTextIntoChunks(text, chunkSize) {
+            const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+            const chunks = [];
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if (currentChunk.length + sentence.length <= chunkSize) {
+                    currentChunk += sentence;
+                } else {
+                    if (currentChunk) {
+                        chunks.push(currentChunk.trim());
+                    }
+                    currentChunk = sentence;
+                }
+            }
+            
+            if (currentChunk) {
+                chunks.push(currentChunk.trim());
+            }
+            
+            return chunks.filter(chunk => chunk.length > 0);
+        }
+        
+        async function streamChunks(chunks) {
+            updateLLMStatus(`Speaking ${chunks.length} chunks...`);
+            
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                
+                // Update UI to show current chunk
+                updateLLMStatus(`<span class="chunk-indicator speaking"></span>Speaking chunk ${i + 1}/${chunks.length}`);
+                updateCurrentResponseText(chunk);
+                updateAvatarStatus('Speaking...', 'speaking');
+                
+                // Send chunk to avatar
+                await sendToAvatar(chunk);
+                
+                // Wait for speech completion (estimated)
+                await waitForSpeechCompletion(chunk);
+                
+                // Small delay between chunks for natural flow
+                if (i < chunks.length - 1) {
+                    await delay(500);
+                }
+            }
+            
+            updateAvatarStatus('Avatar ready', 'connected');
+        }
+        
+        async function sendToAvatar(text) {
+            try {
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: text
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to send text to avatar: ${response.status}`);
+                }
+                
+                console.log('Text sent to avatar:', text.substring(0, 50) + '...');
+                
+            } catch (error) {
+                console.error('Failed to send text to avatar:', error);
+                throw error;
+            }
+        }
+        
+        async function waitForSpeechCompletion(text) {
+            // Estimate speech duration based on text length (rough calculation)
+            const wordsPerMinute = 150;
+            const words = text.split(' ').length;
+            const estimatedDuration = (words / wordsPerMinute) * 60 * 1000; // Convert to milliseconds
+            const minDelay = 2000; // Minimum 2 seconds
+            const maxDelay = 8000; // Maximum 8 seconds
+            
+            const delay = Math.min(Math.max(estimatedDuration, minDelay), maxDelay);
+            
+            return new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // ===== SPEECH RECOGNITION SETUP =====
+        // Configure the browser's speech recognition API
+        
+        function initializeSpeechRecognition() {
+            // Check if browser supports speech recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                // Use webkit prefix for Chrome, standard for others
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                
+                // Configure recognition settings
+                recognition.continuous = true;       // Keep listening until manually stopped
+                recognition.interimResults = true;   // Show interim results for live transcription
+                recognition.lang = 'en-US';         // Set language
+                
+                // Handle speech recognition results
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    // Process all results
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    
+                    // Update the full transcript with any new final results
+                    if (finalTranscript) {
+                        fullTranscript += finalTranscript;
+                    }
+                    
+                    // Update live transcription display
+                    const transcriptionBox = document.getElementById('transcriptionBox');
+                    let displayText = '';
+                    
+                    // Show accumulated final transcript in black
+                    if (fullTranscript) {
+                        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
+                    }
+                    
+                    // Show interim transcript in gray
+                    if (interimTranscript) {
+                        if (fullTranscript) {
+                            displayText += ' ';
+                        }
+                        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
+                    }
+                    
+                    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
+                    
+                    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
+                };
+                
+                // Handle recognition errors
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    
+                    // Don't show error for aborted recognition (expected when we stop)
+                    if (event.error !== 'aborted') {
+                        showStatus('Speech recognition error: ' + event.error, 'error');
+                    }
+                    
+                    isRecording = false;
+                    updateTalkButton();
+                };
+                
+                // Handle when recognition ends
+                recognition.onend = function() {
+                    console.log('Recognition ended. Force stop:', forceStopRecognition);
+                    
+                    // If we're forcing a stop (user released button), process the transcript
+                    if (forceStopRecognition && fullTranscript.trim()) {
+                        console.log('Sending full transcript:', fullTranscript);
+                        addMessage(fullTranscript.trim(), 'user');
+                        sendToWebhook(fullTranscript.trim());
+                    }
+                    
+                    // Reset state
+                    isRecording = false;
+                    forceStopRecognition = false;
+                    updateTalkButton();
+                    
+                    // If recording should still be active (continuous mode), restart
+                    if (isRecording && !forceStopRecognition) {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.log('Could not restart recognition:', e);
+                        }
+                    }
+                };
+            } else {
+                showStatus('Speech recognition not supported in this browser', 'error');
+            }
+        }
+        
+        // ===== RECORDING FUNCTIONS =====
+        // Handle push-to-talk functionality
+        
+        function startRecording() {
+            if (!recognition) {
+                showStatus('Speech recognition not available', 'error');
+                return;
+            }
+            
+            if (!document.getElementById('webhookUrl').value) {
+                showStatus('Please enter webhook URL first', 'error');
+                return;
+            }
+            
+            if (!currentScenario) {
+                showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Clear previous transcript and reset state
+            fullTranscript = '';
+            forceStopRecognition = false;
+            
+            // Clear transcription box
+            document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+            
+            isRecording = true;
+            updateTalkButton();
+            
+            try {
+                recognition.start();
+                showStatus('Listening...', 'info');
+            } catch (error) {
+                console.error('Error starting recognition:', error);
+                showStatus('Error starting recording', 'error');
+                isRecording = false;
+                updateTalkButton();
+            }
+        }
+        
+        function stopRecording() {
+            if (isRecording && recognition) {
+                console.log('Stopping recording...');
+                forceStopRecognition = true;
+                recognition.stop();
+                showStatus('Processing...', 'info');
+            }
+        }
+        
+        function updateTalkButton() {
+            const button = document.getElementById('talkButton');
+            if (isRecording) {
+                button.classList.add('recording');
+                button.innerHTML = '🔴 Recording...';
+            } else {
+                button.classList.remove('recording');
+                button.innerHTML = 'Push to Talk';
+            }
+        }
+
+       // ===== WEBHOOK COMMUNICATION (MODIFIED FOR D-ID STREAMING) =====
+        // Send data to n8n webhook
+        
+        async function sendToWebhook(message) {
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            
+            if (!webhookUrl) {
+                showStatus('Webhook URL not configured', 'error');
+                return;
+            }
+            
+            // Show loading spinner
+            addMessage('<div class="spinner"></div>', 'ai');
+            
+            try {
+                // Prepare data to send
+                const payload = {
+                    sessionId: sessionId,
+                    message: message,
+                    scenario: currentScenario,
+                    timestamp: new Date().toISOString(),
+                    conversationHistory: conversationHistory,
+                    studentInfo: {
+                        sessionStartTime: new Date(parseInt(sessionId.split('_')[1])).toISOString(),
+                        messageCount: conversationHistory.filter(h => h.sender === 'user').length + 1
+                    }
+                };
+                
+                console.log('Sending to webhook:', webhookUrl);
+                console.log('Payload:', payload);
+                
+                // Send POST request to webhook
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Try to get response as text first
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let data;
+                try {
+                    // Try to parse as JSON
+                    data = JSON.parse(responseText);
+                    console.log('Parsed response:', data);
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    // If not JSON, treat the text as the response
+                    data = { response: responseText };
+                }
+                
+                // Remove loading spinner
+                removeLastMessage();
+                
+                // Check various possible response formats
+                let aiResponse = null;
+                
+                // Common n8n response formats
+                if (data.response) {
+                    aiResponse = data.response;
+                } else if (data.message) {
+                    aiResponse = data.message;
+                } else if (data.text) {
+                    aiResponse = data.text;
+                } else if (data.output) {
+                    aiResponse = data.output;
+                } else if (typeof data === 'string') {
+                    aiResponse = data;
+                } else if (Array.isArray(data) && data.length > 0) {
+                    // Sometimes n8n returns an array
+                    aiResponse = data[0].response || data[0].message || data[0];
+                }
+                
+                if (aiResponse) {
+                    addMessage(aiResponse, 'ai');
+                    
+                    // Process the response for D-ID streaming avatar speech
+                    if (isConnected && isStreaming) {
+                        console.log('Processing LLM response for avatar speech');
+                        await processLLMResponse(aiResponse);
+                    } else {
+                        console.log('Avatar not ready - skipping speech generation');
+                    }
+                } else {
+                    console.error('Could not find response in data:', data);
+                    showStatus('Unexpected response format from webhook', 'error');
+                    addMessage('Received response but could not parse it. Check console for details.', 'ai');
+                }
+                
+            } catch (error) {
+                console.error('Webhook error:', error);
+                removeLastMessage();
+                
+                // More specific error messages
+                if (error.message.includes('Failed to fetch')) {
+                    showStatus('Cannot reach webhook - check URL and CORS settings', 'error');
+                    addMessage('Connection failed. Make sure your n8n webhook is accessible and CORS is enabled.', 'ai');
+                } else {
+                    showStatus(`Error: ${error.message}`, 'error');
+                    addMessage(`Error: ${error.message}`, 'ai');
+                }
+            }
+        }
+        
+        // [Keep all the existing Google Sheets functions unchanged]
+        // ===== GOOGLE SHEETS INTEGRATION =====
+        
+        async function loadSheetNames() {
+            const sheetId = document.getElementById('sheetId').value;
+            
+            if (!sheetId) {
+                showStatus('Please enter Sheet ID first', 'error');
+                return;
+            }
+            
+            showStatus('Loading sheet names...', 'info');
+            
+            try {
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title&key=${apiKey}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const sheetNames = data.sheets.map(sheet => sheet.properties.title);
+                console.log('Found sheets:', sheetNames);
+                
+                populateSheetNameDropdown(sheetNames);
+                showStatus(`Found ${sheetNames.length} sheets`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading sheet names:', error);
+                showStatus('Could not load sheet names automatically. Enter manually below.', 'error');
+                
+                const select = document.getElementById('sheetName');
+                select.disabled = false;
+                select.innerHTML = '<option value="">Enter sheet name manually below...</option>';
+            }
+        }
+        
+        function populateSheetNameDropdown(sheetNames) {
+            const select = document.getElementById('sheetName');
+            select.innerHTML = '<option value="">Select a sheet...</option>';
+            select.disabled = false;
+            
+            sheetNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+            
+            select.removeEventListener('change', handleSheetChange);
+            select.addEventListener('change', handleSheetChange);
+        }
+        
+        function handleSheetChange(e) {
+            if (e.target.value) {
+                saveConfig();
+                loadSheetData();
+            }
+        }
+        
+        function getSelectedSheetName() {
+            const dropdown = document.getElementById('sheetName');
+            return dropdown.value;
+        }
+        
+        async function loadSheetData() {
+            const sheetId = document.getElementById('sheetId').value;
+            const sheetName = getSelectedSheetName();
+            
+            if (!sheetId || !sheetName) {
+                showStatus('Please enter Sheet ID and select/enter Sheet Name', 'error');
+                return;
+            }
+            
+            showStatus(`Loading data from sheet: ${sheetName}...`, 'info');
+            
+            try {
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 0) {
+                    sheetData = data.values;
+                    populateScenarioDropdown();
+                    showStatus(`Loaded ${data.values.length - 1} scenarios from ${sheetName}`, 'success');
+                } else {
+                    showStatus('No data found in the selected sheet', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error loading sheet:', error);
+                showStatus('Error loading sheet data. Check console for details.', 'error');
+            }
+        }
+        
+        function populateScenarioDropdown() {
+            const select = document.getElementById('scenarioSelect');
+            select.innerHTML = '<option value="">Select a scenario...</option>';
+            select.disabled = false;
+            
+            for (let i = 1; i < sheetData.length; i++) {
+                const row = sheetData[i];
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}. ${row[0]}`;
+                select.appendChild(option);
+            }
+            
+            select.removeEventListener('change', handleScenarioChange);
+            select.addEventListener('change', handleScenarioChange);
+        }
+        
+        function handleScenarioChange(e) {
+            if (e.target.value) {
+                selectScenario(parseInt(e.target.value));
+            }
+        }
+        
+        function selectScenario(rowIndex) {
+            const headers = sheetData[0];
+            const row = sheetData[rowIndex];
+            
+            currentScenario = {};
+            headers.forEach((header, index) => {
+                currentScenario[header] = row[index];
+            });
+            
+            console.log('Selected scenario:', currentScenario);
+            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+            
+            clearChat();
+            addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
+        }
+        
+        function selectRandomScenario() {
+            if (sheetData.length <= 1) {
+                showStatus('Please load sheet data first', 'error');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * (sheetData.length - 1)) + 1;
+            document.getElementById('scenarioSelect').value = randomIndex;
+            selectScenario(randomIndex);
+            showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
+        }
+        
+        // ===== SUBMIT CONVERSATION FUNCTION =====
+        
+        async function submitConversation() {
+            const submitWebhookUrl = document.getElementById('submitWebhookUrl').value;
+            
+            if (!submitWebhookUrl) {
+                showStatus('Submit webhook URL not configured', 'error');
+                return;
+            }
+            
+            if (conversationHistory.length === 0) {
+                showStatus('No conversation to submit', 'error');
+                return;
+            }
+            
+            showStatus('Submitting conversation...', 'info');
+            addMessage('📤 Submitting conversation for evaluation...', 'system');
+            
+            try {
+                const submissionPayload = {
+                    sessionId: sessionId,
+                    scenario: currentScenario,
+                    conversationHistory: conversationHistory,
+                    submissionTime: new Date().toISOString(),
+                    sessionInfo: {
+                        sessionStartTime: new Date(parseInt(sessionId.split('_')[1])).toISOString(),
+                        totalMessages: conversationHistory.length,
+                        userMessages: conversationHistory.filter(h => h.sender === 'user').length,
+                        aiMessages: conversationHistory.filter(h => h.sender === 'ai').length,
+                        duration: Date.now() - parseInt(sessionId.split('_')[1])
+                    },
+                    metadata: {
+                        userAgent: navigator.userAgent,
+                        timestamp: new Date().toISOString(),
+                        type: 'conversation_submission'
+                    }
+                };
+                
+                console.log('Submitting conversation:', submissionPayload);
+                
+                const response = await fetch(submitWebhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(submissionPayload)
+                });
+                
+                console.log('Submit response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response body:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+                }
+                
+                const responseText = await response.text();
+                console.log('Submit raw response text:', responseText);
+                
+                if (!responseText || responseText.trim() === '') {
+                    console.warn('Empty response received from webhook');
+                    addMessage('📋 Evaluation Complete:\n\nConversation submitted successfully, but no feedback was returned. The evaluation may be processing in the background.', 'system');
+                    showStatus('✅ Conversation submitted (no feedback received)', 'success');
+                    return;
+                }
+                
+                let responseData;
+                let feedbackMessage = '';
+                
+                try {
+                    responseData = JSON.parse(responseText);
+                    console.log('Parsed JSON response:', responseData);
+                    
+                    if (responseData.feedback) {
+                        feedbackMessage = responseData.feedback;
+                    } else if (responseData.evaluation) {
+                        feedbackMessage = responseData.evaluation;
+                    } else if (responseData.response) {
+                        feedbackMessage = responseData.response;
+                    } else if (responseData.message) {
+                        feedbackMessage = responseData.message;
+                    } else if (responseData.data && responseData.data.feedback) {
+                        feedbackMessage = responseData.data.feedback;
+                    } else if (responseData.data && responseData.data.response) {
+                        feedbackMessage = responseData.data.response;
+                    } else if (responseData.result) {
+                        feedbackMessage = responseData.result;
+                    } else {
+                        feedbackMessage = `Raw response: ${JSON.stringify(responseData, null, 2)}`;
+                    }
+                    
+                } catch (parseError) {
+                    console.log('Not JSON, treating as plain text');
+                    if (responseText.trim().startsWith('<') && responseText.trim().includes('html')) {
+                        console.warn('Received HTML response instead of JSON');
+                        feedbackMessage = 'Received HTML response instead of expected feedback. Check your n8n workflow output format.';
+                    } else {
+                        feedbackMessage = responseText.trim();
+                    }
+                }
+                
+                console.log('Final feedback message:', feedbackMessage);
+                
+                function formatFeedback(text) {
+                    if (!text) return text;
+                    
+                    let formatted = text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        .replace(/^### (.*$)/gm, '<h3 style="margin: 15px 0 10px 0; color: var(--primary-color); font-size: 1.1em;">$1</h3>')
+                        .replace(/^## (.*$)/gm, '<h2 style="margin: 20px 0 10px 0; color: var(--primary-color); font-size: 1.2em;">$1</h2>')
+                        .replace(/^# (.*$)/gm, '<h1 style="margin: 20px 0 15px 0; color: var(--primary-color); font-size: 1.3em;">$1</h1>')
+                        .replace(/^- (.*$)/gm, '<li style="margin: 5px 0; padding-left: 5px;">$1</li>')
+                        .replace(/^\d+\. (.*$)/gm, '<li style="margin: 5px 0; padding-left: 5px;">$1</li>')
+                        .replace(/\n\n/g, '</p><p style="margin: 10px 0; line-height: 1.5;">')
+                        .replace(/\n/g, '<br>');
+                    
+                    if (!formatted.includes('<p>') && !formatted.includes('<h')) {
+                        formatted = `<p style="margin: 10px 0; line-height: 1.5;">${formatted}</p>`;
+                    } else if (formatted.includes('<p>')) {
+                        if (!formatted.startsWith('<p>') && !formatted.startsWith('<h')) {
+                            formatted = `<p style="margin: 10px 0; line-height: 1.5;">${formatted}`;
+                        }
+                        if (!formatted.endsWith('</p>') && !formatted.endsWith('</h3>') && !formatted.endsWith('</h2>') && !formatted.endsWith('</h1>')) {
+                            formatted = `${formatted}</p>`;
+                        }
+                    }
+                    
+                    if (formatted.includes('<li>')) {
+                        formatted = formatted
+                            .replace(/(<li>.*?<\/li>)/gs, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>')
+                            .replace(/<\/ul>\s*<ul[^>]*>/g, '');
+                    }
+                    
+                    return formatted;
+                }
+                
+                if (feedbackMessage) {
+                    const formattedFeedback = formatFeedback(feedbackMessage);
+                    addMessage(`📋 Evaluation Feedback:<br><br>${formattedFeedback}`, 'system');
+                    showStatus('✅ Conversation submitted and evaluated successfully!', 'success');
+                } else {
+                    addMessage('📋 Evaluation Complete:\n\nConversation submitted successfully, but the feedback format was not recognized. Check console for raw response.', 'system');
+                    showStatus('✅ Conversation submitted (feedback format issue)', 'success');
+                }
+                
+            } catch (error) {
+                console.error('Submit conversation error:', error);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    showStatus('Cannot reach submit webhook - check URL and CORS settings', 'error');
+                    addMessage('❌ Submission failed. Make sure your n8n submit webhook is accessible and CORS is enabled.', 'system');
+                } else if (error.message.includes('NetworkError')) {
+                    showStatus('Network error - check n8n webhook configuration', 'error');
+                    addMessage('❌ Network error. Check that your n8n webhook is running and accessible.', 'system');
+                } else {
+                    showStatus(`❌ Submission error: ${error.message}`, 'error');
+                    addMessage(`❌ Submission failed: ${error.message}`, 'system');
+                }
+            }
+        }
+
+        // ===== EXPORT CONVERSATION FUNCTION =====
+        
+        function exportConversation() {
+            if (conversationHistory.length === 0) {
+                showStatus('No conversation to export', 'error');
+                return;
+            }
+            
+            try {
+                let exportText = '';
+                
+                exportText += '='.repeat(60) + '\n';
+                exportText += 'PHARMACY CONSULTATION TRAINING - CONVERSATION EXPORT\n';
+                exportText += '='.repeat(60) + '\n\n';
+                
+                exportText += `Session ID: ${sessionId}\n`;
+                exportText += `Export Date: ${new Date().toLocaleString()}\n`;
+                exportText += `Session Start: ${new Date(parseInt(sessionId.split('_')[1])).toLocaleString()}\n\n`;
+                
+                if (currentScenario) {
+                    exportText += 'SCENARIO DETAILS:\n';
+                    exportText += '-'.repeat(20) + '\n';
+                    Object.keys(currentScenario).forEach(key => {
+                        if (currentScenario[key] && currentScenario[key].toString().trim() !== '') {
+                            exportText += `${key}: ${currentScenario[key]}\n`;
+                        }
+                    });
+                    exportText += '\n';
+                }
+                
+                const chatContainer = document.getElementById('chatContainer');
+                const messageElements = chatContainer.getElementsByClassName('message');
+                
+                let userMessages = 0;
+                let aiMessages = 0;
+                let systemMessages = 0;
+                
+                for (let i = 0; i < messageElements.length; i++) {
+                    const messageElement = messageElements[i];
+                    if (messageElement.className.includes('user')) {
+                        userMessages++;
+                    } else if (messageElement.className.includes('ai')) {
+                        aiMessages++;
+                    } else if (messageElement.className.includes('system')) {
+                        systemMessages++;
+                    }
+                }
+                
+                const sessionDuration = Date.now() - parseInt(sessionId.split('_')[1]);
+                const durationMinutes = Math.floor(sessionDuration / 60000);
+                const durationSeconds = Math.floor((sessionDuration % 60000) / 1000);
+                
+                exportText += 'CONVERSATION STATISTICS:\n';
+                exportText += '-'.repeat(25) + '\n';
+                exportText += `Total Messages: ${userMessages + aiMessages + systemMessages}\n`;
+                exportText += `Student Messages: ${userMessages}\n`;
+                exportText += `AI Patient Messages: ${aiMessages}\n`;
+                exportText += `System Messages: ${systemMessages}\n`;
+                exportText += `Session Duration: ${durationMinutes}m ${durationSeconds}s\n\n`;
+                
+                exportText += 'FULL CONVERSATION:\n';
+                exportText += '-'.repeat(20) + '\n\n';
+                
+                for (let i = 0; i < messageElements.length; i++) {
+                    const messageElement = messageElements[i];
+                    const messageClass = messageElement.className;
+                    
+                    let speaker = 'UNKNOWN';
+                    if (messageClass.includes('user')) {
+                        speaker = 'STUDENT';
+                    } else if (messageClass.includes('ai')) {
+                        speaker = 'AI PATIENT';
+                    } else if (messageClass.includes('system')) {
+                        speaker = 'SYSTEM';
+                    }
+                    
+                    let messageContent = messageElement.innerHTML
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/p><p[^>]*>/gi, '\n\n')
+                        .replace(/<p[^>]*>/gi, '')
+                        .replace(/<\/p>/gi, '')
+                        .replace(/<h[1-6][^>]*>/gi, '\n**')
+                        .replace(/<\/h[1-6]>/gi, '**\n')
+                        .replace(/<strong[^>]*>/gi, '**')
+                        .replace(/<\/strong>/gi, '**')
+                        .replace(/<em[^>]*>/gi, '*')
+                        .replace(/<\/em>/gi, '*')
+                        .replace(/<ul[^>]*>/gi, '\n')
+                        .replace(/<\/ul>/gi, '')
+                        .replace(/<li[^>]*>/gi, '  • ')
+                        .replace(/<\/li>/gi, '\n')
+                        .replace(/<div[^>]*class="spinner"[^>]*><\/div>/gi, '')
+                        .replace(/<[^>]*>/g, '')
+                        .replace(/&nbsp;/g, ' ')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/\n\s*\n\s*\n/g, '\n\n')
+                        .trim();
+                    
+                    if (!messageContent || messageContent.includes('spinner') || messageContent === '') {
+                        continue;
+                    }
+                    
+                    exportText += `${speaker}:\n`;
+                    
+                    const lines = messageContent.split('\n');
+                    lines.forEach(line => {
+                        if (line.trim()) {
+                            exportText += `  ${line.trim()}\n`;
+                        } else {
+                            exportText += '\n';
+                        }
+                    });
+                    
+                    exportText += '\n';
+                }
+                
+                exportText += '='.repeat(60) + '\n';
+                exportText += 'End of Conversation Export\n';
+                exportText += 'Generated by Pharmacy Training System with D-ID Streaming v2.0\n';
+                exportText += '='.repeat(60) + '\n';
+                
+                const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const scenarioName = currentScenario && currentScenario['Scenario Name'] 
+                    ? currentScenario['Scenario Name'].replace(/[^a-zA-Z0-9]/g, '_') 
+                    : 'Unknown_Scenario';
+                
+                downloadLink.download = `Pharmacy_Training_${scenarioName}_${dateStr}_${timeStr}.txt`;
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                window.URL.revokeObjectURL(url);
+                
+                showStatus('✅ Conversation exported successfully!', 'success');
+                console.log('Conversation exported:', downloadLink.download);
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus(`❌ Export failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // ===== CHAT MANAGEMENT =====
+        
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = text;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            if (!text.includes('spinner') && sender !== 'system') {
+                conversationHistory.push({
+                    sender: sender,
+                    message: text,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+        
+        function removeLastMessage() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messages = chatContainer.getElementsByClassName('message');
+            if (messages.length > 0) {
+                messages[messages.length - 1].remove();
+            }
+        }
+        
+        function clearChat() {
+            document.getElementById('chatContainer').innerHTML = '';
+            conversationHistory = [];
+        }
+        
+        // ===== UTILITY FUNCTIONS =====
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        function saveConfig() {
+            const config = {
+                webhookUrl: document.getElementById('webhookUrl').value,
+                submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
+                sheetId: document.getElementById('sheetId').value,
+                sheetName: getSelectedSheetName(),
+                didApiKey: document.getElementById('didApiKey').value,
+                serviceType: document.getElementById('serviceType').value,
+                sourceUrl: document.getElementById('sourceUrl').value,
+                presenterId: document.getElementById('presenterId').value,
+                chunkSize: document.getElementById('chunkSize').value,
+                streamingMode: document.getElementById('streamingMode').checked
+            };
+            localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
+        }
+        
+        function loadSavedConfig() {
+            const saved = localStorage.getItem('pharmacyChatConfig');
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('webhookUrl').value = config.webhookUrl || '';
+                document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
+                document.getElementById('sheetId').value = config.sheetId || '';
+                document.getElementById('didApiKey').value = config.didApiKey || '';
+                document.getElementById('serviceType').value = config.serviceType || 'talks';
+                document.getElementById('sourceUrl').value = config.sourceUrl || '';
+                document.getElementById('presenterId').value = config.presenterId || '';
+                document.getElementById('chunkSize').value = config.chunkSize || 200;
+                document.getElementById('streamingMode').checked = config.streamingMode !== false;
+                
+                const sheetNameDropdown = document.getElementById('sheetName');
+                if (config.sheetName && sheetNameDropdown.options.length > 1) {
+                    sheetNameDropdown.value = config.sheetName;
+                }
+                
+                // Update service fields based on saved service type
+                updateServiceFields();
+            }
+        }
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (isConnected) {
+                disconnectAvatar();
+            }
+        });
+        
+    </script>
 </body>
 </html>
