@@ -429,8 +429,8 @@
         
         .image-modal-content {
             position: relative;
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 95%;
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -475,14 +475,19 @@
         .image-modal-body {
             padding: 0;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
         }
         
         .patient-image {
             max-width: 100%;
-            max-height: 70vh;
+            max-height: 85vh;
             width: auto;
             height: auto;
             display: block;
+            object-fit: contain;
         }
         
         .image-loading {
@@ -2309,5 +2314,6 @@
     </script>
 </body>
 </html>
+
 
 
