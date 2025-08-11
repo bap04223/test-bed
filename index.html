@@ -1491,7 +1491,7 @@
                 if (fileIdMatch && fileIdMatch[1]) {
                     const fileId = fileIdMatch[1];
                     // Use the thumbnail format which is more reliable for embedding
-                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w3000`;
                     console.log('Converted Google Drive URL:', url, '->', directUrl);
                     return directUrl;
                 }
@@ -2314,6 +2314,7 @@
     </script>
 </body>
 </html>
+
 
 
 
