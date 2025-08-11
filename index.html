@@ -2437,6 +2437,7 @@
         
         // [Keep all the existing Google Sheets functions unchanged]
         // ===== GOOGLE SHEETS INTEGRATION =====
+        // Load sheet names from Google Sheets
         
         async function loadSheetNames() {
             const sheetId = document.getElementById('sheetId').value;
@@ -2449,7 +2450,11 @@
             showStatus('Loading sheet names...', 'info');
             
             try {
-                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                // NOTE: You need to replace YOUR_API_KEY with your actual Google Sheets API key
+                // Get your API key from: https://console.cloud.google.com/apis/credentials
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // REPLACE THIS!
+                
+                // Make API call to get spreadsheet metadata including sheet names
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title&key=${apiKey}`;
                 
                 const response = await fetch(url);
@@ -2459,6 +2464,8 @@
                 }
                 
                 const data = await response.json();
+                
+                // Extract sheet names from the response
                 const sheetNames = data.sheets.map(sheet => sheet.properties.title);
                 console.log('Found sheets:', sheetNames);
                 
@@ -2467,14 +2474,18 @@
                 
             } catch (error) {
                 console.error('Error loading sheet names:', error);
+                
+                // If API call fails, show manual input option
                 showStatus('Could not load sheet names automatically. Enter manually below.', 'error');
                 
+                // Enable the dropdown and add a manual entry option
                 const select = document.getElementById('sheetName');
                 select.disabled = false;
                 select.innerHTML = '<option value="">Enter sheet name manually below...</option>';
             }
         }
         
+        // Populate sheet name dropdown
         function populateSheetNameDropdown(sheetNames) {
             const select = document.getElementById('sheetName');
             select.innerHTML = '<option value="">Select a sheet...</option>';
@@ -2487,22 +2498,22 @@
                 select.appendChild(option);
             });
             
-            select.removeEventListener('change', handleSheetChange);
-            select.addEventListener('change', handleSheetChange);
+            // Auto-load sheet data when selection changes
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    saveConfig(); // Save the selection
+                    loadSheetData(); // Automatically load the data
+                }
+            });
         }
         
-        function handleSheetChange(e) {
-            if (e.target.value) {
-                saveConfig();
-                loadSheetData();
-            }
-        }
-        
+        // Get selected sheet name (from dropdown only)
         function getSelectedSheetName() {
             const dropdown = document.getElementById('sheetName');
             return dropdown.value;
         }
         
+        // Load data from Google Sheets
         async function loadSheetData() {
             const sheetId = document.getElementById('sheetId').value;
             const sheetName = getSelectedSheetName();
@@ -2515,7 +2526,10 @@
             showStatus(`Loading data from sheet: ${sheetName}...`, 'info');
             
             try {
-                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                // NOTE: You need to replace YOUR_API_KEY with your actual Google Sheets API key
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // REPLACE THIS!
+                
+                // Construct Google Sheets API URL for the specific sheet
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
                 
                 const response = await fetch(url);
@@ -2526,6 +2540,7 @@
                 
                 const data = await response.json();
                 
+                // Process the actual sheet data
                 if (data.values && data.values.length > 0) {
                     sheetData = data.values;
                     populateScenarioDropdown();
@@ -2540,20 +2555,26 @@
             }
         }
         
+        // Populate the scenario selection dropdown
         function populateScenarioDropdown() {
             const select = document.getElementById('scenarioSelect');
             select.innerHTML = '<option value="">Select a scenario...</option>';
             select.disabled = false;
             
+            // Skip header row, process all data rows
             for (let i = 1; i < sheetData.length; i++) {
                 const row = sheetData[i];
                 const option = document.createElement('option');
                 option.value = i;
+                // Use column A (index 0) for the scenario name
                 option.textContent = `${i}. ${row[0]}`;
                 select.appendChild(option);
             }
             
+            // Clear any existing event listeners
             select.removeEventListener('change', handleScenarioChange);
+            
+            // Add change event listener
             select.addEventListener('change', handleScenarioChange);
         }
         
@@ -2563,10 +2584,12 @@
             }
         }
         
+        // Handle scenario selection
         function selectScenario(rowIndex) {
             const headers = sheetData[0];
             const row = sheetData[rowIndex];
             
+            // Create scenario object
             currentScenario = {};
             headers.forEach((header, index) => {
                 currentScenario[header] = row[index];
@@ -2575,19 +2598,219 @@
             console.log('Selected scenario:', currentScenario);
             showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
             
+            // Update patient image button based on image availability
+            updatePatientImageButton();
+            
+            // Clear previous conversation
             clearChat();
+            
+            // Add initial message
             addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
         }
         
+        // Update patient image button state based on scenario
+        function updatePatientImageButton() {
+            const button = document.getElementById('patientImageBtn');
+            
+            if (!currentScenario) {
+                // No scenario selected
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+                return;
+            }
+            
+            // Check for image URL in various possible column names
+            const imageUrl = currentScenario['Patient Image'] || 
+                           currentScenario['Image URL'] || 
+                           currentScenario['Photo URL'] || 
+                           currentScenario['Image'] || 
+                           currentScenario['Photo'] ||
+                           currentScenario['Picture URL'] ||
+                           currentScenario['Picture'];
+            
+            if (imageUrl && imageUrl.trim() !== '') {
+                // Image available
+                button.className = 'patient-image-btn available';
+                button.innerHTML = '👁️ View Patient Image';
+                button.disabled = false;
+            } else {
+                // No image URL
+                button.className = 'patient-image-btn unavailable';
+                button.innerHTML = '❌ No Patient Image';
+                button.disabled = true;
+            }
+        }
+        
+        // Helper function to convert Google Drive share links to direct image URLs
+        function convertGoogleDriveUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return url;
+            }
+            
+            // Check if it's a Google Drive share link
+            if (url.includes('drive.google.com/file/d/')) {
+                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    // Use a much larger size parameter for high resolution
+                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+                    console.log('Converted Google Drive URL:', url, '->', directUrl);
+                    return directUrl;
+                }
+            }
+            
+            // Return original URL if not a Google Drive link or conversion failed
+            return url;
+        }
+        
+        // Show patient image modal
+        function showPatientImage() {
+            if (!currentScenario) {
+                showStatus('No scenario selected', 'error');
+                return;
+            }
+            
+            // Get image URL from scenario data
+            const imageUrl = currentScenario['Patient Image'] || 
+                           currentScenario['Image URL'] || 
+                           currentScenario['Photo URL'] || 
+                           currentScenario['Image'] || 
+                           currentScenario['Photo'] ||
+                           currentScenario['Picture URL'] ||
+                           currentScenario['Picture'];
+            
+            if (!imageUrl || imageUrl.trim() === '') {
+                showStatus('No image URL available for this patient', 'error');
+                return;
+            }
+            
+            // Convert Google Drive share links to direct image URLs
+            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+            
+            // Log URL conversion for debugging
+            if (convertedImageUrl !== imageUrl.trim()) {
+                console.log('Original URL:', imageUrl.trim());
+                console.log('Converted URL:', convertedImageUrl);
+            }
+            
+            // Set modal title
+            const patientName = currentScenario['Patient Name'] || 'Patient';
+            document.getElementById('imageModalTitle').textContent = `${patientName} - Patient Image`;
+            
+            // Show modal
+            const modal = document.getElementById('imageModal');
+            const modalBody = document.getElementById('imageModalBody');
+            
+            // Show loading state
+            modalBody.innerHTML = `
+                <div class="image-loading">
+                    <div class="spinner"></div>
+                    Loading image...
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
+            };
+            
+            img.onerror = function() {
+                // Image failed to load - try alternative Google Drive formats
+                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First Google Drive format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    // Extract file ID and try different format
+                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        // Try the uc format as backup
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
+                
+                // Image failed to load completely
+                modalBody.innerHTML = `
+                    <div class="image-error">
+                        <h4>Failed to Load Image</h4>
+                        <p>The image could not be loaded. This might be due to:</p>
+                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                            <li>The image is not set to "Anyone with the link can view"</li>
+                            <li>Google Drive is blocking the image embedding</li>
+                            <li>The file is not an image format</li>
+                            <li>The URL is incorrect or the file was deleted</li>
+                        </ul>
+                        
+                        <p><strong>Attempted URL:</strong></p>
+                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                        
+                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
+                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
+                                <li>Right-click the image → "Get link"</li>
+                                <li>Change to "Anyone with the link"</li>
+                                <li>Use a direct image hosting service instead</li>
+                            </ol>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
+                        </div>
+                        
+                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            🔗 Open Original Link
+                        </button>
+                    </div>
+                `;
+            };
+            
+            // Start loading the image
+            img.src = convertedImageUrl;
+        }
+        
+        // Close patient image modal
+        function closeImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+        
+        // Add keyboard support for modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+        
+        // Select a random scenario
         function selectRandomScenario() {
             if (sheetData.length <= 1) {
                 showStatus('Please load sheet data first', 'error');
                 return;
             }
             
+            // Generate random index (skip header row at index 0)
             const randomIndex = Math.floor(Math.random() * (sheetData.length - 1)) + 1;
+            
+            // Update dropdown to show selected scenario
             document.getElementById('scenarioSelect').value = randomIndex;
+            
+            // Select the scenario
             selectScenario(randomIndex);
+            
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
         
@@ -3007,6 +3230,7 @@
     </script>
 </body>
 </html>
+
 
 
 
