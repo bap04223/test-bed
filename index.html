@@ -1,3 +1,7 @@
+# Pharmacy Consultation Training - Section 1
+## HTML Structure and Basic Styling (Lines 1-500)
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -456,48 +460,29 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
-        /* Patient Image Button Styling */
-        .patient-image-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 12px 16px;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .patient-image-btn.available {
+
+        /* Image button states */
+        .btn-image-available {
             background-color: var(--success-color);
             color: white;
         }
-        
-        .patient-image-btn.available:hover {
+
+        .btn-image-available:hover {
             background-color: #047857;
         }
-        
-        .patient-image-btn.unavailable {
+
+        .btn-image-unavailable {
             background-color: var(--danger-color);
             color: white;
             cursor: not-allowed;
         }
-        
-        .patient-image-btn.disabled {
-            background-color: var(--text-secondary);
-            color: white;
-            cursor: not-allowed;
+
+        .btn-image-unavailable:disabled {
+            opacity: 0.6;
         }
-        
-        /* Image Modal Styling */
+
+        /* Modal styles */
         .image-modal {
-            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -505,114 +490,55 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        .image-modal.show {
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
         }
-        
-        .image-modal-content {
+
+        .modal-content {
             position: relative;
-            max-width: 98%;
-            max-height: 98%;
             background: white;
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
-        
-        .image-modal-header {
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .image-modal-header h3 {
-            margin: 0;
-            font-size: 1.1em;
-        }
-        
-        .image-modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
             cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background-color 0.3s;
+            color: #aaa;
+            transition: color 0.3s;
         }
-        
-        .image-modal-close:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+
+        .modal-close:hover {
+            color: black;
         }
-        
-        .image-modal-body {
-            padding: 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: calc(100% - 50px);
-            overflow: hidden;
+
+        #patientImage {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .patient-image {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            display: block;
-            object-fit: contain;
-        }
-        
-        .image-loading {
-            padding: 40px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .image-error {
-            padding: 40px;
-            color: var(--danger-color);
-            text-align: center;
-        }
-        
-        /* Modal Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-            from { 
-                opacity: 0;
-                transform: scale(0.8) translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+
+        #imageCaption {
+            margin-top: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 16px;
         }
     </style>
 </head>
 
+# Pharmacy Consultation Training - Section 2
+## HTML Body Structure and Instructions (Lines 501-1000)
+
+```html
 <body>
     <div class="container">
         <!-- Header section with title and description -->
@@ -650,7 +576,7 @@
             <p><strong>Tips:</strong> Speak clearly, ask open-ended questions, and practice active listening skills!</p>
         </div>
 
-<!-- Main content grid -->
+      <!-- Main content grid -->
         <div class="grid">
             <!-- Configuration section -->
             <div class="card">
@@ -727,16 +653,6 @@
                         
                         <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
                             🎲 Random Scenario
-                        </button>
-                        
-                        <!-- Patient Image Button -->
-                        <button 
-                            class="patient-image-btn disabled" 
-                            id="patientImageBtn"
-                            onclick="showPatientImage()"
-                            disabled
-                        >
-                            📷 No Scenario Selected
                         </button>
                         
                         <!-- D-ID Streaming Configuration (UPDATED SECTION) -->
@@ -859,10 +775,17 @@
                         <button class="btn-info" onclick="exportConversation()">
                             📥 Export Chat
                         </button>
+                        <button id="imageButton" class="btn-secondary" onclick="toggleImageModal()" style="display: none;">
+                            📷 Patient Image
+                        </button>
                     </div>
                 </div>
             </div>
-            
+
+# Pharmacy Consultation Training - Section 3
+## Avatar Display and Initial JavaScript Setup (Lines 1001-1500)
+
+```html
             <!-- Avatar display area (UPDATED SECTION) -->
             <div class="card">
                 <h2>🎭 AI Patient Avatar</h2>
@@ -930,27 +853,19 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Patient Image Modal -->
-    <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
-        <div class="image-modal-content" onclick="event.stopPropagation()">
-            <div class="image-modal-header">
-                <h3 id="imageModalTitle">Patient Image</h3>
-                <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
-            </div>
-            <div class="image-modal-body" id="imageModalBody">
-                <div class="image-loading">
-                    <div class="spinner"></div>
-                    Loading image...
-                </div>
-            </div>
+    <div id="imageModal" class="image-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeImageModal()">&times;</span>
+            <img id="patientImage" src="" alt="Patient Image" style="max-width: 100%; max-height: 80vh;">
+            <p id="imageCaption"></p>
         </div>
     </div>
             
     <!-- JavaScript code for functionality -->
     <script>
-
-// ===== GLOBAL VARIABLES =====
+        // ===== GLOBAL VARIABLES =====
         // These store the state of our application
         
         let currentScenario = null;       // Store the selected patient scenario
@@ -1003,6 +918,12 @@
             // Initialize D-ID streaming setup
             initializeDIDElements();
             
+            // Initialize image button (will be hidden until scenario is selected)
+            const imageButton = document.getElementById('imageButton');
+            if (imageButton) {
+                imageButton.style.display = 'none';
+            }
+            
             console.log('Pharmacy Training System initialized with D-ID streaming');
         };
         
@@ -1010,26 +931,6 @@
         // Generate and manage unique session IDs
         
         function generateSessionId() {
-            // Generate a unique session ID using timestamp and random string
-            const timestamp = Date.now();
-            const randomStr = Math.random().toString(36).substring(2, 15);
-            sessionId = `session_${timestamp}_${randomStr}`;
-            
-            console.log('New session started:', sessionId);
-        }
-        
-        function displaySessionInfo() {
-            // Add session ID display to the page
-            const header = document.querySelector('.header');
-            const sessionInfo = document.createElement('p');
-            sessionInfo.style.fontSize = '0.9em';
-            sessionInfo.style.color = 'var(--text-secondary)';
-            sessionInfo.style.marginTop = '10px';
-            sessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
-            header.appendChild(sessionInfo);
-        }
-
-function generateSessionId() {
             // Generate a unique session ID using timestamp and random string
             const timestamp = Date.now();
             const randomStr = Math.random().toString(36).substring(2, 15);
@@ -1143,7 +1044,11 @@ function generateSessionId() {
             if (startStreamBtn) startStreamBtn.disabled = !isConnected || isStreaming;
             if (stopStreamBtn) stopStreamBtn.disabled = !isStreaming;
         }
-        
+
+# Pharmacy Consultation Training - Section 4
+## D-ID Streaming Functions (Lines 1501-2000)
+
+```javascript
         // ===== D-ID STREAMING FUNCTIONS (NEW SECTION) =====
         
         function convertImageUrl(url) {
@@ -1218,8 +1123,8 @@ function generateSessionId() {
                 return convertImageUrl(url);
             }
         }
-
-async function connectAvatar() {
+        
+        async function connectAvatar() {
             try {
                 // Get configuration values
                 didApiKey = document.getElementById('didApiKey').value.trim();
@@ -1408,7 +1313,11 @@ async function connectAvatar() {
             }
         }
 
-async function setupWebRTC() {
+# Pharmacy Consultation Training - Section 5
+## WebRTC Setup and Stream Management (Lines 2001-2500)
+
+```javascript
+        async function setupWebRTC() {
             // Create peer connection with the ICE servers from the session creation response
             const sessionData = await getSessionDataFromCreation();
             
@@ -1675,7 +1584,153 @@ async function setupWebRTC() {
             }
         }
 
-function splitTextIntoChunks(text, chunkSize) {
+# Pharmacy Consultation Training - Section 6
+## LLM Integration and Speech Processing (Lines 2501-3000)
+
+```javascript
+        function splitTextIntoChunks(text, chunkSize) {
+            const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+            const chunks = [];
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if (currentChunk.length + sentence.length <= chunkSize) {
+                    currentChunk += sentence;
+                } else {
+                    if (currentChunk) {
+                        chunks.push(currentChunk.trim());
+                    }
+                    currentChunk = sentence;
+                }
+            }
+            
+            if (currentChunk) {
+                chunks.push(currentChunk.trim());
+            }
+            
+            return chunks.filter(chunk => chunk.length > 0);
+        }
+        
+        async function streamChunks(chunks) {
+            updateLLMStatus(`Speaking ${chunks.length} chunks...`);
+            
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                
+                // Update UI to show current chunk
+                updateLLMStatus(`<span class="chunk-indicator speaking"></span>Speaking chunk ${i + 1}/${chunks.length}`);
+                updateCurrentResponseText(chunk);
+                updateAvatarStatus('Speaking...', 'speaking');
+                
+                // Send chunk to avatar
+                await sendToAvatar(chunk);
+                
+                // Wait for speech completion (estimated)
+                await waitForSpeechCompletion(chunk);
+                
+                // Small delay between chunks for natural flow
+                if (i < chunks.length - 1) {
+                    await delay(500);
+                }
+            }
+            
+            updateAvatarStatus('Avatar ready', 'connected');
+        }
+        
+        async function sendToAvatar(text) {
+            try {
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: text
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to send text to avatar: ${response.status}`);
+                }
+                
+                console.log('Text sent to avatar:', text.substring(0, 50) + '...');
+                
+            } catch (error) {
+                console.error('Failed to send text to avatar:', error);
+                throw error;
+            }
+        }
+
+        // ===== LLM INTEGRATION AND AVATAR SPEECH (NEW SECTION) =====
+        
+        async function processLLMResponse(fullResponse) {
+            if (!isConnected || !isStreaming) {
+                console.log('Avatar not ready for speech');
+                updateLLMStatus('Avatar not streaming - connect and start first', true);
+                return;
+            }
+            
+            try {
+                isProcessingResponse = true;
+                updateLLMStatus('Processing LLM response...');
+                updateAvatarStatus('Generating speech...', 'speaking');
+                
+                if (streamingMode) {
+                    // Split response into chunks and stream
+                    const chunks = splitTextIntoChunks(fullResponse, chunkSize);
+                    console.log(`Processing ${chunks.length} text chunks for avatar speech`);
+                    await streamChunks(chunks);
+                } else {
+                    // Send entire response at once
+                    updateCurrentResponseText(fullResponse);
+                    await sendToAvatar(fullResponse);
+                    updateLLMStatus('Avatar speaking...', true);
+                    
+                    // Estimate speech duration and update status
+                    const estimatedDuration = estimateSpeechDuration(fullResponse);
+                    setTimeout(() => {
+                        updateLLMStatus('Response complete', false);
+                        updateAvatarStatus('🎭 Avatar ready - speaking enabled!', 'connected');
+                    }, estimatedDuration);
+                }
+                
+            } catch (error) {
+                console.error('Error processing LLM response:', error);
+                updateLLMStatus(`Speech error: ${error.message}`, true);
+                
+                // Show helpful error message to user
+                if (error.message.includes('500')) {
+                    showStatus('Avatar speech failed due to server error. The text response is still available above.', 'warning');
+                } else {
+                    showStatus('Avatar speech failed. The conversation continues with text only.', 'warning');
+                }
+                
+                // Clear status after delay
+                setTimeout(() => {
+                    updateLLMStatus('', false);
+                    updateAvatarStatus('🎭 Avatar ready - text only mode', 'connected');
+                }, 5000);
+                
+            } finally {
+                isProcessingResponse = false;
+                updateCurrentResponseText('', false);
+            }
+        }
+        
+        function estimateSpeechDuration(text) {
+            // Estimate speech duration based on text length
+            const wordsPerMinute = 150;
+            const words = text.split(' ').length;
+            const estimatedSeconds = (words / wordsPerMinute) * 60;
+            return Math.max(estimatedSeconds * 1000, 3000); // Minimum 3 seconds
+        }
+        
+        function splitTextIntoChunks(text, chunkSize) {
             const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
             const chunks = [];
             let currentChunk = '';
@@ -1808,71 +1863,43 @@ function splitTextIntoChunks(text, chunkSize) {
             }
         }
 
-        // ===== LLM INTEGRATION AND AVATAR SPEECH (NEW SECTION) =====
-        
-        async function processLLMResponse(fullResponse) {
-            if (!isConnected || !isStreaming) {
-                console.log('Avatar not ready for speech');
-                updateLLMStatus('Avatar not streaming - connect and start first', true);
-                return;
-            }
-            
+# Pharmacy Consultation Training - Section 7
+## Speech Recognition and Recording Functions (Lines 3001-3500)
+
+```javascript
+        async function sendToAvatarSimple(text) {
+            // Simplified request format for troubleshooting
             try {
-                isProcessingResponse = true;
-                updateLLMStatus('Processing LLM response...');
-                updateAvatarStatus('Generating speech...', 'speaking');
+                console.log('Sending simplified avatar request...');
                 
-                if (streamingMode) {
-                    // Split response into chunks and stream
-                    const chunks = splitTextIntoChunks(fullResponse, chunkSize);
-                    console.log(`Processing ${chunks.length} text chunks for avatar speech`);
-                    await streamChunks(chunks);
-                } else {
-                    // Send entire response at once
-                    updateCurrentResponseText(fullResponse);
-                    await sendToAvatar(fullResponse);
-                    updateLLMStatus('Avatar speaking...', true);
-                    
-                    // Estimate speech duration and update status
-                    const estimatedDuration = estimateSpeechDuration(fullResponse);
-                    setTimeout(() => {
-                        updateLLMStatus('Response complete', false);
-                        updateAvatarStatus('🎭 Avatar ready - speaking enabled!', 'connected');
-                    }, estimatedDuration);
+                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionIdDID,
+                        script: {
+                            type: 'text',
+                            input: text.trim()
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Simple request failed: ${response.status} - ${errorText}`);
                 }
+                
+                const responseData = await response.json();
+                console.log('Simple avatar speech successful:', responseData);
+                return responseData;
                 
             } catch (error) {
-                console.error('Error processing LLM response:', error);
-                updateLLMStatus(`Speech error: ${error.message}`, true);
-                
-                // Show helpful error message to user
-                if (error.message.includes('500')) {
-                    showStatus('Avatar speech failed due to server error. The text response is still available above.', 'warning');
-                } else {
-                    showStatus('Avatar speech failed. The conversation continues with text only.', 'warning');
-                }
-                
-                // Clear status after delay
-                setTimeout(() => {
-                    updateLLMStatus('',
-
-setTimeout(() => {
-                    updateLLMStatus('', false);
-                    updateAvatarStatus('🎭 Avatar ready - text only mode', 'connected');
-                }, 5000);
-                
-            } finally {
-                isProcessingResponse = false;
-                updateCurrentResponseText('', false);
+                console.error('Simple avatar speech failed:', error);
+                throw error;
             }
-        }
-        
-        function estimateSpeechDuration(text) {
-            // Estimate speech duration based on text length
-            const wordsPerMinute = 150;
-            const words = text.split(' ').length;
-            const estimatedSeconds = (words / wordsPerMinute) * 60;
-            return Math.max(estimatedSeconds * 1000, 3000); // Minimum 3 seconds
         }
         
         async function waitForSpeechCompletion(text) {
@@ -2052,42 +2079,188 @@ setTimeout(() => {
             }
         }
         
-        async function sendToAvatarSimple(text) {
-            // Simplified request format for troubleshooting
-            try {
-                console.log('Sending simplified avatar request...');
+        async function waitForSpeechCompletion(text) {
+            // Estimate speech duration based on text length (rough calculation)
+            const wordsPerMinute = 150;
+            const words = text.split(' ').length;
+            const estimatedDuration = (words / wordsPerMinute) * 60 * 1000; // Convert to milliseconds
+            const minDelay = 2000; // Minimum 2 seconds
+            const maxDelay = 8000; // Maximum 8 seconds
+            
+            const delay = Math.min(Math.max(estimatedDuration, minDelay), maxDelay);
+            
+            return new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // ===== SPEECH RECOGNITION SETUP =====
+        // Configure the browser's speech recognition API
+        
+        function initializeSpeechRecognition() {
+            // Check if browser supports speech recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                // Use webkit prefix for Chrome, standard for others
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
                 
-                const response = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Basic ${didApiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        session_id: sessionIdDID,
-                        script: {
-                            type: 'text',
-                            input: text.trim()
+                // Configure recognition settings
+                recognition.continuous = true;       // Keep listening until manually stopped
+                recognition.interimResults = true;   // Show interim results for live transcription
+                recognition.lang = 'en-US';         // Set language
+                
+                // Handle speech recognition results
+                recognition.onresult = function(event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    // Process all results
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                        } else {
+                            interimTranscript += transcript;
                         }
-                    })
-                });
+                    }
+                    
+                    // Update the full transcript with any new final results
+                    if (finalTranscript) {
+                        fullTranscript += finalTranscript;
+                    }
+                    
+                    // Update live transcription display
+                    const transcriptionBox = document.getElementById('transcriptionBox');
+                    let displayText = '';
+                    
+                    // Show accumulated final transcript in black
+                    if (fullTranscript) {
+                        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
+                    }
+                    
+                    // Show interim transcript in gray
+                    if (interimTranscript) {
+                        if (fullTranscript) {
+                            displayText += ' ';
+                        }
+                        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
+                    }
+                    
+                    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
+                    
+                    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
+                };
                 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Simple request failed: ${response.status} - ${errorText}`);
-                }
+                // Handle recognition errors
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    
+                    // Don't show error for aborted recognition (expected when we stop)
+                    if (event.error !== 'aborted') {
+                        showStatus('Speech recognition error: ' + event.error, 'error');
+                    }
+                    
+                    isRecording = false;
+                    updateTalkButton();
+                };
                 
-                const responseData = await response.json();
-                console.log('Simple avatar speech successful:', responseData);
-                return responseData;
-                
-            } catch (error) {
-                console.error('Simple avatar speech failed:', error);
-                throw error;
+                // Handle when recognition ends
+                recognition.onend = function() {
+                    console.log('Recognition ended. Force stop:', forceStopRecognition);
+                    
+                    // If we're forcing a stop (user released button), process the transcript
+                    if (forceStopRecognition && fullTranscript.trim()) {
+                        console.log('Sending full transcript:', fullTranscript);
+                        addMessage(fullTranscript.trim(), 'user');
+                        sendToWebhook(fullTranscript.trim());
+                    }
+                    
+                    // Reset state
+                    isRecording = false;
+                    forceStopRecognition = false;
+                    updateTalkButton();
+                    
+                    // If recording should still be active (continuous mode), restart
+                    if (isRecording && !forceStopRecognition) {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.log('Could not restart recognition:', e);
+                        }
+                    }
+                };
+            } else {
+                showStatus('Speech recognition not supported in this browser', 'error');
             }
         }
 
-// ===== WEBHOOK COMMUNICATION (MODIFIED FOR D-ID STREAMING) =====
+# Pharmacy Consultation Training - Section 8
+## Webhook Communication and Google Sheets Integration (Lines 3501-4000)
+
+```javascript
+        // ===== RECORDING FUNCTIONS =====
+        // Handle push-to-talk functionality
+        
+        function startRecording() {
+            if (!recognition) {
+                showStatus('Speech recognition not available', 'error');
+                return;
+            }
+            
+            if (!document.getElementById('webhookUrl').value) {
+                showStatus('Please enter webhook URL first', 'error');
+                return;
+            }
+            
+            if (!currentScenario) {
+                showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Clear previous transcript and reset state
+            fullTranscript = '';
+            forceStopRecognition = false;
+            
+            // Clear transcription box
+            document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+            
+            isRecording = true;
+            updateTalkButton();
+            
+            try {
+                recognition.start();
+                showStatus('Listening...', 'info');
+            } catch (error) {
+                console.error('Error starting recognition:', error);
+                showStatus('Error starting recording', 'error');
+                isRecording = false;
+                updateTalkButton();
+            }
+        }
+        
+        function stopRecording() {
+            if (isRecording && recognition) {
+                console.log('Stopping recording...');
+                forceStopRecognition = true;
+                recognition.stop();
+                showStatus('Processing...', 'info');
+            }
+        }
+        
+        function updateTalkButton() {
+            const button = document.getElementById('talkButton');
+            if (isRecording) {
+                button.classList.add('recording');
+                button.innerHTML = '🔴 Recording...';
+            } else {
+                button.classList.remove('recording');
+                button.innerHTML = 'Push to Talk';
+            }
+        }
+
+        // ===== WEBHOOK COMMUNICATION (MODIFIED FOR D-ID STREAMING) =====
         // Send data to n8n webhook
         
         async function sendToWebhook(message) {
@@ -2221,6 +2394,7 @@ setTimeout(() => {
             }
         }
         
+        // [Keep all the existing Google Sheets functions unchanged]
         // ===== GOOGLE SHEETS INTEGRATION =====
         
         async function loadSheetNames() {
@@ -2287,7 +2461,11 @@ setTimeout(() => {
             const dropdown = document.getElementById('sheetName');
             return dropdown.value;
         }
-        
+
+# Pharmacy Consultation Training - Section 9
+## Google Sheets Data Loading and Scenario Management (Lines 4001-4500)
+
+```javascript
         async function loadSheetData() {
             const sheetId = document.getElementById('sheetId').value;
             const sheetName = getSelectedSheetName();
@@ -2330,6 +2508,11 @@ setTimeout(() => {
             select.innerHTML = '<option value="">Select a scenario...</option>';
             select.disabled = false;
             
+        function populateScenarioDropdown() {
+            const select = document.getElementById('scenarioSelect');
+            select.innerHTML = '<option value="">Select a scenario...</option>';
+            select.disabled = false;
+            
             for (let i = 1; i < sheetData.length; i++) {
                 const row = sheetData[i];
                 const option = document.createElement('option');
@@ -2360,45 +2543,11 @@ setTimeout(() => {
             console.log('Selected scenario:', currentScenario);
             showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
             
-            // Update patient image button based on image availability
-            updatePatientImageButton();
+            // Handle patient image
+            updateImageButton();
             
             clearChat();
             addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
-        }
-        
-        // Update patient image button state based on scenario
-        function updatePatientImageButton() {
-            const button = document.getElementById('patientImageBtn');
-            
-            if (!currentScenario) {
-                // No scenario selected
-                button.className = 'patient-image-btn disabled';
-                button.textContent = '📷 No Scenario Selected';
-                button.disabled = true;
-                return;
-            }
-            
-            // Check for image URL in various possible column names
-            const imageUrl = currentScenario['Patient Image'] || 
-                           currentScenario['Image URL'] || 
-                           currentScenario['Photo URL'] || 
-                           currentScenario['Image'] || 
-                           currentScenario['Photo'] ||
-                           currentScenario['Picture URL'] ||
-                           currentScenario['Picture'];
-            
-            if (imageUrl && imageUrl.trim() !== '') {
-                // Image available
-                button.className = 'patient-image-btn available';
-                button.innerHTML = '👁️ View Patient Image';
-                button.disabled = false;
-            } else {
-                // No image URL
-                button.className = 'patient-image-btn unavailable';
-                button.innerHTML = '❌ No Patient Image';
-                button.disabled = true;
-            }
         }
         
         function selectRandomScenario() {
@@ -2412,8 +2561,8 @@ setTimeout(() => {
             selectScenario(randomIndex);
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
-
-// ===== SUBMIT CONVERSATION FUNCTION =====
+        
+        // ===== SUBMIT CONVERSATION FUNCTION =====
         
         async function submitConversation() {
             const submitWebhookUrl = document.getElementById('submitWebhookUrl').value;
@@ -2577,7 +2726,14 @@ setTimeout(() => {
                 }
             }
         }
-       
+
+# Pharmacy Consultation Training - Section 10
+## Export Function and Final Utilities (Lines 4501-5154)
+
+       # Pharmacy Consultation Training - Section 10
+## Export Function and Final Utilities (Lines 4501-5154)
+
+
         // ===== EXPORT CONVERSATION FUNCTION =====
         
         function exportConversation() {
@@ -2631,6 +2787,7 @@ setTimeout(() => {
                 const durationSeconds = Math.floor((sessionDuration % 60000) / 1000);
                 
                 exportText += 'CONVERSATION STATISTICS:\n';
+                exportText += '-'.repeat(25) + '\n';
                 exportText += `Total Messages: ${userMessages + aiMessages + systemMessages}\n`;
                 exportText += `Student Messages: ${userMessages}\n`;
                 exportText += `AI Patient Messages: ${aiMessages}\n`;
@@ -2731,152 +2888,74 @@ setTimeout(() => {
             }
         }
         
-        // ===== CHAT MANAGEMENT =====
-        
-        function addMessage(text, sender) {
-            const chatContainer = document.getElementById('chatContainer');
+        // ===== IMAGE MANAGEMENT FUNCTIONS =====
+
+        function updateImageButton() {
+            const imageButton = document.getElementById('imageButton');
+            const imageUrl = currentScenario['Patient Image'] || currentScenario['Image URL'] || currentScenario['Photo URL'] || currentScenario['Picture URL'] || currentScenario['patient_image'];
             
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            messageDiv.innerHTML = text;
-            
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            if (!text.includes('spinner') && sender !== 'system') {
-                conversationHistory.push({
-                    sender: sender,
-                    message: text,
-                    timestamp: new Date().toISOString()
-                });
+            if (imageUrl && imageUrl.trim() !== '') {
+                imageButton.style.display = 'inline-block';
+                imageButton.className = 'btn-image-available';
+                imageButton.textContent = '📷 View Patient';
+                imageButton.title = 'Patient image available - click to view';
+                imageButton.disabled = false;
+            } else {
+                imageButton.style.display = 'inline-block';
+                imageButton.className = 'btn-image-unavailable';
+                imageButton.textContent = '📷 No Image';
+                imageButton.title = 'No patient image available';
+                imageButton.disabled = true;
             }
-        }
-        
-        function removeLastMessage() {
-            const chatContainer = document.getElementById('chatContainer');
-            const messages = chatContainer.getElementsByClassName('message');
-            if (messages.length > 0) {
-                messages[messages.length - 1].remove();
-            }
-        }
-        
-        function clearChat() {
-            document.getElementById('chatContainer').innerHTML = '';
-            conversationHistory = [];
-        }
-        
-        // ===== UTILITY FUNCTIONS =====
-        
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 5000);
         }
 
-exportText += `Total Messages: ${userMessages + aiMessages + systemMessages}\n`;
-                exportText += `Student Messages: ${userMessages}\n`;
-                exportText += `AI Patient Messages: ${aiMessages}\n`;
-                exportText += `System Messages: ${systemMessages}\n`;
-                exportText += `Session Duration: ${durationMinutes}m ${durationSeconds}s\n\n`;
-                
-                exportText += 'FULL CONVERSATION:\n';
-                exportText += '-'.repeat(20) + '\n\n';
-                
-                for (let i = 0; i < messageElements.length; i++) {
-                    const messageElement = messageElements[i];
-                    const messageClass = messageElement.className;
-                    
-                    let speaker = 'UNKNOWN';
-                    if (messageClass.includes('user')) {
-                        speaker = 'STUDENT';
-                    } else if (messageClass.includes('ai')) {
-                        speaker = 'AI PATIENT';
-                    } else if (messageClass.includes('system')) {
-                        speaker = 'SYSTEM';
-                    }
-                    
-                    let messageContent = messageElement.innerHTML
-                        .replace(/<br\s*\/?>/gi, '\n')
-                        .replace(/<\/p><p[^>]*>/gi, '\n\n')
-                        .replace(/<p[^>]*>/gi, '')
-                        .replace(/<\/p>/gi, '')
-                        .replace(/<h[1-6][^>]*>/gi, '\n**')
-                        .replace(/<\/h[1-6]>/gi, '**\n')
-                        .replace(/<strong[^>]*>/gi, '**')
-                        .replace(/<\/strong>/gi, '**')
-                        .replace(/<em[^>]*>/gi, '*')
-                        .replace(/<\/em>/gi, '*')
-                        .replace(/<ul[^>]*>/gi, '\n')
-                        .replace(/<\/ul>/gi, '')
-                        .replace(/<li[^>]*>/gi, '  • ')
-                        .replace(/<\/li>/gi, '\n')
-                        .replace(/<div[^>]*class="spinner"[^>]*><\/div>/gi, '')
-                        .replace(/<[^>]*>/g, '')
-                        .replace(/&nbsp;/g, ' ')
-                        .replace(/&amp;/g, '&')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                        .replace(/&quot;/g, '"')
-                        .replace(/\n\s*\n\s*\n/g, '\n\n')
-                        .trim();
-                    
-                    if (!messageContent || messageContent.includes('spinner') || messageContent === '') {
-                        continue;
-                    }
-                    
-                    exportText += `${speaker}:\n`;
-                    
-                    const lines = messageContent.split('\n');
-                    lines.forEach(line => {
-                        if (line.trim()) {
-                            exportText += `  ${line.trim()}\n`;
-                        } else {
-                            exportText += '\n';
-                        }
-                    });
-                    
-                    exportText += '\n';
-                }
-                
-                exportText += '='.repeat(60) + '\n';
-                exportText += 'End of Conversation Export\n';
-                exportText += 'Generated by Pharmacy Training System with D-ID Streaming v2.0\n';
-                exportText += '='.repeat(60) + '\n';
-                
-                const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
-                const url = window.URL.createObjectURL(blob);
-                
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                
-                const now = new Date();
-                const dateStr = now.toISOString().split('T')[0];
-                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-                const scenarioName = currentScenario && currentScenario['Scenario Name'] 
-                    ? currentScenario['Scenario Name'].replace(/[^a-zA-Z0-9]/g, '_') 
-                    : 'Unknown_Scenario';
-                
-                downloadLink.download = `Pharmacy_Training_${scenarioName}_${dateStr}_${timeStr}.txt`;
-                
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                
-                window.URL.revokeObjectURL(url);
-                
-                showStatus('✅ Conversation exported successfully!', 'success');
-                console.log('Conversation exported:', downloadLink.download);
-                
-            } catch (error) {
-                console.error('Export error:', error);
-                showStatus(`❌ Export failed: ${error.message}`, 'error');
+        function toggleImageModal() {
+            const imageUrl = currentScenario['Patient Image'] || currentScenario['Image URL'] || currentScenario['Photo URL'] || currentScenario['Picture URL'] || currentScenario['patient_image'];
+            
+            if (!imageUrl || imageUrl.trim() === '') {
+                showStatus('No patient image available for this scenario', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('patientImage');
+            const caption = document.getElementById('imageCaption');
+            
+            img.src = imageUrl;
+            caption.textContent = `Patient: ${currentScenario['Patient Name'] || currentScenario['Name'] || 'Unknown'}`;
+            
+            // Handle image load errors
+            img.onerror = function() {
+                showStatus('Failed to load patient image', 'error');
+                closeImageModal();
+            };
+            
+            img.onload = function() {
+                console.log('Patient image loaded successfully');
+            };
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside the image
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeImageModal();
             }
         }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        });
         
         // ===== CHAT MANAGEMENT =====
         
@@ -2910,162 +2989,6 @@ exportText += `Total Messages: ${userMessages + aiMessages + systemMessages}\n`;
         function clearChat() {
             document.getElementById('chatContainer').innerHTML = '';
             conversationHistory = [];
-            
-            // Reset patient image button if no scenario is selected
-            if (!currentScenario) {
-                const button = document.getElementById('patientImageBtn');
-                button.className = 'patient-image-btn disabled';
-                button.textContent = '📷 No Scenario Selected';
-                button.disabled = true;
-            }
-        }
-        
-        // ===== PATIENT IMAGE FUNCTIONS =====
-        
-        // Helper function to convert Google Drive share links to direct image URLs
-        function convertGoogleDriveUrl(url) {
-            if (!url || typeof url !== 'string') {
-                return url;
-            }
-            
-            // Check if it's a Google Drive share link
-            if (url.includes('drive.google.com/file/d/')) {
-                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (fileIdMatch && fileIdMatch[1]) {
-                    const fileId = fileIdMatch[1];
-                    // Use a much larger size parameter for high resolution
-                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
-                    console.log('Converted Google Drive URL:', url, '->', directUrl);
-                    return directUrl;
-                }
-            }
-            
-            // Return original URL if not a Google Drive link or conversion failed
-            return url;
-        }
-        
-        // Show patient image modal
-        function showPatientImage() {
-            if (!currentScenario) {
-                showStatus('No scenario selected', 'error');
-                return;
-            }
-            
-            // Get image URL from scenario data
-            const imageUrl = currentScenario['Patient Image'] || 
-                           currentScenario['Image URL'] || 
-                           currentScenario['Photo URL'] || 
-                           currentScenario['Image'] || 
-                           currentScenario['Photo'] ||
-                           currentScenario['Picture URL'] ||
-                           currentScenario['Picture'];
-            
-            if (!imageUrl || imageUrl.trim() === '') {
-                showStatus('No image URL available for this patient', 'error');
-                return;
-            }
-            
-            // Convert Google Drive share links to direct image URLs
-            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
-            
-            // Log URL conversion for debugging
-            if (convertedImageUrl !== imageUrl.trim()) {
-                console.log('Original URL:', imageUrl.trim());
-                console.log('Converted URL:', convertedImageUrl);
-            }
-            
-            // Set modal title
-            const patientName = currentScenario['Patient Name'] || 'Patient';
-            document.getElementById('imageModalTitle').textContent = `${patientName} - Patient Image`;
-            
-            // Show modal
-            const modal = document.getElementById('imageModal');
-            const modalBody = document.getElementById('imageModalBody');
-            
-            // Show loading state
-            modalBody.innerHTML = `
-                <div class="image-loading">
-                    <div class="spinner"></div>
-                    Loading image...
-                </div>
-            `;
-            
-            modal.classList.add('show');
-            
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
-            };
-            
-            img.onerror = function() {
-                // Image failed to load - try alternative Google Drive formats
-                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First Google Drive format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    // Extract file ID and try different format
-                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        // Try the uc format as backup
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely
-                modalBody.innerHTML = `
-                    <div class="image-error">
-                        <h4>Failed to Load Image</h4>
-                        <p>The image could not be loaded. This might be due to:</p>
-                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                            <li>The image is not set to "Anyone with the link can view"</li>
-                            <li>Google Drive is blocking the image embedding</li>
-                            <li>The file is not an image format</li>
-                            <li>The URL is incorrect or the file was deleted</li>
-                        </ul>
-                        
-                        <p><strong>Attempted URL:</strong></p>
-                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
-                        
-                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
-                        
-                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
-                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
-                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
-                                <li>Right-click the image → "Get link"</li>
-                                <li>Change to "Anyone with the link"</li>
-                                <li>Use a direct image hosting service instead</li>
-                            </ol>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
-                        </div>
-                        
-                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            🔗 Open Original Link
-                        </button>
-                    </div>
-                `;
-            };
-            
-            // Start loading the image
-            img.src = convertedImageUrl;
-        }
-        
-        // Close patient image modal
-        function closeImageModal(event) {
-            // If event is passed and it's not the backdrop click, ignore
-            if (event && event.target !== event.currentTarget && event.type === 'click') {
-                return;
-            }
-            
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('show');
         }
         
         // ===== UTILITY FUNCTIONS =====
@@ -3128,15 +3051,14 @@ exportText += `Total Messages: ${userMessages + aiMessages + systemMessages}\n`;
             }
         });
         
-        // Add keyboard support for modal
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeImageModal();
-            }
-        });
     </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
