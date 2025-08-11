@@ -2578,6 +2578,203 @@
             clearChat();
             addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
         }
+
+         // Update patient image button based on image availability
+            updatePatientImageButton();
+            
+            // Clear previous conversation
+            clearChat();
+            
+            // Add initial message
+            addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
+        }
+        
+        // Update patient image button state based on scenario
+        function updatePatientImageButton() {
+            const button = document.getElementById('patientImageBtn');
+            
+            if (!currentScenario) {
+                // No scenario selected
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+                return;
+            }
+            
+            // Check for image URL in various possible column names
+            const imageUrl = currentScenario['Patient Image'] || 
+                           currentScenario['Image URL'] || 
+                           currentScenario['Photo URL'] || 
+                           currentScenario['Image'] || 
+                           currentScenario['Photo'] ||
+                           currentScenario['Picture URL'] ||
+                           currentScenario['Picture'];
+            
+            if (imageUrl && imageUrl.trim() !== '') {
+                // Image available
+                button.className = 'patient-image-btn available';
+                button.innerHTML = '👁️ View Patient Image';
+                button.disabled = false;
+            } else {
+                // No image URL
+                button.className = 'patient-image-btn unavailable';
+                button.innerHTML = '❌ No Patient Image';
+                button.disabled = true;
+            }
+        }
+        
+        // Helper function to convert Google Drive share links to direct image URLs
+        function convertGoogleDriveUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return url;
+            }
+            
+            // Check if it's a Google Drive share link
+            if (url.includes('drive.google.com/file/d/')) {
+                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    // Use a much larger size parameter for high resolution
+                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+                    console.log('Converted Google Drive URL:', url, '->', directUrl);
+                    return directUrl;
+                }
+            }
+            
+            // Return original URL if not a Google Drive link or conversion failed
+            return url;
+        }
+        
+        // Show patient image modal
+        function showPatientImage() {
+            if (!currentScenario) {
+                showStatus('No scenario selected', 'error');
+                return;
+            }
+            
+            // Get image URL from scenario data
+            const imageUrl = currentScenario['Patient Image'] || 
+                           currentScenario['Image URL'] || 
+                           currentScenario['Photo URL'] || 
+                           currentScenario['Image'] || 
+                           currentScenario['Photo'] ||
+                           currentScenario['Picture URL'] ||
+                           currentScenario['Picture'];
+            
+            if (!imageUrl || imageUrl.trim() === '') {
+                showStatus('No image URL available for this patient', 'error');
+                return;
+            }
+            
+            // Convert Google Drive share links to direct image URLs
+            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+            
+            // Log URL conversion for debugging
+            if (convertedImageUrl !== imageUrl.trim()) {
+                console.log('Original URL:', imageUrl.trim());
+                console.log('Converted URL:', convertedImageUrl);
+            }
+            
+            // Set modal title
+            const patientName = currentScenario['Patient Name'] || 'Patient';
+            document.getElementById('imageModalTitle').textContent = `${patientName} - Patient Image`;
+            
+            // Show modal
+            const modal = document.getElementById('imageModal');
+            const modalBody = document.getElementById('imageModalBody');
+            
+            // Show loading state
+            modalBody.innerHTML = `
+                <div class="image-loading">
+                    <div class="spinner"></div>
+                    Loading image...
+                </div>
+            `;
+            
+            modal.classList.add('show');
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
+            };
+            
+            img.onerror = function() {
+                // Image failed to load - try alternative Google Drive formats
+                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First Google Drive format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    // Extract file ID and try different format
+                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        // Try the uc format as backup
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
+                
+                // Image failed to load completely
+                modalBody.innerHTML = `
+                    <div class="image-error">
+                        <h4>Failed to Load Image</h4>
+                        <p>The image could not be loaded. This might be due to:</p>
+                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                            <li>The image is not set to "Anyone with the link can view"</li>
+                            <li>Google Drive is blocking the image embedding</li>
+                            <li>The file is not an image format</li>
+                            <li>The URL is incorrect or the file was deleted</li>
+                        </ul>
+                        
+                        <p><strong>Attempted URL:</strong></p>
+                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                        
+                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
+                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
+                                <li>Right-click the image → "Get link"</li>
+                                <li>Change to "Anyone with the link"</li>
+                                <li>Use a direct image hosting service instead</li>
+                            </ol>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
+                        </div>
+                        
+                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            🔗 Open Original Link
+                        </button>
+                    </div>
+                `;
+            };
+            
+            // Start loading the image
+            img.src = convertedImageUrl;
+        }
+        
+        // Close patient image modal
+        function closeImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+        
+        // Add keyboard support for modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        });
         
         function selectRandomScenario() {
             if (sheetData.length <= 1) {
@@ -2943,6 +3140,15 @@
             document.getElementById('chatContainer').innerHTML = '';
             conversationHistory = [];
         }
+
+        // Reset patient image button if no scenario is selected
+            if (!currentScenario) {
+                const button = document.getElementById('patientImageBtn');
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+            }
+        }
         
         // ===== UTILITY FUNCTIONS =====
         
@@ -3007,6 +3213,7 @@
     </script>
 </body>
 </html>
+
 
 
 
