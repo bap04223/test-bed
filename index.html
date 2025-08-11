@@ -1485,7 +1485,8 @@
                 const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
                 if (fileIdMatch && fileIdMatch[1]) {
                     const fileId = fileIdMatch[1];
-                    const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    // Use the thumbnail format which is more reliable for embedding
+                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
                     console.log('Converted Google Drive URL:', url, '->', directUrl);
                     return directUrl;
                 }
@@ -1552,15 +1553,54 @@
             };
             
             img.onerror = function() {
-                // Image failed to load
+                // Image failed to load - try alternative Google Drive formats
+                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First Google Drive format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    // Extract file ID and try different format
+                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        // Try the uc format as backup
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
+                
+                // Image failed to load completely
                 modalBody.innerHTML = `
                     <div class="image-error">
                         <h4>Failed to Load Image</h4>
-                        <p>The image could not be loaded. Please check the URL:</p>
+                        <p>The image could not be loaded. This might be due to:</p>
+                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                            <li>The image is not set to "Anyone with the link can view"</li>
+                            <li>Google Drive is blocking the image embedding</li>
+                            <li>The file is not an image format</li>
+                            <li>The URL is incorrect or the file was deleted</li>
+                        </ul>
+                        
+                        <p><strong>Attempted URL:</strong></p>
                         <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
-                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong><br><span style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0; display: block;">${imageUrl.trim()}</span></p>` : ''}
-                        <p>Make sure the URL is correct and the image is accessible.</p>
-                        ${imageUrl.includes('drive.google.com') ? '<p><strong>Note:</strong> For Google Drive images, make sure they are set to "Anyone with the link can view".</p>' : ''}
+                        
+                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
+                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
+                                <li>Right-click the image → "Get link"</li>
+                                <li>Change to "Anyone with the link"</li>
+                                <li>Use a direct image hosting service instead</li>
+                            </ol>
+                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
+                        </div>
+                        
+                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            🔗 Open Original Link
+                        </button>
                     </div>
                 `;
             };
@@ -2269,4 +2309,5 @@
     </script>
 </body>
 </html>
+
 
