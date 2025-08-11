@@ -1,7 +1,3 @@
-# Pharmacy Consultation Training - Section 1
-## HTML Structure and Basic Styling (Lines 1-500)
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -461,28 +457,47 @@
             100% { opacity: 1; }
         }
 
-        /* Image button states */
-        .btn-image-available {
+  /* Patient Image Button Styling */
+        .patient-image-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .patient-image-btn.available {
             background-color: var(--success-color);
             color: white;
         }
-
-        .btn-image-available:hover {
+        
+        .patient-image-btn.available:hover {
             background-color: #047857;
         }
-
-        .btn-image-unavailable {
+        
+        .patient-image-btn.unavailable {
             background-color: var(--danger-color);
             color: white;
             cursor: not-allowed;
         }
-
-        .btn-image-unavailable:disabled {
-            opacity: 0.6;
+        
+        .patient-image-btn.disabled {
+            background-color: var(--text-secondary);
+            color: white;
+            cursor: not-allowed;
         }
-
-        /* Modal styles */
+        
+        /* Image Modal Styling */
         .image-modal {
+            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -490,55 +505,113 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .image-modal.show {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
-
-        .modal-content {
+        
+        .image-modal-content {
             position: relative;
+            max-width: 98%;
+            max-height: 98%;
             background: white;
-            padding: 20px;
             border-radius: 12px;
-            max-width: 90%;
-            max-height: 90%;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
         }
-
-        .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
+        
+        .image-modal-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .image-modal-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        
+        .image-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
             cursor: pointer;
-            color: #aaa;
-            transition: color 0.3s;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
         }
-
-        .modal-close:hover {
-            color: black;
+        
+        .image-modal-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
         }
-
-        #patientImage {
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        
+        .image-modal-body {
+            padding: 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100% - 50px);
+            overflow: hidden;
         }
-
-        #imageCaption {
-            margin-top: 15px;
-            font-weight: 500;
-            color: var(--text-primary);
-            font-size: 16px;
+        
+        .patient-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+        
+        .image-loading {
+            padding: 40px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .image-error {
+            padding: 40px;
+            color: var(--danger-color);
+            text-align: center;
+        }
+        
+        /* Modal Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
     </style>
 </head>
-
-# Pharmacy Consultation Training - Section 2
-## HTML Body Structure and Instructions (Lines 501-1000)
-
-```html
 <body>
     <div class="container">
         <!-- Header section with title and description -->
@@ -775,17 +848,10 @@
                         <button class="btn-info" onclick="exportConversation()">
                             📥 Export Chat
                         </button>
-                        <button id="imageButton" class="btn-secondary" onclick="toggleImageModal()" style="display: none;">
-                            📷 Patient Image
-                        </button>
                     </div>
                 </div>
             </div>
-
-# Pharmacy Consultation Training - Section 3
-## Avatar Display and Initial JavaScript Setup (Lines 1001-1500)
-
-```html
+            
             <!-- Avatar display area (UPDATED SECTION) -->
             <div class="card">
                 <h2>🎭 AI Patient Avatar</h2>
@@ -853,15 +919,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Patient Image Modal -->
-    <div id="imageModal" class="image-modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeImageModal()">&times;</span>
-            <img id="patientImage" src="" alt="Patient Image" style="max-width: 100%; max-height: 80vh;">
-            <p id="imageCaption"></p>
-        </div>
-    </div>
             
     <!-- JavaScript code for functionality -->
     <script>
@@ -917,12 +974,6 @@
             
             // Initialize D-ID streaming setup
             initializeDIDElements();
-            
-            // Initialize image button (will be hidden until scenario is selected)
-            const imageButton = document.getElementById('imageButton');
-            if (imageButton) {
-                imageButton.style.display = 'none';
-            }
             
             console.log('Pharmacy Training System initialized with D-ID streaming');
         };
@@ -1044,11 +1095,8 @@
             if (startStreamBtn) startStreamBtn.disabled = !isConnected || isStreaming;
             if (stopStreamBtn) stopStreamBtn.disabled = !isStreaming;
         }
-
-# Pharmacy Consultation Training - Section 4
-## D-ID Streaming Functions (Lines 1501-2000)
-
-```javascript
+        
+                
         // ===== D-ID STREAMING FUNCTIONS (NEW SECTION) =====
         
         function convertImageUrl(url) {
@@ -1312,11 +1360,7 @@
                 throw fetchError;
             }
         }
-
-# Pharmacy Consultation Training - Section 5
-## WebRTC Setup and Stream Management (Lines 2001-2500)
-
-```javascript
+        
         async function setupWebRTC() {
             // Create peer connection with the ICE servers from the session creation response
             const sessionData = await getSessionDataFromCreation();
@@ -1583,11 +1627,7 @@
                 console.error('Error during disconnect:', error);
             }
         }
-
-# Pharmacy Consultation Training - Section 6
-## LLM Integration and Speech Processing (Lines 2501-3000)
-
-```javascript
+        
         function splitTextIntoChunks(text, chunkSize) {
             const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
             const chunks = [];
@@ -1862,11 +1902,7 @@
                 throw error;
             }
         }
-
-# Pharmacy Consultation Training - Section 7
-## Speech Recognition and Recording Functions (Lines 3001-3500)
-
-```javascript
+        
         async function sendToAvatarSimple(text) {
             // Simplified request format for troubleshooting
             try {
@@ -2195,11 +2231,7 @@
                 showStatus('Speech recognition not supported in this browser', 'error');
             }
         }
-
-# Pharmacy Consultation Training - Section 8
-## Webhook Communication and Google Sheets Integration (Lines 3501-4000)
-
-```javascript
+        
         // ===== RECORDING FUNCTIONS =====
         // Handle push-to-talk functionality
         
@@ -2259,8 +2291,7 @@
                 button.innerHTML = 'Push to Talk';
             }
         }
-
-        // ===== WEBHOOK COMMUNICATION (MODIFIED FOR D-ID STREAMING) =====
+// ===== WEBHOOK COMMUNICATION (MODIFIED FOR D-ID STREAMING) =====
         // Send data to n8n webhook
         
         async function sendToWebhook(message) {
@@ -2461,11 +2492,7 @@
             const dropdown = document.getElementById('sheetName');
             return dropdown.value;
         }
-
-# Pharmacy Consultation Training - Section 9
-## Google Sheets Data Loading and Scenario Management (Lines 4001-4500)
-
-```javascript
+        
         async function loadSheetData() {
             const sheetId = document.getElementById('sheetId').value;
             const sheetName = getSelectedSheetName();
@@ -2508,11 +2535,6 @@
             select.innerHTML = '<option value="">Select a scenario...</option>';
             select.disabled = false;
             
-        function populateScenarioDropdown() {
-            const select = document.getElementById('scenarioSelect');
-            select.innerHTML = '<option value="">Select a scenario...</option>';
-            select.disabled = false;
-            
             for (let i = 1; i < sheetData.length; i++) {
                 const row = sheetData[i];
                 const option = document.createElement('option');
@@ -2542,9 +2564,6 @@
             
             console.log('Selected scenario:', currentScenario);
             showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-            
-            // Handle patient image
-            updateImageButton();
             
             clearChat();
             addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
@@ -2726,14 +2745,7 @@
                 }
             }
         }
-
-# Pharmacy Consultation Training - Section 10
-## Export Function and Final Utilities (Lines 4501-5154)
-
-       # Pharmacy Consultation Training - Section 10
-## Export Function and Final Utilities (Lines 4501-5154)
-
-
+       
         // ===== EXPORT CONVERSATION FUNCTION =====
         
         function exportConversation() {
@@ -2888,75 +2900,6 @@
             }
         }
         
-        // ===== IMAGE MANAGEMENT FUNCTIONS =====
-
-        function updateImageButton() {
-            const imageButton = document.getElementById('imageButton');
-            const imageUrl = currentScenario['Patient Image'] || currentScenario['Image URL'] || currentScenario['Photo URL'] || currentScenario['Picture URL'] || currentScenario['patient_image'];
-            
-            if (imageUrl && imageUrl.trim() !== '') {
-                imageButton.style.display = 'inline-block';
-                imageButton.className = 'btn-image-available';
-                imageButton.textContent = '📷 View Patient';
-                imageButton.title = 'Patient image available - click to view';
-                imageButton.disabled = false;
-            } else {
-                imageButton.style.display = 'inline-block';
-                imageButton.className = 'btn-image-unavailable';
-                imageButton.textContent = '📷 No Image';
-                imageButton.title = 'No patient image available';
-                imageButton.disabled = true;
-            }
-        }
-
-        function toggleImageModal() {
-            const imageUrl = currentScenario['Patient Image'] || currentScenario['Image URL'] || currentScenario['Photo URL'] || currentScenario['Picture URL'] || currentScenario['patient_image'];
-            
-            if (!imageUrl || imageUrl.trim() === '') {
-                showStatus('No patient image available for this scenario', 'error');
-                return;
-            }
-            
-            const modal = document.getElementById('imageModal');
-            const img = document.getElementById('patientImage');
-            const caption = document.getElementById('imageCaption');
-            
-            img.src = imageUrl;
-            caption.textContent = `Patient: ${currentScenario['Patient Name'] || currentScenario['Name'] || 'Unknown'}`;
-            
-            // Handle image load errors
-            img.onerror = function() {
-                showStatus('Failed to load patient image', 'error');
-                closeImageModal();
-            };
-            
-            img.onload = function() {
-                console.log('Patient image loaded successfully');
-            };
-            
-            modal.style.display = 'flex';
-        }
-
-        function closeImageModal() {
-            const modal = document.getElementById('imageModal');
-            modal.style.display = 'none';
-        }
-
-        // Close modal when clicking outside the image
-        window.onclick = function(event) {
-            const modal = document.getElementById('imageModal');
-            if (event.target === modal) {
-                closeImageModal();
-            }
-        }
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeImageModal();
-            }
-        });
-        
         // ===== CHAT MANAGEMENT =====
         
         function addMessage(text, sender) {
@@ -3054,6 +2997,7 @@
     </script>
 </body>
 </html>
+
 
 
 
