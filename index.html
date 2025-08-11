@@ -2664,118 +2664,155 @@
             return url;
         }
         
-        // Show patient image modal
-        function showPatientImage() {
-            if (!currentScenario) {
-                showStatus('No scenario selected', 'error');
+       // Show patient image modal
+function showPatientImage() {
+    if (!currentScenario) {
+        showStatus('No scenario selected', 'error');
+        return;
+    }
+    
+    // Get image URL from scenario data
+    const imageUrl = currentScenario['Patient Image'] || 
+                   currentScenario['Image URL'] || 
+                   currentScenario['Photo URL'] || 
+                   currentScenario['Image'] || 
+                   currentScenario['Photo'] ||
+                   currentScenario['Picture URL'] ||
+                   currentScenario['Picture'];
+    
+    if (!imageUrl || imageUrl.trim() === '') {
+        showStatus('No image URL available for this patient', 'error');
+        return;
+    }
+    
+    // Convert Google Drive share links to direct image URLs
+    const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+    
+    // Log URL conversion for debugging
+    console.log('Original URL:', imageUrl.trim());
+    console.log('Converted URL:', convertedImageUrl);
+    
+    // Set modal title
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    
+    // Get modal elements - create if they don't exist
+    let modal = document.getElementById('imageModal');
+    if (!modal) {
+        console.error('Image modal not found in DOM - creating it now');
+        createImageModal();
+        modal = document.getElementById('imageModal');
+    }
+    
+    const modalTitle = document.getElementById('imageModalTitle');
+    const modalBody = document.getElementById('imageModalBody');
+    
+    if (modalTitle) {
+        modalTitle.textContent = `${patientName} - Patient Image`;
+    }
+    
+    // Show loading state
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="image-loading">
+                <div class="spinner"></div>
+                Loading image...
+            </div>
+        `;
+    }
+    
+    // Show modal
+    modal.classList.add('show');
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        if (modalBody) {
+            modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
+        }
+        console.log('Image loaded successfully');
+    };
+    
+    img.onerror = function() {
+        console.error('Image failed to load:', convertedImageUrl);
+        
+        // Try alternative Google Drive formats
+        if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            console.log('First Google Drive format failed, trying alternative...');
+            img.hasTriedAlternative = true;
+            
+            // Extract file ID and try different format
+            const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                // Try the uc format as backup
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log('Trying alternative URL:', alternativeUrl);
+                img.src = alternativeUrl;
                 return;
             }
-            
-            // Get image URL from scenario data
-            const imageUrl = currentScenario['Patient Image'] || 
-                           currentScenario['Image URL'] || 
-                           currentScenario['Photo URL'] || 
-                           currentScenario['Image'] || 
-                           currentScenario['Photo'] ||
-                           currentScenario['Picture URL'] ||
-                           currentScenario['Picture'];
-            
-            if (!imageUrl || imageUrl.trim() === '') {
-                showStatus('No image URL available for this patient', 'error');
-                return;
-            }
-            
-            // Convert Google Drive share links to direct image URLs
-            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
-            
-            // Log URL conversion for debugging
-            if (convertedImageUrl !== imageUrl.trim()) {
-                console.log('Original URL:', imageUrl.trim());
-                console.log('Converted URL:', convertedImageUrl);
-            }
-            
-            // Set modal title
-            const patientName = currentScenario['Patient Name'] || 'Patient';
-            document.getElementById('imageModalTitle').textContent = `${patientName} - Patient Image`;
-            
-            // Show modal
-            const modal = document.getElementById('imageModal');
-            const modalBody = document.getElementById('imageModalBody');
-            
-            // Show loading state
+        }
+        
+        // Image failed to load completely
+        if (modalBody) {
             modalBody.innerHTML = `
-                <div class="image-loading">
-                    <div class="spinner"></div>
-                    Loading image...
+                <div class="image-error">
+                    <h4>Failed to Load Image</h4>
+                    <p>The image could not be loaded. This might be due to:</p>
+                    <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                        <li>The image is not set to "Anyone with the link can view"</li>
+                        <li>Google Drive is blocking the image embedding</li>
+                        <li>The file is not an image format</li>
+                        <li>The URL is incorrect or the file was deleted</li>
+                    </ul>
+                    
+                    <p><strong>Attempted URL:</strong></p>
+                    <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                    
+                    ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                        <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
+                        <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
+                        <ol style="margin: 5px 0 10px 20px; color: #92400e;">
+                            <li>Right-click the image → "Get link"</li>
+                            <li>Change to "Anyone with the link"</li>
+                            <li>Use a direct image hosting service instead</li>
+                        </ol>
+                        <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
+                    </div>
+                    
+                    <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🔗 Open Original Link
+                    </button>
                 </div>
             `;
-            
-            modal.classList.add('show');
-            
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
-            };
-            
-            img.onerror = function() {
-                // Image failed to load - try alternative Google Drive formats
-                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First Google Drive format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    // Extract file ID and try different format
-                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        // Try the uc format as backup
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely
-                modalBody.innerHTML = `
-                    <div class="image-error">
-                        <h4>Failed to Load Image</h4>
-                        <p>The image could not be loaded. This might be due to:</p>
-                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                            <li>The image is not set to "Anyone with the link can view"</li>
-                            <li>Google Drive is blocking the image embedding</li>
-                            <li>The file is not an image format</li>
-                            <li>The URL is incorrect or the file was deleted</li>
-                        </ul>
-                        
-                        <p><strong>Attempted URL:</strong></p>
-                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
-                        
-                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
-                        
-                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
-                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
-                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
-                                <li>Right-click the image → "Get link"</li>
-                                <li>Change to "Anyone with the link"</li>
-                                <li>Use a direct image hosting service instead</li>
-                            </ol>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
-                        </div>
-                        
-                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            🔗 Open Original Link
-                        </button>
-                    </div>
-                `;
-            };
-            
-            // Start loading the image
-            img.src = convertedImageUrl;
         }
+    };
+    
+    // Start loading the image
+    img.src = convertedImageUrl;
+}
+
+// Function to create modal if it doesn't exist
+function createImageModal() {
+    const modalHTML = `
+        <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+            <div class="image-modal-content" onclick="event.stopPropagation()">
+                <div class="image-modal-header">
+                    <h3 id="imageModalTitle">Patient Image</h3>
+                    <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
+                </div>
+                <div id="imageModalBody" class="image-modal-body">
+                    <!-- Image will be loaded here -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
         
         // Close patient image modal
         function closeImageModal(event) {
@@ -3228,8 +3265,20 @@
         });
         
     </script>
+    <div id="imageModal" class="image-modal" onclick="closeImageModal(event)">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <div class="image-modal-header">
+            <h3 id="imageModalTitle">Patient Image</h3>
+            <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
+        </div>
+        <div id="imageModalBody" class="image-modal-body">
+            <!-- Image will be loaded here -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
 
 
 
