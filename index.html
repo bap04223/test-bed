@@ -1474,6 +1474,27 @@
             }
         }
         
+        // Helper function to convert Google Drive share links to direct image URLs
+        function convertGoogleDriveUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return url;
+            }
+            
+            // Check if it's a Google Drive share link
+            if (url.includes('drive.google.com/file/d/')) {
+                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    console.log('Converted Google Drive URL:', url, '->', directUrl);
+                    return directUrl;
+                }
+            }
+            
+            // Return original URL if not a Google Drive link or conversion failed
+            return url;
+        }
+        
         // Show patient image modal
         function showPatientImage() {
             if (!currentScenario) {
@@ -1493,6 +1514,15 @@
             if (!imageUrl || imageUrl.trim() === '') {
                 showStatus('No image URL available for this patient', 'error');
                 return;
+            }
+            
+            // Convert Google Drive share links to direct image URLs
+            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+            
+            // Log URL conversion for debugging
+            if (convertedImageUrl !== imageUrl.trim()) {
+                console.log('Original URL:', imageUrl.trim());
+                console.log('Converted URL:', convertedImageUrl);
             }
             
             // Set modal title
@@ -1518,7 +1548,7 @@
             
             img.onload = function() {
                 // Image loaded successfully
-                modalBody.innerHTML = `<img src="${imageUrl}" alt="${patientName}" class="patient-image">`;
+                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
             };
             
             img.onerror = function() {
@@ -1527,14 +1557,16 @@
                     <div class="image-error">
                         <h4>Failed to Load Image</h4>
                         <p>The image could not be loaded. Please check the URL:</p>
-                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl}</p>
+                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong><br><span style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0; display: block;">${imageUrl.trim()}</span></p>` : ''}
                         <p>Make sure the URL is correct and the image is accessible.</p>
+                        ${imageUrl.includes('drive.google.com') ? '<p><strong>Note:</strong> For Google Drive images, make sure they are set to "Anyone with the link can view".</p>' : ''}
                     </div>
                 `;
             };
             
             // Start loading the image
-            img.src = imageUrl;
+            img.src = convertedImageUrl;
         }
         
         // Close patient image modal
@@ -1573,7 +1605,7 @@
             
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
-
+       
         // ===== EXPORT CONVERSATION FUNCTION =====
         // New function to export conversation as a downloadable text file
         
@@ -2237,3 +2269,4 @@
     </script>
 </body>
 </html>
+
