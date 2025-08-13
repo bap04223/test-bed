@@ -1906,7 +1906,7 @@
                 
                 // Make a simple API call to verify credentials
                 await new Promise((resolve, reject) => {
-                    transcribe.listMedicalTranscriptionJobs({ MaxResults: 1 }, (err, data) => {
+                    sts.getCallerIdentity({}, (err, data) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -3647,6 +3647,7 @@
     </script>
 </body>
 </html> 
+
 
 
 
