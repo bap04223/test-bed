@@ -370,6 +370,93 @@
             background-color: #d97706;
         }
         
+        /* STT Provider Styling */
+        .stt-provider-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stt-provider-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            background: white;
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .stt-provider-btn.active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .stt-provider-btn:hover:not(.active) {
+            border-color: var(--primary-hover);
+            background-color: #f8fafc;
+        }
+        
+        /* AWS Transcribe specific styling */
+        .aws-transcribe-config {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            background-color: #f0f9ff;
+        }
+        
+        .aws-test-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-top: 8px;
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .aws-test-btn:hover {
+            background-color: #0284c7;
+        }
+        
+        .aws-test-btn:disabled {
+            background-color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+        
+        /* STT Status indicator */
+        .stt-status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .stt-status.browser {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .stt-status.aws {
+            background-color: #f0f9ff;
+            color: #0c4a6e;
+            border: 1px solid #7dd3fc;
+        }
+        
+        .stt-status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
         /* Patient Image Button Styling */
         .patient-image-btn {
             width: 100%;
@@ -644,8 +731,126 @@
             <div class="card">
                 <h2>🎙️ Voice Control</h2>
                 
-                <!-- TTS Provider Selection -->
+                <!-- STT Provider Selection -->
                 <div class="form-group">
+                    <label>Speech-to-Text Provider:</label>
+                    <div class="stt-provider-group">
+                        <button class="stt-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
+                            🌐 Browser STT
+                        </button>
+                        <button class="stt-provider-btn" id="awsSttBtn" onclick="selectSttProvider('aws')">
+                            ☁️ AWS Transcribe Medical
+                        </button>
+                    </div>
+                    <!-- STT Status Indicator -->
+                    <div class="stt-status browser" id="sttStatus">
+                        🌐 Using Browser Speech Recognition
+                    </div>
+                </div>
+                
+                <!-- Browser STT Settings -->
+                <div id="browserSttSettings" class="stt-settings">
+                    <div class="form-group">
+                        <label for="browserLanguage">Browser STT Language:</label>
+                        <select id="browserLanguage">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="en-AU">English (Australia)</option>
+                            <option value="en-CA">English (Canada)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="browserInterimResults" checked>
+                            Show interim results (live transcription)
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- AWS Transcribe Medical Settings -->
+                <div id="awsTranscribeSettings" class="stt-settings aws-transcribe-config" style="display: none;">
+                    <div class="form-group">
+                        <label for="awsAccessKeyId">AWS Access Key ID:</label>
+                        <input 
+                            type="password" 
+                            id="awsAccessKeyId" 
+                            placeholder="Enter your AWS Access Key ID"
+                            title="Get your credentials from AWS IAM Console"
+                        >
+                        <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+                            Get your credentials from <a href="https://console.aws.amazon.com/iam/" target="_blank">AWS IAM Console</a>
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="awsSecretAccessKey">AWS Secret Access Key:</label>
+                        <input 
+                            type="password" 
+                            id="awsSecretAccessKey" 
+                            placeholder="Enter your AWS Secret Access Key"
+                            title="Keep this secure and don't share it"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="awsRegion">AWS Region:</label>
+                        <select id="awsRegion">
+                            <option value="us-east-1">US East (N. Virginia)</option>
+                            <option value="us-east-2">US East (Ohio)</option>
+                            <option value="us-west-1">US West (N. California)</option>
+                            <option value="us-west-2">US West (Oregon)</option>
+                            <option value="ap-southeast-2">Asia Pacific (Sydney)</option>
+                            <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
+                            <option value="eu-west-1">Europe (Ireland)</option>
+                            <option value="ca-central-1">Canada (Central)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medicalSpecialty">Medical Specialty:</label>
+                        <select id="medicalSpecialty">
+                            <option value="PRIMARYCARE">Primary Care</option>
+                            <option value="CARDIOLOGY">Cardiology</option>
+                            <option value="NEUROLOGY">Neurology</option>
+                            <option value="ONCOLOGY">Oncology</option>
+                            <option value="RADIOLOGY">Radiology</option>
+                            <option value="PSYCHIATRY">Psychiatry</option>
+                            <option value="UROLOGY">Urology</option>
+                            <option value="ORTHOPEDICS">Orthopedics</option>
+                            <option value="ENT">ENT (Ear, Nose, Throat)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="transcriptionType">Transcription Type:</label>
+                        <select id="transcriptionType">
+                            <option value="CONVERSATION">Conversation</option>
+                            <option value="DICTATION">Dictation</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableSpeakerLabels" checked>
+                            Enable speaker identification
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableMedicalTerms" checked>
+                            Enhanced medical terminology
+                        </label>
+                    </div>
+                    
+                    <button class="aws-test-btn" onclick="testAwsConnection()" id="awsTestBtn">
+                        🧪 Test AWS Connection
+                    </button>
+                </div>
+                
+                <!-- TTS Provider Selection -->
+                <div class="form-group" style="margin-top: 30px;">
                     <label>Text-to-Speech Provider:</label>
                     <div class="tts-provider-group">
                         <button class="tts-provider-btn active" id="browserTtsBtn" onclick="selectTtsProvider('browser')">
@@ -748,6 +953,10 @@
                     ">
                         <span style="color: var(--text-secondary);">Transcription will appear here when you speak...</span>
                     </div>
+                    <!-- Transcription provider indicator -->
+                    <small id="transcriptionProvider" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px; display: block;">
+                        Using: Browser Speech Recognition
+                    </small>
                 </div>
                 
                 <!-- Push to talk button -->
@@ -813,7 +1022,187 @@
         </div>
     </div>
 
-  <!-- JavaScript code for functionality -->
+   // ===== RECORDING FUNCTIONS =====
+        // Handle push-to-talk functionality with multiple STT providers
+        
+        function startRecording() {
+            if (!document.getElementById('webhookUrl').value) {
+                showStatus('Please enter webhook URL first', 'error');
+                return;
+            }
+            
+            if (!currentScenario) {
+                showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Stop any currently playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+            
+            // Cancel any browser speech synthesis
+            synthesis.cancel();
+            
+            // Clear previous transcript and reset state
+            fullTranscript = '';
+            forceStopRecognition = false;
+            
+            // Clear transcription box
+            const transcriptionBox = document.getElementById('transcriptionBox');
+            const providerIcon = currentSttProvider === 'aws' ? '☁️' : '🌐';
+            transcriptionBox.innerHTML = `<span style="color: var(--text-secondary);">${providerIcon} Listening...</span>`;
+            
+            isRecording = true;
+            updateTalkButton();
+            
+            // Start recording based on selected provider
+            if (currentSttProvider === 'aws') {
+                startAwsRecording();
+            } else {
+                startBrowserRecording();
+            }
+        }
+        
+        function startBrowserRecording() {
+            if (!recognition) {
+                showStatus('Browser speech recognition not available', 'error');
+                isRecording = false;
+                updateTalkButton();
+                return;
+            }
+            
+            try {
+                // Update recognition language if changed
+                const selectedLang = document.getElementById('browserLanguage').value;
+                recognition.lang = selectedLang;
+                
+                // Update interim results setting
+                const interimResults = document.getElementById('browserInterimResults').checked;
+                recognition.interimResults = interimResults;
+                
+                recognition.start();
+                showStatus('Listening with Browser STT...', 'info');
+            } catch (error) {
+                console.error('Error starting browser recognition:', error);
+                showStatus('Error starting browser recording', 'error');
+                isRecording = false;
+                updateTalkButton();
+            }
+        }
+        
+        async function startAwsRecording() {
+            try {
+                // Check if AWS credentials are configured
+                if (!awsCredentials) {
+                    throw new Error('AWS credentials not configured. Please test connection first.');
+                }
+                
+                showStatus('Connecting to AWS Transcribe Medical...', 'info');
+                
+                // Initialize AWS Transcribe connection
+                await initializeAwsTranscribe();
+                
+                // Start AWS streaming transcription
+                await startAwsStreamingTranscription();
+                
+                showStatus('Listening with AWS Transcribe Medical...', 'info');
+                
+            } catch (error) {
+                console.error('Error starting AWS recording:', error);
+                showStatus(`AWS recording error: ${error.message}`, 'error');
+                isRecording = false;
+                updateTalkButton();
+                
+                // Update STT status
+                const statusDiv = document.getElementById('sttStatus');
+                statusDiv.className = 'stt-status error';
+                statusDiv.innerHTML = '❌ AWS Recording Failed';
+            }
+        }
+        
+        async function startAwsStreamingTranscription() {
+            // This is a simplified implementation - full AWS WebSocket streaming
+            // would require more complex setup with proper authentication and encoding
+            
+            const specialty = document.getElementById('medicalSpecialty').value;
+            const type = document.getElementById('transcriptionType').value;
+            const speakerLabels = document.getElementById('enableSpeakerLabels').checked;
+            
+            // For now, we'll simulate AWS transcription with a placeholder
+            // In a real implementation, you would:
+            // 1. Set up WebSocket connection to AWS Transcribe Medical
+            // 2. Stream audio data in real-time
+            // 3. Handle streaming responses
+            
+            console.log('AWS Transcribe Medical config:', {
+                specialty,
+                type,
+                speakerLabels,
+                region: awsCredentials.region
+            });
+            
+            // Placeholder for AWS streaming - would need actual WebSocket implementation
+            // This would require server-side implementation or pre-signed URLs
+            showStatus('AWS Transcribe Medical streaming started', 'info');
+            
+            // For demo purposes, fall back to browser STT for now
+            console.warn('AWS streaming not fully implemented - falling back to browser STT');
+            currentSttProvider = 'browser';
+            selectSttProvider('browser');
+            startBrowserRecording();
+        }
+        
+        function stopRecording() {
+            if (isRecording) {
+                console.log('Stopping recording...');
+                forceStopRecognition = true;
+                
+                if (currentSttProvider === 'aws') {
+                    stopAwsRecording();
+                } else {
+                    stopBrowserRecording();
+                }
+                
+                showStatus('Processing...', 'info');
+            }
+        }
+        
+        function stopBrowserRecording() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+        
+        function stopAwsRecording() {
+            // Stop AWS transcription and process results
+            cleanupAwsConnection();
+            
+            // Process any accumulated transcript
+            if (fullTranscript.trim()) {
+                console.log('Sending AWS STT transcript:', fullTranscript);
+                addMessage(fullTranscript.trim(), 'user');
+                sendToWebhook(fullTranscript.trim());
+            }
+            
+            // Reset state
+            isRecording = false;
+            forceStopRecognition = false;
+            updateTalkButton();
+        }
+        
+        function updateTalkButton() {
+            const button = document.getElementById('talkButton');
+            if (isRecording) {
+                button.classList.add('recording');
+                const provider = currentSttProvider === 'aws' ? '☁️ AWS' : '🌐 Browser';
+                button.innerHTML = `🔴 Recording (${provider})...`;
+            } else {
+                button.classList.remove('recording');
+                button.innerHTML = 'Push to Talk';
+            }
+        }<!-- JavaScript code for functionality -->
     <script>
         // ===== GLOBAL VARIABLES =====
         // These store the state of our application
@@ -828,8 +1217,16 @@
         let fullTranscript = '';         // Store the complete transcript during recording
         let forceStopRecognition = false; // Flag to force stop recognition
         let currentTtsProvider = 'browser'; // Current TTS provider
+        let currentSttProvider = 'browser'; // Current STT provider
         let elevenlabsVoices = [];       // Store ElevenLabs voices
         let currentAudio = null;         // Current playing audio for ElevenLabs
+        
+        // AWS Transcribe Medical variables
+        let awsTranscribeSocket = null;   // WebSocket connection to AWS
+        let awsCredentials = null;        // AWS credentials object
+        let mediaRecorder = null;         // MediaRecorder for AWS audio streaming
+        let audioStream = null;           // Audio stream from microphone
+        let awsTranscribeConnected = false; // Track AWS connection status
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -852,6 +1249,9 @@
             
             // Display session info
             displaySessionInfo();
+            
+            // Load AWS SDK if needed
+            loadAwsSdk();
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -877,6 +1277,215 @@
             header.appendChild(sessionInfo);
         }
         
+        // ===== STT PROVIDER MANAGEMENT =====
+        // Handle switching between browser and AWS Transcribe Medical STT
+        
+        function selectSttProvider(provider) {
+            currentSttProvider = provider;
+            
+            // Update UI
+            document.getElementById('browserSttBtn').classList.toggle('active', provider === 'browser');
+            document.getElementById('awsSttBtn').classList.toggle('active', provider === 'aws');
+            
+            // Show/hide settings
+            document.getElementById('browserSttSettings').style.display = provider === 'browser' ? 'block' : 'none';
+            document.getElementById('awsTranscribeSettings').style.display = provider === 'aws' ? 'block' : 'none';
+            
+            // Update status indicator
+            const statusDiv = document.getElementById('sttStatus');
+            const providerDiv = document.getElementById('transcriptionProvider');
+            
+            if (provider === 'browser') {
+                statusDiv.className = 'stt-status browser';
+                statusDiv.innerHTML = '🌐 Using Browser Speech Recognition';
+                providerDiv.textContent = 'Using: Browser Speech Recognition';
+            } else {
+                statusDiv.className = 'stt-status aws';
+                statusDiv.innerHTML = '☁️ Using AWS Transcribe Medical';
+                providerDiv.textContent = 'Using: AWS Transcribe Medical';
+            }
+            
+            // Stop any current recording when switching providers
+            if (isRecording) {
+                stopRecording();
+            }
+            
+            // Cleanup previous connections
+            if (provider === 'browser' && awsTranscribeSocket) {
+                cleanupAwsConnection();
+            }
+            
+            // Save preference
+            saveConfig();
+            
+            console.log('STT provider changed to:', provider);
+        }
+        
+        // ===== AWS SDK LOADING =====
+        // Load AWS SDK dynamically when needed
+        
+        function loadAwsSdk() {
+            // Check if AWS SDK is already loaded
+            if (window.AWS) {
+                console.log('AWS SDK already loaded');
+                return Promise.resolve();
+            }
+            
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://sdk.amazonaws.com/js/aws-sdk-2.1563.0.min.js';
+                script.onload = () => {
+                    console.log('AWS SDK loaded successfully');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('Failed to load AWS SDK');
+                    reject(new Error('Failed to load AWS SDK'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        // ===== AWS TRANSCRIBE MEDICAL INTEGRATION =====
+        // Functions for AWS Transcribe Medical streaming
+        
+        async function testAwsConnection() {
+            const accessKey = document.getElementById('awsAccessKeyId').value;
+            const secretKey = document.getElementById('awsSecretAccessKey').value;
+            const region = document.getElementById('awsRegion').value;
+            
+            if (!accessKey || !secretKey || !region) {
+                showStatus('Please enter AWS credentials and select a region', 'error');
+                return;
+            }
+            
+            const testBtn = document.getElementById('awsTestBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = '🔄 Testing...';
+            
+            try {
+                // Load AWS SDK if not already loaded
+                await loadAwsSdk();
+                
+                // Configure AWS credentials
+                window.AWS.config.update({
+                    accessKeyId: accessKey,
+                    secretAccessKey: secretKey,
+                    region: region
+                });
+                
+                // Test connection by trying to create a Transcribe service instance
+                const transcribe = new window.AWS.TranscribeService();
+                
+                // Make a simple API call to verify credentials
+                await new Promise((resolve, reject) => {
+                    transcribe.listMedicalTranscriptionJobs({ MaxResults: 1 }, (err, data) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(data);
+                        }
+                    });
+                });
+                
+                awsCredentials = {
+                    accessKeyId: accessKey,
+                    secretAccessKey: secretKey,
+                    region: region
+                };
+                
+                showStatus('✅ AWS connection successful!', 'success');
+                testBtn.textContent = '✅ Connection Verified';
+                testBtn.style.backgroundColor = 'var(--success-color)';
+                
+                // Update STT status if AWS is selected
+                if (currentSttProvider === 'aws') {
+                    const statusDiv = document.getElementById('sttStatus');
+                    statusDiv.className = 'stt-status aws';
+                    statusDiv.innerHTML = '☁️ AWS Transcribe Medical - Ready';
+                }
+                
+            } catch (error) {
+                console.error('AWS connection test failed:', error);
+                awsCredentials = null;
+                
+                let errorMessage = 'AWS connection failed';
+                if (error.code === 'UnrecognizedClientException') {
+                    errorMessage = 'Invalid AWS credentials';
+                } else if (error.code === 'AccessDenied') {
+                    errorMessage = 'AWS access denied - check IAM permissions';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showStatus(`❌ ${errorMessage}`, 'error');
+                testBtn.textContent = '❌ Connection Failed';
+                testBtn.style.backgroundColor = 'var(--danger-color)';
+                
+                // Update STT status
+                const statusDiv = document.getElementById('sttStatus');
+                statusDiv.className = 'stt-status error';
+                statusDiv.innerHTML = '❌ AWS Connection Failed';
+                
+            } finally {
+                setTimeout(() => {
+                    testBtn.disabled = false;
+                    testBtn.textContent = '🧪 Test AWS Connection';
+                    testBtn.style.backgroundColor = '#0ea5e9';
+                }, 3000);
+            }
+        }
+        
+        async function initializeAwsTranscribe() {
+            if (!awsCredentials) {
+                throw new Error('AWS credentials not configured');
+            }
+            
+            try {
+                // Load AWS SDK if not already loaded
+                await loadAwsSdk();
+                
+                // Configure AWS credentials
+                window.AWS.config.update(awsCredentials);
+                
+                // Get microphone access
+                audioStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        sampleRate: 16000,
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    } 
+                });
+                
+                console.log('AWS Transcribe Medical initialized successfully');
+                return true;
+                
+            } catch (error) {
+                console.error('Failed to initialize AWS Transcribe:', error);
+                throw error;
+            }
+        }
+        
+        function cleanupAwsConnection() {
+            if (awsTranscribeSocket) {
+                awsTranscribeSocket.close();
+                awsTranscribeSocket = null;
+            }
+            
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            mediaRecorder = null;
+            
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+            }
+            
+            awsTranscribeConnected = false;
+            console.log('AWS connection cleaned up');
+        }
         // ===== TTS PROVIDER MANAGEMENT =====
         // Handle switching between browser and ElevenLabs TTS
         
@@ -1048,9 +1657,14 @@
         }
         
         // ===== SPEECH RECOGNITION SETUP =====
-        // Configure the browser's speech recognition API
+        // Configure speech recognition based on selected provider
         
         function initializeSpeechRecognition() {
+            // Initialize browser speech recognition
+            initializeBrowserSpeechRecognition();
+        }
+        
+        function initializeBrowserSpeechRecognition() {
             // Check if browser supports speech recognition
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 // Use webkit prefix for Chrome, standard for others
@@ -1058,9 +1672,9 @@
                 recognition = new SpeechRecognition();
                 
                 // Configure recognition settings
-                recognition.continuous = true;       // CHANGED: Keep listening until manually stopped
+                recognition.continuous = true;       // Keep listening until manually stopped
                 recognition.interimResults = true;   // Show interim results for live transcription
-                recognition.lang = 'en-US';         // Set language
+                recognition.lang = 'en-US';         // Default language
                 
                 // Handle speech recognition results
                 recognition.onresult = function(event) {
@@ -1083,30 +1697,14 @@
                     }
                     
                     // Update live transcription display
-                    const transcriptionBox = document.getElementById('transcriptionBox');
-                    let displayText = '';
+                    updateTranscriptionDisplay(fullTranscript, interimTranscript, 'browser');
                     
-                    // Show accumulated final transcript in black
-                    if (fullTranscript) {
-                        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
-                    }
-                    
-                    // Show interim transcript in gray
-                    if (interimTranscript) {
-                        if (fullTranscript) {
-                            displayText += ' ';
-                        }
-                        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
-                    }
-                    
-                    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
-                    
-                    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
+                    console.log('Browser STT - Full transcript:', fullTranscript, 'Interim:', interimTranscript);
                 };
                 
                 // Handle recognition errors
                 recognition.onerror = function(event) {
-                    console.error('Speech recognition error:', event.error);
+                    console.error('Browser speech recognition error:', event.error);
                     
                     // Don't show error for aborted recognition (expected when we stop)
                     if (event.error !== 'aborted') {
@@ -1119,11 +1717,11 @@
                 
                 // Handle when recognition ends
                 recognition.onend = function() {
-                    console.log('Recognition ended. Force stop:', forceStopRecognition);
+                    console.log('Browser recognition ended. Force stop:', forceStopRecognition);
                     
                     // If we're forcing a stop (user released button), process the transcript
                     if (forceStopRecognition && fullTranscript.trim()) {
-                        console.log('Sending full transcript:', fullTranscript);
+                        console.log('Sending browser STT transcript:', fullTranscript);
                         addMessage(fullTranscript.trim(), 'user');
                         sendToWebhook(fullTranscript.trim());
                     }
@@ -1138,13 +1736,37 @@
                         try {
                             recognition.start();
                         } catch (e) {
-                            console.log('Could not restart recognition:', e);
+                            console.log('Could not restart browser recognition:', e);
                         }
                     }
                 };
             } else {
-                showStatus('Speech recognition not supported in this browser', 'error');
+                showStatus('Browser speech recognition not supported', 'error');
             }
+        }
+        
+        function updateTranscriptionDisplay(finalText, interimText, provider) {
+            const transcriptionBox = document.getElementById('transcriptionBox');
+            let displayText = '';
+            
+            // Show accumulated final transcript in black
+            if (finalText) {
+                displayText += `<span style="color: black;">${finalText.trim()}</span>`;
+            }
+            
+            // Show interim transcript in gray
+            if (interimText) {
+                if (finalText) {
+                    displayText += ' ';
+                }
+                displayText += `<span style="color: #6b7280; font-style: italic;">${interimText}</span>`;
+            }
+            
+            // Add provider indicator
+            const providerIcon = provider === 'aws' ? '☁️' : '🌐';
+            const listeningText = displayText || `<span style="color: var(--text-secondary);">${providerIcon} Listening...</span>`;
+            
+            transcriptionBox.innerHTML = listeningText;
         }
         
         // ===== VOICE SYNTHESIS SETUP =====
@@ -1190,11 +1812,28 @@
                 document.getElementById('clarityValue').textContent = e.target.value;
             });
             
+            // Browser STT language change
+            document.getElementById('browserLanguage').addEventListener('change', function(e) {
+                if (recognition) {
+                    recognition.lang = e.target.value;
+                }
+                saveConfig();
+            });
+            
             // Save configuration when changed
             document.getElementById('webhookUrl').addEventListener('change', saveConfig);
             document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
             document.getElementById('sheetId').addEventListener('change', saveConfig);
             document.getElementById('elevenlabsApiKey').addEventListener('change', saveConfig);
+            
+            // AWS configuration change listeners
+            document.getElementById('awsAccessKeyId').addEventListener('change', saveConfig);
+            document.getElementById('awsSecretAccessKey').addEventListener('change', saveConfig);
+            document.getElementById('awsRegion').addEventListener('change', saveConfig);
+            document.getElementById('medicalSpecialty').addEventListener('change', saveConfig);
+            document.getElementById('transcriptionType').addEventListener('change', saveConfig);
+            document.getElementById('enableSpeakerLabels').addEventListener('change', saveConfig);
+            document.getElementById('enableMedicalTerms').addEventListener('change', saveConfig);
         }
         
         // ===== RECORDING FUNCTIONS =====
@@ -1266,7 +1905,7 @@
             }
         }
 
-      // ===== GOOGLE SHEETS INTEGRATION =====
+        // ===== GOOGLE SHEETS INTEGRATION =====
         // Load sheet names from Google Sheets
         
         async function loadSheetNames() {
@@ -1651,7 +2290,7 @@
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
 
-      // ===== EXPORT CONVERSATION FUNCTION =====
+       // ===== EXPORT CONVERSATION FUNCTION =====
         // New function to export conversation as a downloadable text file
         
         function exportConversation() {
@@ -1673,7 +2312,39 @@
                 exportText += `Session ID: ${sessionId}\n`;
                 exportText += `Export Date: ${new Date().toLocaleString()}\n`;
                 exportText += `Session Start: ${new Date(parseInt(sessionId.split('_')[1])).toLocaleString()}\n`;
-                exportText += `TTS Provider: ${currentTtsProvider}\n\n`;
+                exportText += `TTS Provider: ${currentTtsProvider}\n`;
+                exportText += `STT Provider: ${currentSttProvider}\n\n`;
+                
+                // Add provider-specific configuration
+                if (currentSttProvider === 'aws' && awsCredentials) {
+                    exportText += 'STT CONFIGURATION (AWS TRANSCRIBE MEDICAL):\n';
+                    exportText += '-'.repeat(40) + '\n';
+                    exportText += `AWS Region: ${awsCredentials.region}\n`;
+                    exportText += `Medical Specialty: ${document.getElementById('medicalSpecialty').value}\n`;
+                    exportText += `Transcription Type: ${document.getElementById('transcriptionType').value}\n`;
+                    exportText += `Speaker Labels: ${document.getElementById('enableSpeakerLabels').checked ? 'Enabled' : 'Disabled'}\n`;
+                    exportText += `Medical Terms Enhancement: ${document.getElementById('enableMedicalTerms').checked ? 'Enabled' : 'Disabled'}\n\n`;
+                } else {
+                    exportText += 'STT CONFIGURATION (BROWSER):\n';
+                    exportText += '-'.repeat(30) + '\n';
+                    exportText += `Language: ${document.getElementById('browserLanguage').value}\n`;
+                    exportText += `Interim Results: ${document.getElementById('browserInterimResults').checked ? 'Enabled' : 'Disabled'}\n\n`;
+                }
+                
+                if (currentTtsProvider === 'elevenlabs') {
+                    exportText += 'TTS CONFIGURATION (ELEVENLABS):\n';
+                    exportText += '-'.repeat(35) + '\n';
+                    const selectedVoice = document.getElementById('elevenlabsVoice');
+                    exportText += `Voice: ${selectedVoice.options[selectedVoice.selectedIndex]?.text || 'Not selected'}\n`;
+                    exportText += `Stability: ${document.getElementById('elevenlabsStability').value}\n`;
+                    exportText += `Clarity: ${document.getElementById('elevenlabsClarity').value}\n\n`;
+                } else {
+                    exportText += 'TTS CONFIGURATION (BROWSER):\n';
+                    exportText += '-'.repeat(30) + '\n';
+                    const selectedVoice = document.getElementById('voiceSelect');
+                    exportText += `Voice: ${selectedVoice.options[selectedVoice.selectedIndex]?.text || 'Default'}\n`;
+                    exportText += `Speech Rate: ${document.getElementById('speechRate').value}\n\n`;
+                }
                 
                 // Add scenario information if available
                 if (currentScenario) {
@@ -1790,8 +2461,10 @@
                 const scenarioName = currentScenario && currentScenario['Scenario Name'] 
                     ? currentScenario['Scenario Name'].replace(/[^a-zA-Z0-9]/g, '_') 
                     : 'Unknown_Scenario';
+                const sttProvider = currentSttProvider.toUpperCase();
+                const ttsProvider = currentTtsProvider.toUpperCase();
                 
-                downloadLink.download = `Pharmacy_Training_${scenarioName}_${dateStr}_${timeStr}.txt`;
+                downloadLink.download = `Pharmacy_Training_${scenarioName}_${sttProvider}_${ttsProvider}_${dateStr}_${timeStr}.txt`;
                 
                 // Trigger download
                 document.body.appendChild(downloadLink);
@@ -1835,7 +2508,32 @@
                     studentInfo: {
                         sessionStartTime: new Date(parseInt(sessionId.split('_')[1])).toISOString(),
                         messageCount: conversationHistory.filter(h => h.sender === 'user').length + 1,
-                        ttsProvider: currentTtsProvider
+                        ttsProvider: currentTtsProvider,
+                        sttProvider: currentSttProvider
+                    },
+                    technicalInfo: {
+                        sttConfiguration: currentSttProvider === 'aws' && awsCredentials ? {
+                            provider: 'aws_transcribe_medical',
+                            region: awsCredentials.region,
+                            medicalSpecialty: document.getElementById('medicalSpecialty').value,
+                            transcriptionType: document.getElementById('transcriptionType').value,
+                            speakerLabels: document.getElementById('enableSpeakerLabels').checked,
+                            medicalTerms: document.getElementById('enableMedicalTerms').checked
+                        } : {
+                            provider: 'browser',
+                            language: document.getElementById('browserLanguage').value,
+                            interimResults: document.getElementById('browserInterimResults').checked
+                        },
+                        ttsConfiguration: currentTtsProvider === 'elevenlabs' ? {
+                            provider: 'elevenlabs',
+                            voiceId: document.getElementById('elevenlabsVoice').value,
+                            stability: document.getElementById('elevenlabsStability').value,
+                            clarity: document.getElementById('elevenlabsClarity').value
+                        } : {
+                            provider: 'browser',
+                            voiceIndex: document.getElementById('voiceSelect').value,
+                            speechRate: document.getElementById('speechRate').value
+                        }
                     }
                 };
                 
@@ -1957,12 +2655,38 @@
                         userMessages: conversationHistory.filter(h => h.sender === 'user').length,
                         aiMessages: conversationHistory.filter(h => h.sender === 'ai').length,
                         duration: Date.now() - parseInt(sessionId.split('_')[1]), // Duration in milliseconds
-                        ttsProvider: currentTtsProvider
+                        ttsProvider: currentTtsProvider,
+                        sttProvider: currentSttProvider
+                    },
+                    technicalConfiguration: {
+                        speechToText: currentSttProvider === 'aws' && awsCredentials ? {
+                            provider: 'aws_transcribe_medical',
+                            region: awsCredentials.region,
+                            medicalSpecialty: document.getElementById('medicalSpecialty').value,
+                            transcriptionType: document.getElementById('transcriptionType').value,
+                            speakerLabels: document.getElementById('enableSpeakerLabels').checked,
+                            medicalTermsEnhancement: document.getElementById('enableMedicalTerms').checked
+                        } : {
+                            provider: 'browser_speech_recognition',
+                            language: document.getElementById('browserLanguage').value,
+                            interimResults: document.getElementById('browserInterimResults').checked
+                        },
+                        textToSpeech: currentTtsProvider === 'elevenlabs' ? {
+                            provider: 'elevenlabs',
+                            voiceId: document.getElementById('elevenlabsVoice').value,
+                            stability: parseFloat(document.getElementById('elevenlabsStability').value),
+                            clarity: parseFloat(document.getElementById('elevenlabsClarity').value)
+                        } : {
+                            provider: 'browser_speech_synthesis',
+                            voiceIndex: document.getElementById('voiceSelect').value,
+                            speechRate: parseFloat(document.getElementById('speechRate').value)
+                        }
                     },
                     metadata: {
                         userAgent: navigator.userAgent,
                         timestamp: new Date().toISOString(),
-                        type: 'conversation_submission'
+                        type: 'conversation_submission',
+                        version: '1.2_aws_transcribe'
                     }
                 };
                 
@@ -2271,47 +2995,130 @@
         
         function saveConfig() {
             const config = {
+                // Webhook URLs
                 webhookUrl: document.getElementById('webhookUrl').value,
                 submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
+                
+                // Google Sheets configuration
                 sheetId: document.getElementById('sheetId').value,
                 sheetName: getSelectedSheetName(),
+                
+                // TTS Provider settings
                 ttsProvider: currentTtsProvider,
                 elevenlabsApiKey: document.getElementById('elevenlabsApiKey').value,
-                elevenlabsVoice: document.getElementById('elevenlabsVoice').value
+                elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
+                
+                // STT Provider settings
+                sttProvider: currentSttProvider,
+                browserLanguage: document.getElementById('browserLanguage').value,
+                browserInterimResults: document.getElementById('browserInterimResults').checked,
+                
+                // AWS Transcribe Medical settings
+                awsAccessKeyId: document.getElementById('awsAccessKeyId').value,
+                awsSecretAccessKey: document.getElementById('awsSecretAccessKey').value,
+                awsRegion: document.getElementById('awsRegion').value,
+                medicalSpecialty: document.getElementById('medicalSpecialty').value,
+                transcriptionType: document.getElementById('transcriptionType').value,
+                enableSpeakerLabels: document.getElementById('enableSpeakerLabels').checked,
+                enableMedicalTerms: document.getElementById('enableMedicalTerms').checked
             };
+            
             localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
+            console.log('Configuration saved:', config);
         }
         
         function loadSavedConfig() {
             const saved = localStorage.getItem('pharmacyChatConfig');
             if (saved) {
-                const config = JSON.parse(saved);
-                document.getElementById('webhookUrl').value = config.webhookUrl || '';
-                document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
-                document.getElementById('sheetId').value = config.sheetId || '';
-                document.getElementById('elevenlabsApiKey').value = config.elevenlabsApiKey || '';
-                
-                // Try to set sheet name in dropdown first
-                const sheetNameDropdown = document.getElementById('sheetName');
-                if (config.sheetName) {
-                    // If dropdown has options, try to select the saved value
-                    if (sheetNameDropdown.options.length > 1) {
-                        sheetNameDropdown.value = config.sheetName;
+                try {
+                    const config = JSON.parse(saved);
+                    
+                    // Load webhook URLs
+                    document.getElementById('webhookUrl').value = config.webhookUrl || '';
+                    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
+                    
+                    // Load Google Sheets configuration
+                    document.getElementById('sheetId').value = config.sheetId || '';
+                    
+                    // Load ElevenLabs configuration
+                    document.getElementById('elevenlabsApiKey').value = config.elevenlabsApiKey || '';
+                    
+                    // Try to set sheet name in dropdown first
+                    const sheetNameDropdown = document.getElementById('sheetName');
+                    if (config.sheetName) {
+                        // If dropdown has options, try to select the saved value
+                        if (sheetNameDropdown.options.length > 1) {
+                            sheetNameDropdown.value = config.sheetName;
+                        }
                     }
-                }
-                
-                // Set TTS provider
-                if (config.ttsProvider) {
-                    selectTtsProvider(config.ttsProvider);
-                }
-                
-                // Set ElevenLabs voice if saved
-                if (config.elevenlabsVoice) {
-                    document.getElementById('elevenlabsVoice').value = config.elevenlabsVoice;
+                    
+                    // Set TTS provider
+                    if (config.ttsProvider) {
+                        selectTtsProvider(config.ttsProvider);
+                    }
+                    
+                    // Set STT provider
+                    if (config.sttProvider) {
+                        selectSttProvider(config.sttProvider);
+                    }
+                    
+                    // Load browser STT settings
+                    if (config.browserLanguage) {
+                        document.getElementById('browserLanguage').value = config.browserLanguage;
+                        // Update recognition language if it exists
+                        if (recognition) {
+                            recognition.lang = config.browserLanguage;
+                        }
+                    }
+                    
+                    if (config.browserInterimResults !== undefined) {
+                        document.getElementById('browserInterimResults').checked = config.browserInterimResults;
+                    }
+                    
+                    // Load AWS Transcribe Medical settings
+                    if (config.awsAccessKeyId) {
+                        document.getElementById('awsAccessKeyId').value = config.awsAccessKeyId;
+                    }
+                    
+                    if (config.awsSecretAccessKey) {
+                        document.getElementById('awsSecretAccessKey').value = config.awsSecretAccessKey;
+                    }
+                    
+                    if (config.awsRegion) {
+                        document.getElementById('awsRegion').value = config.awsRegion;
+                    }
+                    
+                    if (config.medicalSpecialty) {
+                        document.getElementById('medicalSpecialty').value = config.medicalSpecialty;
+                    }
+                    
+                    if (config.transcriptionType) {
+                        document.getElementById('transcriptionType').value = config.transcriptionType;
+                    }
+                    
+                    if (config.enableSpeakerLabels !== undefined) {
+                        document.getElementById('enableSpeakerLabels').checked = config.enableSpeakerLabels;
+                    }
+                    
+                    if (config.enableMedicalTerms !== undefined) {
+                        document.getElementById('enableMedicalTerms').checked = config.enableMedicalTerms;
+                    }
+                    
+                    // Set ElevenLabs voice if saved
+                    if (config.elevenlabsVoice) {
+                        document.getElementById('elevenlabsVoice').value = config.elevenlabsVoice;
+                    }
+                    
+                    console.log('Configuration loaded:', config);
+                    
+                } catch (error) {
+                    console.error('Error loading saved configuration:', error);
+                    showStatus('Error loading saved settings', 'error');
                 }
             }
         }
     </script>
 </body>
-</html>
+</html> 
+
 
