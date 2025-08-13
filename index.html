@@ -984,8 +984,13 @@
                 <!-- Push to talk button -->
                 <button 
                     class="talk-button btn-danger" 
-                    id="talkButton"
-                    style="margin-top: 60px;"
+    id="talkButton"
+    onmousedown="startRecording()"
+    onmouseup="stopRecording()"
+    onmouseleave="stopRecording()"
+    ontouchstart="startRecording()"
+    ontouchend="stopRecording()"
+    style="margin-top: 60px;"
                 >
                     Push to Talk
                 </button>
@@ -3863,6 +3868,7 @@
     </script>
 </body>
 </html> 
+
 
 
 
