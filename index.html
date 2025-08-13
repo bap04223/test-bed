@@ -1902,7 +1902,7 @@
                 });
                 
                 // Test connection by trying to create a Transcribe service instance
-                const transcribe = new window.AWS.TranscribeService();
+                const sts = new window.AWS.STS();
                 
                 // Make a simple API call to verify credentials
                 await new Promise((resolve, reject) => {
@@ -3647,6 +3647,7 @@
     </script>
 </body>
 </html> 
+
 
 
 
