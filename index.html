@@ -1923,30 +1923,7 @@
                 button.innerHTML = 'Push to Talk';
             }
         }
-        // ===== GLOBAL VARIABLES =====
-        // These store the state of our application
-        
-        let recognition = null;           // Speech recognition object
-        let synthesis = window.speechSynthesis; // Speech synthesis object
-        let isRecording = false;          // Track if we're currently recording
-        let currentScenario = null;       // Store the selected patient scenario
-        let conversationHistory = [];     // Store all messages in the conversation
-        let sheetData = [];              // Store data loaded from Google Sheets
-        let sessionId = '';              // Unique session identifier for this training session
-        let fullTranscript = '';         // Store the complete transcript during recording
-        let forceStopRecognition = false; // Flag to force stop recognition
-        let currentTtsProvider = 'browser'; // Current TTS provider
-        let currentSttProvider = 'browser'; // Current STT provider
-        let elevenlabsVoices = [];       // Store ElevenLabs voices
-        let currentAudio = null;         // Current playing audio for ElevenLabs
-        
-        // AWS Transcribe Medical variables
-        let awsTranscribeSocket = null;   // WebSocket connection to AWS
-        let awsCredentials = null;        // AWS credentials object
-        let mediaRecorder = null;         // MediaRecorder for AWS audio streaming
-        let audioStream = null;           // Audio stream from microphone
-        let awsTranscribeConnected = false; // Track AWS connection status
-        
+                
         // ===== INITIALIZATION =====
         // This runs when the page loads
         
@@ -3839,6 +3816,7 @@
     </script>
 </body>
 </html> 
+
 
 
 
