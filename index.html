@@ -1907,75 +1907,7 @@
             document.getElementById('enableMedicalTerms').addEventListener('change', saveConfig);
         }
         
-        // ===== RECORDING FUNCTIONS =====
-        // Handle push-to-talk functionality
-        
-        function startRecording() {
-            if (!recognition) {
-                showStatus('Speech recognition not available', 'error');
-                return;
-            }
-            
-            if (!document.getElementById('webhookUrl').value) {
-                showStatus('Please enter webhook URL first', 'error');
-                return;
-            }
-            
-            if (!currentScenario) {
-                showStatus('Please select a patient scenario first', 'error');
-                return;
-            }
-            
-            // Stop any currently playing audio
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            
-            // Cancel any browser speech synthesis
-            synthesis.cancel();
-            
-            // Clear previous transcript and reset state
-            fullTranscript = '';
-            forceStopRecognition = false;
-            
-            // Clear transcription box
-            document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
-            
-            isRecording = true;
-            updateTalkButton();
-            
-            try {
-                recognition.start();
-                showStatus('Listening...', 'info');
-            } catch (error) {
-                console.error('Error starting recognition:', error);
-                showStatus('Error starting recording', 'error');
-                isRecording = false;
-                updateTalkButton();
-            }
-        }
-        
-        function stopRecording() {
-            if (isRecording && recognition) {
-                console.log('Stopping recording...');
-                forceStopRecognition = true;
-                recognition.stop();
-                showStatus('Processing...', 'info');
-            }
-        }
-        
-        function updateTalkButton() {
-            const button = document.getElementById('talkButton');
-            if (isRecording) {
-                button.classList.add('recording');
-                button.innerHTML = '🔴 Recording...';
-            } else {
-                button.classList.remove('recording');
-                button.innerHTML = 'Push to Talk';
-            }
-        }
-                
+                      
         // ===== INITIALIZATION =====
         // This runs when the page loads
         
@@ -2584,75 +2516,7 @@
             document.getElementById('enableMedicalTerms').addEventListener('change', saveConfig);
         }
         
-        // ===== RECORDING FUNCTIONS =====
-        // Handle push-to-talk functionality
         
-        function startRecording() {
-            if (!recognition) {
-                showStatus('Speech recognition not available', 'error');
-                return;
-            }
-            
-            if (!document.getElementById('webhookUrl').value) {
-                showStatus('Please enter webhook URL first', 'error');
-                return;
-            }
-            
-            if (!currentScenario) {
-                showStatus('Please select a patient scenario first', 'error');
-                return;
-            }
-            
-            // Stop any currently playing audio
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio = null;
-            }
-            
-            // Cancel any browser speech synthesis
-            synthesis.cancel();
-            
-            // Clear previous transcript and reset state
-            fullTranscript = '';
-            forceStopRecognition = false;
-            
-            // Clear transcription box
-            document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
-            
-            isRecording = true;
-            updateTalkButton();
-            
-            try {
-                recognition.start();
-                showStatus('Listening...', 'info');
-            } catch (error) {
-                console.error('Error starting recognition:', error);
-                showStatus('Error starting recording', 'error');
-                isRecording = false;
-                updateTalkButton();
-            }
-        }
-        
-        function stopRecording() {
-            if (isRecording && recognition) {
-                console.log('Stopping recording...');
-                forceStopRecognition = true;
-                recognition.stop();
-                showStatus('Processing...', 'info');
-            }
-        }
-        
-        function updateTalkButton() {
-            const button = document.getElementById('talkButton');
-            if (isRecording) {
-                button.classList.add('recording');
-                button.innerHTML = '🔴 Recording...';
-            } else {
-                button.classList.remove('recording');
-                button.innerHTML = 'Push to Talk';
-            }
-        }
-
         // ===== GOOGLE SHEETS INTEGRATION =====
         // Load sheet names from Google Sheets
         
@@ -3868,6 +3732,7 @@
     </script>
 </body>
 </html> 
+
 
 
 
