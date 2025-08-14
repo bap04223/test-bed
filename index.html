@@ -670,6 +670,21 @@
                             </select>
                         </div>
                         
+                        <!-- Add this after the sheetId input -->
+<div class="form-group">
+    <label for="googleApiKey">Google Sheets API Key:</label>
+    <input 
+        type="password" 
+        id="googleApiKey" 
+        placeholder="Enter your Google Sheets API key"
+        title="Get your API key from console.cloud.google.com"
+        autocomplete="new-password"
+    >
+    <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
+        Get your API key from <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a>
+    </small>
+</div>
+                        
                         <!-- Scenario selection dropdown -->
                         <div class="form-group" style="margin-top: 20px;">
                             <label for="scenarioSelect">Select Scenario:</label>
@@ -1674,7 +1689,11 @@ function stopDeepgramRecording() {
             try {
                 // NOTE: You need to replace YOUR_API_KEY with your actual Google Sheets API key
                 // Get your API key from: https://console.cloud.google.com/apis/credentials
-                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // REPLACE THIS!
+                const apiKey = document.getElementById('googleApiKey').value;
+if (!apiKey) {
+    showStatus('Please enter Google Sheets API key first', 'error');
+    return;
+}
                 
                 // Make API call to get spreadsheet metadata including sheet names
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title&key=${apiKey}`;
@@ -1749,7 +1768,11 @@ function stopDeepgramRecording() {
             
             try {
                 // NOTE: You need to replace YOUR_API_KEY with your actual Google Sheets API key
-                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // REPLACE THIS!
+const apiKey = document.getElementById('googleApiKey').value;
+if (!apiKey) {
+    showStatus('Please enter Google Sheets API key first', 'error');
+    return;
+}
                 
                 // Construct Google Sheets API URL for the specific sheet
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
@@ -2586,27 +2609,27 @@ function stopDeepgramRecording() {
         submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
         sheetId: document.getElementById('sheetId').value,
         sheetName: getSelectedSheetName(),
-        ttsProvider: currentTtsProvider,
-        sttProvider: currentSttProvider, // Add this line
+        googleApiKey: document.getElementById('googleApiKey').value, // ADD THIS LINE
+        sttProvider: currentSttProvider,
         elevenlabsApiKey: document.getElementById('elevenlabsApiKey').value,
         elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
-        deepgramApiKey: document.getElementById('deepgramApiKey').value, // Add this line
-        deepgramModel: document.getElementById('deepgramModel').value, // Add this line
-        deepgramLanguage: document.getElementById('deepgramLanguage').value // Add this line
+        deepgramApiKey: document.getElementById('deepgramApiKey').value,
+        deepgramModel: document.getElementById('deepgramModel').value,
+        deepgramLanguage: document.getElementById('deepgramLanguage').value
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
 }
         
         function loadSavedConfig() {
-            const saved = localStorage.getItem('pharmacyChatConfig');
-            if (saved) {
-                const config = JSON.parse(saved);
-                document.getElementById('webhookUrl').value = config.webhookUrl || '';
-                document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
-                document.getElementById('sheetId').value = config.sheetId || '';
-                document.getElementById('didApiKey').value = config.didApiKey || '';
+    const saved = localStorage.getItem('pharmacyChatConfig');
+    if (saved) {
+        const config = JSON.parse(saved);
+        document.getElementById('webhookUrl').value = config.webhookUrl || '';
+        document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
+        document.getElementById('sheetId').value = config.sheetId || '';
+        document.getElementById('didApiKey').value = config.didApiKey || '';
+        document.getElementById('googleApiKey').value = config.googleApiKey || ''; // ADD THIS LINE
 
-                // Add these lines in the loadSavedConfig function after loading other configs:
 // Set STT provider
 if (config.sttProvider) {
     selectSttProvider(config.sttProvider);
@@ -2655,4 +2678,5 @@ if (config.deepgramLanguage) {
     </script>
 </body>
 </html>
+
 
