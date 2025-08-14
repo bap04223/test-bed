@@ -1720,13 +1720,14 @@ function stopDeepgramRecording() {
                 select.appendChild(option);
             });
             
-            // Auto-load sheet data when selection changes
+           // Auto-load sheet data when selection changes
             select.addEventListener('change', function() {
-                if (this.value) {
-                    saveConfig(); // Save the selection
-                    loadSheetData(); // Automatically load the data
-                }
-            });
+                 if (this.value) {
+                 console.log('Sheet selected:', this.value);
+                 saveConfig(); // Save the selection
+                 loadSheetData(); // Automatically load the data
+                 }
+             });
         }
         
         // Get selected sheet name (from dropdown only)
@@ -2654,6 +2655,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
