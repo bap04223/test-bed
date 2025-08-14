@@ -1336,7 +1336,7 @@ function stopDeepgramRecording() {
         
         // ===== RECORDING FUNCTIONS =====
         // Handle push-to-talk functionality
-        function startRecording() {
+    function startRecording() {
     if (currentSttProvider === 'deepgram') {
         // Use Deepgram
         if (!document.getElementById('deepgramApiKey').value) {
@@ -1385,26 +1385,25 @@ function stopDeepgramRecording() {
             return;
         }
         
-               
-       function stopRecording() {
-    if (currentSttProvider === 'deepgram') {
-        if (isRecording) {
-            console.log('Stopping Deepgram recording...');
-            stopDeepgramRecording();
+        // Clear previous transcript
+        fullTranscript = '';
+        document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+        
+        isRecording = true;
+        forceStopRecognition = false;
+        updateTalkButton();
+        
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Could not start recognition:', e);
+            showStatus('Could not start speech recognition', 'error');
             isRecording = false;
             updateTalkButton();
-            showStatus('Processing...', 'info');
-        }
-    } else {
-        // Use browser STT
-        if (isRecording && recognition) {
-            console.log('Stopping browser recording...');
-            forceStopRecognition = true;
-            recognition.stop();
-            showStatus('Processing...', 'info');
         }
     }
 }
+        
         function updateTalkButton() {
     const button = document.getElementById('talkButton');
     if (isRecording) {
@@ -2748,6 +2747,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
