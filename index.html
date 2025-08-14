@@ -913,6 +913,7 @@
 
         // deepgram variables
         let currentSttProvider = 'browser'; // Current STT provider (browser or deepgram)
+        let currentTtsProvider = 'browser'; // Add this line
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let deepgramApiKey = ''; // Deepgram API key
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
@@ -2586,7 +2587,7 @@ function stopDeepgramRecording() {
         submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
         sheetId: document.getElementById('sheetId').value,
         sheetName: getSelectedSheetName(),
-        ttsProvider: currentTtsProvider,
+        ttsProvider: currentTtttsProvider: typeof currentTtsProvider !== 'undefined' ? currentTtsProvider : 'browser',sProvider,
         sttProvider: currentSttProvider, // Add this line
         elevenlabsApiKey: document.getElementById('elevenlabsApiKey').value,
         elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
@@ -2654,6 +2655,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
