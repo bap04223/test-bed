@@ -2606,22 +2606,21 @@ function stopDeepgramRecording() {
                 document.getElementById('sheetId').value = config.sheetId || '';
                 document.getElementById('didApiKey').value = config.didApiKey || '';
 
-                // Add these lines in the loadSavedConfig function after loading other configs:
-// Set STT provider
-if (config.sttProvider) {
-    selectSttProvider(config.sttProvider);
-}
+                // Set STT provider
+                if (config.sttProvider) {
+                    selectSttProvider(config.sttProvider);
+                }
 
-// Set Deepgram settings
-if (config.deepgramApiKey) {
-    document.getElementById('deepgramApiKey').value = config.deepgramApiKey;
-}
-if (config.deepgramModel) {
-    document.getElementById('deepgramModel').value = config.deepgramModel;
-}
-if (config.deepgramLanguage) {
-    document.getElementById('deepgramLanguage').value = config.deepgramLanguage;
-}
+                // Set Deepgram settings
+                if (config.deepgramApiKey) {
+                    document.getElementById('deepgramApiKey').value = config.deepgramApiKey;
+                }
+                if (config.deepgramModel) {
+                    document.getElementById('deepgramModel').value = config.deepgramModel;
+                }
+                if (config.deepgramLanguage) {
+                    document.getElementById('deepgramLanguage').value = config.deepgramLanguage;
+                }
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
@@ -2655,6 +2654,7 @@ if (config.deepgramLanguage) {
     </script>
 </body>
 </html>
+
 
 
 
