@@ -1336,7 +1336,6 @@ function stopDeepgramRecording() {
         
         // ===== RECORDING FUNCTIONS =====
         // Handle push-to-talk functionality
-        
         function startRecording() {
     if (currentSttProvider === 'deepgram') {
         // Use Deepgram
@@ -1355,13 +1354,6 @@ function stopDeepgramRecording() {
             return;
         }
         
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-        synthesis.cancel();
-        
         // Clear previous transcript
         fullTranscript = '';
         document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Connecting to Deepgram...</span>';
@@ -1377,26 +1369,42 @@ function stopDeepgramRecording() {
         });
         
     } else {
-        // Use existing browser STT code (keep your current implementation)
+        // Use browser STT
         if (!recognition) {
             showStatus('Speech recognition not available', 'error');
             return;
         }
         
-        // ... rest of your existing startRecording code
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Clear previous transcript
+        fullTranscript = '';
+        document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+        
+        isRecording = true;
+        forceStopRecognition = false;
+        updateTalkButton();
+        
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Could not start recognition:', e);
+            showStatus('Could not start speech recognition', 'error');
+            isRecording = false;
+            updateTalkButton();
+        }
     }
 }
         
-        function stopRecording() {
-            if (isRecording && recognition) {
-                console.log('Stopping recording...');
-                forceStopRecognition = true;
-                recognition.stop();
-                showStatus('Processing...', 'info');
-            }
-        }
-        
-        function stopRecording() {
+       function stopRecording() {
     if (currentSttProvider === 'deepgram') {
         if (isRecording) {
             console.log('Stopping Deepgram recording...');
@@ -1406,15 +1414,75 @@ function stopDeepgramRecording() {
             showStatus('Processing...', 'info');
         }
     } else {
-        // Use existing browser STT code
+        // Use browser STT
         if (isRecording && recognition) {
-            console.log('Stopping recording...');
+            console.log('Stopping browser recording...');
             forceStopRecognition = true;
             recognition.stop();
             showStatus('Processing...', 'info');
         }
     }
 }
+        function updateTalkButton() {
+    const button = document.getElementById('talkButton');
+    if (isRecording) {
+        button.classList.add('recording');
+        button.textContent = 'Recording...';
+    } else {
+        button.classList.remove('recording');
+        button.textContent = 'Push to Talk';
+    }
+}
+        // Clear previous transcript
+        fullTranscript = '';
+        document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Connecting to Deepgram...</span>';
+        
+        isRecording = true;
+        updateTalkButton();
+        
+        startDeepgramRecording().then(success => {
+            if (!success) {
+                isRecording = false;
+                updateTalkButton();
+            }
+        });
+        
+    } else {
+        // Use browser STT
+        if (!recognition) {
+            showStatus('Speech recognition not available', 'error');
+            return;
+        }
+        
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Clear previous transcript
+        fullTranscript = '';
+        document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
+        
+        isRecording = true;
+        forceStopRecognition = false;
+        updateTalkButton();
+        
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Could not start recognition:', e);
+            showStatus('Could not start speech recognition', 'error');
+            isRecording = false;
+            updateTalkButton();
+        }
+    }
+}
+       
 
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
@@ -2698,6 +2766,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
