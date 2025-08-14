@@ -263,6 +263,52 @@
         .btn-warning:hover {
             background-color: #d97706;
         }
+
+        /* STT Provider Button Group Styling */
+.tts-provider-group {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.tts-provider-btn {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    background-color: #f9fafb;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-radius: 0;
+}
+
+.tts-provider-btn:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.tts-provider-btn:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-left: none;
+}
+
+.tts-provider-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.tts-provider-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tts-provider-btn.active:hover {
+    background-color: var(--primary-hover);
+}
         
         /* Chat display area - Flexible height */
         .chat-container {
@@ -2652,6 +2698,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
