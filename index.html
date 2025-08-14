@@ -1056,46 +1056,46 @@
                 recognition.lang = 'en-US';         // Set language
                 
                 // Handle speech recognition results
-                recognition.onresult = function(event) {
-                    let interimTranscript = '';
-                    let finalTranscript = '';
-                    
-                    // Process all results
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const transcript = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) {
-                            finalTranscript += transcript + ' ';
-                        } else {
-                            interimTranscript += transcript;
-                        }
-                    }
-                    
-                    // Update the full transcript with any new final results
-                    if (finalTranscript) {
-                        fullTranscript += finalTranscript;
-                    }
-                    
-                    // Update live transcription display
-                    const transcriptionBox = document.getElementById('transcriptionBox');
-                    let displayText = '';
-                    
-                    // Show accumulated final transcript in black
-                    if (fullTranscript) {
-                        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
-                    }
-                    
-                    // Show interim transcript in gray
-                    if (interimTranscript) {
-                        if (fullTranscript) {
-                            displayText += ' ';
-                        }
-                        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
-                    }
-                    
-                    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
-                    
-                    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
-                };
+recognition.onresult = function(event) {
+    let interimTranscript = '';
+    let finalTranscript = '';
+    
+    // Process all results
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+        } else {
+            interimTranscript += transcript;
+        }
+    }
+    
+    // Update the full transcript with any new final results
+    if (finalTranscript) {
+        fullTranscript += finalTranscript;
+    }
+    
+    // Update live transcription display
+    const transcriptionBox = document.getElementById('transcriptionBox');
+    let displayText = '';
+    
+    // Show accumulated final transcript in black
+    if (fullTranscript) {
+        displayText += `<span style="color: black;">${fullTranscript.trim()}</span>`;
+    }
+    
+    // Show interim transcript in gray
+    if (interimTranscript) {
+        if (fullTranscript) {
+            displayText += ' ';
+        }
+        displayText += `<span style="color: #6b7280; font-style: italic;">${interimTranscript}</span>`;
+    }
+    
+    transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening...</span>';
+    
+    console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
+};
                 
                 // Handle recognition errors
                 recognition.onerror = function(event) {
@@ -2778,6 +2778,7 @@ function updateTalkButton() {
     </script>
 </body>
 </html>
+
 
 
 
