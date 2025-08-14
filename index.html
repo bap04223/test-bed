@@ -1403,6 +1403,37 @@ function stopDeepgramRecording() {
         }
     }
 }
+
+    function stopRecording() {
+    if (currentSttProvider === 'deepgram') {
+        if (isRecording) {
+            console.log('Stopping Deepgram recording...');
+            stopDeepgramRecording();
+            isRecording = false;
+            updateTalkButton();
+            showStatus('Processing...', 'info');
+        }
+    } else {
+        // Use browser STT
+        if (isRecording && recognition) {
+            console.log('Stopping browser recording...');
+            forceStopRecognition = true;
+            recognition.stop();
+            showStatus('Processing...', 'info');
+        }
+    }
+}
+
+function updateTalkButton() {
+    const button = document.getElementById('talkButton');
+    if (isRecording) {
+        button.classList.add('recording');
+        button.textContent = 'Recording...';
+    } else {
+        button.classList.remove('recording');
+        button.textContent = 'Push to Talk';
+    }
+}
         
         function updateTalkButton() {
     const button = document.getElementById('talkButton');
@@ -2747,6 +2778,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
