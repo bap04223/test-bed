@@ -1385,25 +1385,7 @@ function stopDeepgramRecording() {
             return;
         }
         
-        // Clear previous transcript
-        fullTranscript = '';
-        document.getElementById('transcriptionBox').innerHTML = '<span style="color: var(--text-secondary);">Listening...</span>';
-        
-        isRecording = true;
-        forceStopRecognition = false;
-        updateTalkButton();
-        
-        try {
-            recognition.start();
-        } catch (e) {
-            console.error('Could not start recognition:', e);
-            showStatus('Could not start speech recognition', 'error');
-            isRecording = false;
-            updateTalkButton();
-        }
-    }
-}
-        
+               
        function stopRecording() {
     if (currentSttProvider === 'deepgram') {
         if (isRecording) {
@@ -2766,6 +2748,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
