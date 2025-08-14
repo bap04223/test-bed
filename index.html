@@ -2581,19 +2581,16 @@ function stopDeepgramRecording() {
             }, 5000);
         }
         
-       function saveConfig() {
+      function saveConfig() {
     const config = {
         webhookUrl: document.getElementById('webhookUrl').value,
         submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
         sheetId: document.getElementById('sheetId').value,
         sheetName: getSelectedSheetName(),
-        ttsProvider: currentTtttsProvider: typeof currentTtsProvider !== 'undefined' ? currentTtsProvider : 'browser',sProvider,
-        sttProvider: currentSttProvider, // Add this line
-        elevenlabsApiKey: document.getElementById('elevenlabsApiKey').value,
-        elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
-        deepgramApiKey: document.getElementById('deepgramApiKey').value, // Add this line
-        deepgramModel: document.getElementById('deepgramModel').value, // Add this line
-        deepgramLanguage: document.getElementById('deepgramLanguage').value // Add this line
+        sttProvider: currentSttProvider,
+        deepgramApiKey: document.getElementById('deepgramApiKey').value,
+        deepgramModel: document.getElementById('deepgramModel').value,
+        deepgramLanguage: document.getElementById('deepgramLanguage').value
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
 }
@@ -2655,6 +2652,7 @@ function stopDeepgramRecording() {
     </script>
 </body>
 </html>
+
 
 
 
