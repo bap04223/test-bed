@@ -306,27 +306,44 @@
         
         /* Status indicator */
         .status {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .status.success {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status.error {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .status.info {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    transform: scale(0);
+    opacity: 0;
+    cursor: pointer;
+}
+
+.status.show {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.status.success {
+    background-color: #10b981;
+    color: white;
+}
+
+.status.error {
+    background-color: #ef4444;
+    color: white;
+}
+
+.status.info {
+    background-color: #3b82f6;
+    color: white;
+}
 
         #status {
     flex-shrink: 0;
@@ -2902,16 +2919,34 @@ document.getElementById('reviewTranscript').value = '';
         // Helper functions
         
         function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 5000);
-        }
+    const statusDiv = document.getElementById('status');
+    
+    // Set icon based on type
+    let icon = '✓';
+    if (type === 'error') {
+        icon = '✗';
+    } else if (type === 'info') {
+        icon = 'i';
+    }
+    
+    statusDiv.textContent = icon;
+    statusDiv.className = `status ${type}`;
+    statusDiv.style.display = 'flex';
+    statusDiv.title = message; // Show full message on hover
+    
+    // Trigger animation
+    setTimeout(() => {
+        statusDiv.classList.add('show');
+    }, 10);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        statusDiv.classList.remove('show');
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 300);
+    }, 3000);
+}
         
         function saveConfig() {
             const config = {
@@ -2984,6 +3019,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
