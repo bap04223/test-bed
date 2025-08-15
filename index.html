@@ -369,21 +369,27 @@
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    align-items: center;
     margin-bottom: 15px;
     min-height: 0;
+    padding: 10px;
+    overflow: hidden;
 }
 
         #avatarVideo {
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            background-color: #f8f9fa;
-            width: 80%;
-            max-height: 75vh;
-            object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            margin: 0 auto;
-        }
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 0 auto;
+    display: block;
+}
 
         .avatar-status {
             font-size: 16px;
@@ -693,6 +699,25 @@
             margin-top: 10px;
             background-color: #f8fafc;
         }
+
+        /* Responsive video wrapper for better aspect ratio handling */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+        
     </style>
 </head>
 
@@ -929,21 +954,31 @@
                 <h2>🎭 AI Patient Avatar</h2>
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
-                    <div class="avatar-container" id="avatarContainer">
-    <video 
-    id="avatarVideo" 
-    width="100%" 
-    height="auto"
-    autoplay 
-    controls
-    style="
-        border-radius: 12px; 
-        background-color: #f0f0f0; 
-        max-height: 25vh;
-        object-fit: cover;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    "
->
+<div class="avatar-container" id="avatarContainer">
+    <div class="video-wrapper">
+        <video 
+            id="avatarVideo" 
+            width="100%" 
+            height="auto"
+            autoplay 
+            controls
+            style="
+                border-radius: 12px; 
+                background-color: #f0f0f0; 
+                max-height: 50vh;
+                object-fit: contain;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                display: block;
+                margin: 0 auto;
+            "
+        >
+            Your browser does not support the video element.
+        </video>
+    </div>
+    <div id="avatarStatus" class="avatar-status">
+        Avatar ready
+    </div>
+</div>
         Your browser does not support the video element.
     </video>
     <div id="avatarStatus" class="avatar-status">
@@ -2946,6 +2981,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
