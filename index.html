@@ -171,24 +171,7 @@
             border-color: var(--primary-color);
         }
         
-        /* Push to talk button special styling - Smaller for more space */
-        .talk-button {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            font-size: 16px;
-            margin: 15px auto;
-            display: block;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        
-        .talk-button.recording {
-            animation: pulse 1.5s infinite;
-            background-color: var(--danger-color);
-        }
-        
+                
         /* Animation for recording state */
         @keyframes pulse {
             0% {
@@ -277,12 +260,17 @@
         }
         
         /* Individual message styling */
-        .message {
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            max-width: 80%;
-        }
+.message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+/* Add this new CSS for the recording button animation */
+.btn-danger.recording {
+    animation: pulse 1.5s infinite;
+}
         
         .message.user {
             background-color: var(--primary-color);
@@ -1491,38 +1479,38 @@ function updateSessionInfo() {
         }
 
         function updateTalkButton() {
-            const button = document.getElementById('talkButton');
+    const button = document.getElementById('talkButton');
+    
+    switch (recordingState) {
+        case 'stopped':
+            button.classList.remove('recording');
+            button.className = 'btn-primary';  // BLUE when stopped
+            button.innerHTML = '🎤 Start Recording';
+            button.disabled = false;
+            break;
             
-            switch (recordingState) {
-                case 'stopped':
-                    button.classList.remove('recording');
-                    button.className = 'btn-info';
-                    button.innerHTML = '🎤 Start Recording';
-                    button.disabled = false;
-                    break;
-                    
-                case 'recording':
-                    button.classList.add('recording');
-                    button.className = 'btn-danger recording';
-                    button.innerHTML = '⏹️ Stop Recording';
-                    button.disabled = false;
-                    break;
-                    
-                case 'processing':
-                    button.classList.remove('recording');
-                    button.className = 'btn-warning';
-                    button.innerHTML = '⏳ Processing...';
-                    button.disabled = true;
-                    break;
-                    
-                case 'reviewing':
-                    button.classList.remove('recording');
-                    button.className = 'btn-info';
-                    button.innerHTML = '📝 Reviewing...';
-                    button.disabled = true;
-                    break;
-            }
-        }
+        case 'recording':
+            button.classList.add('recording');
+            button.className = 'btn-danger recording';  // RED when recording
+            button.innerHTML = '⏹️ Stop Recording';
+            button.disabled = false;
+            break;
+            
+        case 'processing':
+            button.classList.remove('recording');
+            button.className = 'btn-warning';  // ORANGE when processing
+            button.innerHTML = '⏳ Processing...';
+            button.disabled = true;
+            break;
+            
+        case 'reviewing':
+            button.classList.remove('recording');
+            button.className = 'btn-success';  // GREEN when reviewing
+            button.innerHTML = '📝 Reviewing...';
+            button.disabled = true;
+            break;
+    }
+}
 
         // ===== STT PROVIDER MANAGEMENT =====
         function selectSttProvider(provider) {
@@ -1718,18 +1706,7 @@ function updateSessionInfo() {
             }, 500);
         }
         
-        function updateTalkButton() {
-            const button = document.getElementById('talkButton');
-            if (isRecording) {
-                button.classList.add('recording');
-                button.innerHTML = '🔴 Recording...';
-            } else {
-                button.classList.remove('recording');
-                button.innerHTML = 'Push to Talk';
-            }
-        }
-
-        // ===== REVIEW SECTION FUNCTIONS =====
+                // ===== REVIEW SECTION FUNCTIONS =====
         function showReviewSection(transcript) {
     pendingTranscript = transcript;
     recordingState = 'reviewing';
@@ -3120,6 +3097,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
