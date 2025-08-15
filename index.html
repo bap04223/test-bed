@@ -292,14 +292,12 @@
             max-width: 100%;
         }
         
-        /* Status indicator */
-        /* Option 1: More robust centering with flexbox */
+        /* Status indicator - Fixed centering */
 .status {
     position: fixed;
     top: 20px;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
     padding: 12px 24px;
     border-radius: 8px;
     text-align: center;
@@ -307,76 +305,20 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 300px;
     max-width: 90%;
-    width: fit-content;
     font-weight: 500;
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease-in-out;
     opacity: 0;
-    transform: translateY(-20px);
-    /* Center using margin auto */
     display: block;
-}
-
-/* Alternative Option 2: Using flexbox on parent */
-.status-alt {
-    position: fixed;
-    top: 20px;
-    left: 0;
-    right: 0;
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-align: center;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 300px;
-    max-width: 90%;
-    font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease-in-out;
-    opacity: 0;
-    transform: translateY(-20px);
-    /* Use flexbox centering */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.status-alt::before {
-    content: '';
-    flex: 1;
-}
-
-.status-alt::after {
-    content: '';
-    flex: 1;
-}
-
-/* Option 3: Force perfect centering with calc */
-.status-calc {
-    position: fixed;
-    top: 20px;
-    left: calc(50% - 150px); /* Adjust 150px based on your typical content width */
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-align: center;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 300px;
-    max-width: 90%;
-    font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease-in-out;
-    opacity: 0;
-    transform: translateY(-20px);
-    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .status.show {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 .status.success {
@@ -3065,16 +3007,13 @@ document.getElementById('reviewTranscript').value = '';
     statusDiv.className = `status ${type}`;
     statusDiv.style.display = 'block';
     
-    // Force perfect centering after content is set
+    // Remove any inline positioning that might interfere
+    statusDiv.style.left = '';
+    statusDiv.style.right = '';
+    statusDiv.style.transform = '';
+    
+    // Trigger animation
     setTimeout(() => {
-        const statusWidth = statusDiv.offsetWidth;
-        const windowWidth = window.innerWidth;
-        const leftPosition = (windowWidth - statusWidth) / 2;
-        
-        statusDiv.style.left = `${leftPosition}px`;
-        statusDiv.style.transform = 'translateY(-20px)';
-        
-        // Trigger animation
         statusDiv.classList.add('show');
     }, 10);
     
@@ -3158,6 +3097,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
