@@ -617,21 +617,25 @@
 
         .review-buttons {
     display: flex;
-    gap: 10px;
-    justify-content: stretch;
+    gap: 8px;
     margin-top: 10px;
     flex-shrink: 0;
     width: 100%;
 }
 
-        .review-buttons button {
+.review-buttons button {
     flex: 1;
-    padding: 12px 8px;
-    font-size: 14px;
+    padding: 10px 4px;
+    font-size: 12px;
     font-weight: 500;
     min-width: 0;
+    max-width: none;
     white-space: nowrap;
     text-align: center;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
         /* TTS Provider Styling */
@@ -937,7 +941,6 @@
     </p>
     
     <textarea class="review-transcript" id="reviewTranscript" placeholder="No message to review yet"></textarea>
-        No message to review yet
     </div>
     
     <div class="review-buttons">
@@ -1261,7 +1264,7 @@
                 forceStopRecognition = false;
                 
                 // Clear review box
-                document.getElementById('reviewTranscript').textContent = 'No message to review yet';
+                document.getElementById('reviewTranscript').value = '';
                 
                 recordingState = 'recording';
                 updateTalkButton();
@@ -2926,6 +2929,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
