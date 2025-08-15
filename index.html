@@ -886,40 +886,7 @@
                         </button>
                     </div>
 
-                    <!-- Review section for transcript before sending -->
-                    <div class="review-section" id="reviewSection">
-                        <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">📝 Live Transcription & Review</h3>
-                        <p style="margin: 0 0 10px 0; color: var(--text-secondary); text-align: center;">
-                            Live transcription will appear below as you speak, then review before sending.
-                        </p>
-                        
-                        <div class="review-transcript" id="reviewTranscript" contenteditable="true">
-                            No message to review yet
-                        </div>
-                        
-                        <div class="review-buttons">
-                            <button 
-                                class="btn-info" 
-                                id="talkButton"
-                                onclick="toggleRecording()"
-                            >
-                                🎤 Start Recording
-                            </button>
-                            <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
-                                ✅ Send Message
-                            </button>
-                            <button class="btn-warning" onclick="editTranscript()" disabled id="editBtn">
-                                ✏️ Edit
-                            </button>
-                            <button class="btn-danger" onclick="deleteTranscript()" disabled id="deleteBtn">
-                                🗑️ Delete & Retry
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-                 
+                                     
             <!-- Avatar display area -->
             <div class="card">
                 <h2>🎭 AI Patient Avatar</h2>
@@ -946,7 +913,38 @@
                             Avatar ready
                         </div>
                     </div>
-                    
+
+                    <!-- Review section for transcript before sending -->
+<div class="review-section" id="reviewSection">
+    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">📝 Live Transcription & Review</h3>
+    <p style="margin: 0 0 10px 0; color: var(--text-secondary); text-align: center;">
+        Live transcription will appear below as you speak, then review before sending.
+    </p>
+    
+    <div class="review-transcript" id="reviewTranscript" contenteditable="true">
+        No message to review yet
+    </div>
+    
+    <div class="review-buttons">
+        <button 
+            class="btn-info" 
+            id="talkButton"
+            onclick="toggleRecording()"
+        >
+            🎤 Start Recording
+        </button>
+        <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
+            ✅ Send Message
+        </button>
+        <button class="btn-warning" onclick="editTranscript()" disabled id="editBtn">
+            ✏️ Edit
+        </button>
+        <button class="btn-danger" onclick="deleteTranscript()" disabled id="deleteBtn">
+            🗑️ Delete & Retry
+        </button>
+    </div>
+</div>
+                   
                     <!-- Status display area for system messages -->
                     <div id="status" class="status info" style="display: none;"></div>
                 </div>
@@ -2919,5 +2917,6 @@
     </script>
 </body>
 </html>
+
 
 
