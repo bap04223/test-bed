@@ -591,19 +591,19 @@
         }
 
         .review-transcript {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 15px;
-            min-height: 100px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin: 10px 0;
-            font-size: 16px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 10px 0;
+    font-size: 16px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
 
         .review-buttons {
             display: flex;
@@ -895,26 +895,26 @@
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
                     <div class="avatar-container" id="avatarContainer">
-                        <video 
-                            id="avatarVideo" 
-                            width="100%" 
-                            height="auto"
-                            autoplay 
-                            controls
-                            style="
-                                border-radius: 12px; 
-                                background-color: #f0f0f0; 
-                                max-height: 70vh;
-                                object-fit: cover;
-                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                            "
-                        >
-                            Your browser does not support the video element.
-                        </video>
-                        <div id="avatarStatus" class="avatar-status">
-                            Avatar ready
-                        </div>
-                    </div>
+    <video 
+        id="avatarVideo" 
+        width="100%" 
+        height="auto"
+        autoplay 
+        controls
+        style="
+            border-radius: 12px; 
+            background-color: #f0f0f0; 
+            max-height: 45vh;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        "
+    >
+        Your browser does not support the video element.
+    </video>
+    <div id="avatarStatus" class="avatar-status">
+        Avatar ready
+    </div>
+</div>
 
                     <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
@@ -2917,6 +2917,7 @@
     </script>
 </body>
 </html>
+
 
 
 
