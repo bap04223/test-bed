@@ -615,27 +615,29 @@
     width: 100%;
 }
 
-        .review-section .review-buttons {
-    display: flex !important;
-    gap: 5px !important;
-    margin-top: 10px !important;
-    flex-shrink: 0 !important;
-    width: 100% !important;
+        .review-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-shrink: 0;
+    width: 100%;
+    justify-content: space-between;
 }
 
-.review-section .review-buttons button {
-    flex: 1 !important;
-    padding: 8px 4px !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    white-space: nowrap !important;
-    text-align: center !important;
-    border: none !important;
-    border-radius: 6px !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
+.review-buttons button {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 0;
+    white-space: nowrap;
+    text-align: center;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
         /* TTS Provider Styling */
@@ -2928,6 +2930,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
