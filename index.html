@@ -724,76 +724,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- INSERT DEEPGRAM HTML HERE -->
-<!-- Deepgram Configuration -->
-<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎤 Speech Recognition Settings</h3>
-    
-    <!-- STT Provider Selection -->
-    <div class="form-group">
-        <label for="sttProvider">STT Provider:</label>
-        <select id="sttProvider" onchange="handleSTTProviderChange()">
-            <option value="browser">Browser STT (Free)</option>
-            <option value="deepgram">Deepgram Medical STT</option>
-        </select>
-    </div>
-    
-    <!-- Deepgram API Key -->
-    <div class="form-group" id="deepgramApiKeyGroup" style="display: none;">
-        <label for="deepgramApiKey">Deepgram API Key:</label>
-        <input 
-            type="password" 
-            id="deepgramApiKey" 
-            name="deepgram-api-key"
-            placeholder="Enter your Deepgram API key"
-            title="Get your API key from console.deepgram.com"
-            autocomplete="new-password"
-        >
-        <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
-            Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
-        </small>
-    </div>
-    
-    <!-- Deepgram Model Selection -->
-    <div class="form-group" id="deepgramModelGroup" style="display: none;">
-        <label for="deepgramModel">Deepgram Model:</label>
-        <select id="deepgramModel">
-            <option value="nova-2-medical">Nova-2 Medical (Recommended)</option>
-            <option value="nova-2-general">Nova-2 General</option>
-            <option value="nova-2-phonecall">Nova-2 Phone Call</option>
-            <option value="whisper-cloud">Whisper Cloud</option>
-        </select>
-    </div>
-    
-    <!-- Language Selection -->
-    <div class="form-group" id="deepgramLanguageGroup" style="display: none;">
-        <label for="deepgramLanguage">Language:</label>
-        <select id="deepgramLanguage">
-            <option value="en-US">English (US)</option>
-            <option value="en-GB">English (UK)</option>
-            <option value="en-AU">English (Australia)</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-            <option value="it">Italian</option>
-            <option value="pt">Portuguese</option>
-            <option value="ja">Japanese</option>
-            <option value="ko">Korean</option>
-            <option value="zh">Chinese (Mandarin)</option>
-        </select>
-    </div>
-    
-    <button 
-        type="button"
-        class="btn-primary" 
-        onclick="initializeDeepgram()" 
-        id="initDeepgramBtn"
-        style="margin-top: 10px; width: 100%; display: none;"
-    >
-        🚀 Initialize Deepgram
-    </button>
-</div>
             
             <!-- Voice control section -->
             <div class="card">
@@ -821,6 +751,11 @@
                     <button 
                         class="talk-button btn-danger" 
                         id="talkButton"
+                        onmousedown="startRecording()"
+                        onmouseup="stopRecording()"
+                        onmouseleave="stopRecording()"
+                        ontouchstart="startRecording()"
+                        ontouchend="stopRecording()"
                     >
                         Push to Talk
                     </button>
@@ -927,19 +862,6 @@
         let currentPresenter = null;      // Selected presenter/avatar
         let isAvatarInitialized = false;  // Track initialization status
         let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
-
-         // ===== DEEPGRAM VARIABLES =====
-        let deepgramApiKey = '';
-        let deepgramSocket = null;
-        let deepgramModel = 'nova-2-medical';
-        let deepgramLanguage = 'en-US';
-        let currentSTTProvider = 'browser';
-        let isDeepgramInitialized = false;
-        let mediaRecorder = null;
-        let audioStream = null;
-        let deepgramInterimTranscript = '';
-        let deepgramFinalTranscript = '';
-        
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -1011,29 +933,6 @@
             document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
             document.getElementById('sheetId').addEventListener('change', saveConfig);
             document.getElementById('didApiKey').addEventListener('change', saveConfig);
-            
-            // Add Deepgram event listeners
-            document.getElementById('deepgramApiKey').addEventListener('change', saveConfig);
-            document.getElementById('deepgramModel').addEventListener('change', saveConfig);
-            document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
-            document.getElementById('sttProvider').addEventListener('change', saveConfig);
-            
-            // Set up talk button event listeners with passive touch events
-            const talkButton = document.getElementById('talkButton');
-            
-            // Mouse events
-            talkButton.addEventListener('mousedown', startRecording);
-            talkButton.addEventListener('mouseup', stopRecording);
-            talkButton.addEventListener('mouseleave', stopRecording);
-            
-            // Touch events (passive to avoid warnings)
-            talkButton.addEventListener('touchstart', startRecording, { passive: true });
-            talkButton.addEventListener('touchend', stopRecording, { passive: true });
-            
-            // Prevent context menu on long press
-            talkButton.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-            });
         }
         
         // ===== SPEECH RECOGNITION SETUP =====
@@ -1135,198 +1034,16 @@
                 showStatus('Speech recognition not supported in this browser', 'error');
             }
         }
-
-        // INSERT DEEPGRAM FUNCTIONS HERE
-        // ===== DEEPGRAM STT FUNCTIONS =====
-
-        function handleSTTProviderChange() {
-            const provider = document.getElementById('sttProvider').value;
-            currentSTTProvider = provider;
-            
-            const deepgramGroups = ['deepgramApiKeyGroup', 'deepgramModelGroup', 'deepgramLanguageGroup'];
-            const initBtn = document.getElementById('initDeepgramBtn');
-            
-            if (provider === 'deepgram') {
-                deepgramGroups.forEach(id => {
-                    document.getElementById(id).style.display = 'block';
-                });
-                initBtn.style.display = 'block';
-            } else {
-                deepgramGroups.forEach(id => {
-                    document.getElementById(id).style.display = 'none';
-                });
-                initBtn.style.display = 'none';
-                isDeepgramInitialized = false;
-            }
-            
-            saveConfig();
-        }
-
-        async function initializeDeepgram() {
-            try {
-                deepgramApiKey = document.getElementById('deepgramApiKey').value;
-                deepgramModel = document.getElementById('deepgramModel').value;
-                deepgramLanguage = document.getElementById('deepgramLanguage').value;
-                
-                if (!deepgramApiKey) {
-                    throw new Error('Deepgram API key is required');
-                }
-                
-                // Skip API key validation due to CORS restrictions
-                // The API key will be validated when we actually try to connect
-                console.log('Deepgram configured with:', {
-                    model: deepgramModel,
-                    language: deepgramLanguage,
-                    keyLength: deepgramApiKey.length
-                });
-                
-                isDeepgramInitialized = true;
-                showStatus('Deepgram configured successfully (will validate on first use)', 'success');
-                console.log('Deepgram initialized with model:', deepgramModel, 'language:', deepgramLanguage);
-                
-            } catch (error) {
-                console.error('Deepgram initialization error:', error);
-                showStatus(`Deepgram error: ${error.message}`, 'error');
-                isDeepgramInitialized = false;
-            }
-        }
-
-        async function startDeepgramRecording() {
-            try {
-                // Get microphone access
-                audioStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        sampleRate: 16000,
-                        channelCount: 1,
-                        echoCancellation: true,
-                        noiseSuppression: true
-                    }
-                });
-                
-                // Create WebSocket connection to Deepgram
-                const wsUrl = `wss://api.deepgram.com/v1/listen?model=${deepgramModel}&language=${deepgramLanguage}&smart_format=true&interim_results=true&punctuate=true&diarize=false`;
-                
-                deepgramSocket = new WebSocket(wsUrl, ['token', deepgramApiKey]);
-                
-                deepgramSocket.onopen = () => {
-                    console.log('Deepgram WebSocket connected');
-                    showStatus('Connected to Deepgram', 'success');
-                    
-                    // Set up MediaRecorder to send audio data
-                    mediaRecorder = new MediaRecorder(audioStream, {
-                        mimeType: 'audio/webm;codecs=opus'
-                    });
-                    
-                    mediaRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0 && deepgramSocket.readyState === WebSocket.OPEN) {
-                            deepgramSocket.send(event.data);
-                        }
-                    };
-                    
-                    mediaRecorder.start(100); // Send data every 100ms
-                };
-                
-                deepgramSocket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    
-                    if (data.channel && data.channel.alternatives && data.channel.alternatives[0]) {
-                        const transcript = data.channel.alternatives[0].transcript;
-                        const isFinal = data.is_final;
-                        
-                        if (transcript) {
-                            if (isFinal) {
-                                deepgramFinalTranscript += transcript + ' ';
-                                deepgramInterimTranscript = '';
-                            } else {
-                                deepgramInterimTranscript = transcript;
-                            }
-                            
-                            updateTranscriptionDisplay();
-                        }
-                    }
-                };
-                
-                deepgramSocket.onerror = (error) => {
-                    console.error('Deepgram WebSocket error:', error);
-                    showStatus('Deepgram connection error - check API key', 'error');
-                    isRecording = false;
-                    updateTalkButton();
-                };
-                
-                deepgramSocket.onclose = (event) => {
-                    console.log('Deepgram WebSocket closed:', event.code, event.reason);
-                    if (event.code !== 1000 && isRecording) {
-                        // Abnormal closure
-                        if (event.code === 1002) {
-                            showStatus('Invalid Deepgram API key', 'error');
-                        } else {
-                            showStatus('Deepgram connection lost', 'error');
-                        }
-                        isRecording = false;
-                        updateTalkButton();
-                    }
-                };
-                
-            } catch (error) {
-                console.error('Error starting Deepgram recording:', error);
-                showStatus('Microphone access denied or error starting Deepgram', 'error');
-                isRecording = false;
-                updateTalkButton();
-            }
-        }
-
-        function stopDeepgramRecording() {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
-            
-            if (audioStream) {
-                audioStream.getTracks().forEach(track => track.stop());
-                audioStream = null;
-            }
-            
-            if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-                // Send close message to Deepgram
-                deepgramSocket.send(JSON.stringify({type: 'CloseStream'}));
-                deepgramSocket.close();
-            }
-            
-            // Process final transcript
-            if (deepgramFinalTranscript.trim()) {
-                console.log('Sending Deepgram transcript:', deepgramFinalTranscript);
-                addMessage(deepgramFinalTranscript.trim(), 'user');
-                sendToWebhook(deepgramFinalTranscript.trim());
-            }
-            
-            // Reset transcripts
-            deepgramFinalTranscript = '';
-            deepgramInterimTranscript = '';
-        }
-
-        function updateTranscriptionDisplay() {
-            const transcriptionBox = document.getElementById('transcriptionBox');
-            let displayText = '';
-            
-            // Show accumulated final transcript in black
-            if (deepgramFinalTranscript) {
-                displayText += `<span style="color: black;">${deepgramFinalTranscript.trim()}</span>`;
-            }
-            
-            // Show interim transcript in gray
-            if (deepgramInterimTranscript) {
-                if (deepgramFinalTranscript) {
-                    displayText += ' ';
-                }
-                displayText += `<span style="color: #6b7280; font-style: italic;">${deepgramInterimTranscript}</span>`;
-            }
-            
-            transcriptionBox.innerHTML = displayText || '<span style="color: var(--text-secondary);">Listening with Deepgram...</span>';
-        }
         
         // ===== RECORDING FUNCTIONS =====
         // Handle push-to-talk functionality
         
         function startRecording() {
+            if (!recognition) {
+                showStatus('Speech recognition not available', 'error');
+                return;
+            }
+            
             if (!document.getElementById('webhookUrl').value) {
                 showStatus('Please enter webhook URL first', 'error');
                 return;
@@ -1337,10 +1054,8 @@
                 return;
             }
             
-            // Clear previous transcripts
+            // Clear previous transcript and reset state
             fullTranscript = '';
-            deepgramFinalTranscript = '';
-            deepgramInterimTranscript = '';
             forceStopRecognition = false;
             
             // Clear transcription box
@@ -1349,51 +1064,22 @@
             isRecording = true;
             updateTalkButton();
             
-            if (currentSTTProvider === 'deepgram') {
-                if (!isDeepgramInitialized) {
-                    showStatus('Please initialize Deepgram first', 'error');
-                    isRecording = false;
-                    updateTalkButton();
-                    return;
-                }
-                startDeepgramRecording();
-            } else {
-                // Browser STT
-                if (!recognition) {
-                    showStatus('Speech recognition not available', 'error');
-                    isRecording = false;
-                    updateTalkButton();
-                    return;
-                }
-                
-                try {
-                    recognition.start();
-                    showStatus('Listening with browser STT...', 'info');
-                } catch (error) {
-                    console.error('Error starting recognition:', error);
-                    showStatus('Error starting recording', 'error');
-                    isRecording = false;
-                    updateTalkButton();
-                }
+            try {
+                recognition.start();
+                showStatus('Listening...', 'info');
+            } catch (error) {
+                console.error('Error starting recognition:', error);
+                showStatus('Error starting recording', 'error');
+                isRecording = false;
+                updateTalkButton();
             }
         }
         
         function stopRecording() {
-            if (isRecording) {
+            if (isRecording && recognition) {
                 console.log('Stopping recording...');
-                
-                if (currentSTTProvider === 'deepgram') {
-                    stopDeepgramRecording();
-                } else {
-                    // Browser STT
-                    if (recognition) {
-                        forceStopRecognition = true;
-                        recognition.stop();
-                    }
-                }
-                
-                isRecording = false;
-                updateTalkButton();
+                forceStopRecognition = true;
+                recognition.stop();
                 showStatus('Processing...', 'info');
             }
         }
@@ -2626,11 +2312,7 @@
                 submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
                 sheetId: document.getElementById('sheetId').value,
                 sheetName: getSelectedSheetName(),
-                didApiKey: document.getElementById('didApiKey').value,
-                deepgramApiKey: document.getElementById('deepgramApiKey').value,
-                deepgramModel: document.getElementById('deepgramModel').value,
-                deepgramLanguage: document.getElementById('deepgramLanguage').value,
-                sttProvider: document.getElementById('sttProvider').value
+                didApiKey: document.getElementById('didApiKey').value
             };
             localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
         }
@@ -2643,17 +2325,11 @@
                 document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
                 document.getElementById('sheetId').value = config.sheetId || '';
                 document.getElementById('didApiKey').value = config.didApiKey || '';
-                document.getElementById('deepgramApiKey').value = config.deepgramApiKey || '';
-                document.getElementById('deepgramModel').value = config.deepgramModel || 'nova-2-medical';
-                document.getElementById('deepgramLanguage').value = config.deepgramLanguage || 'en-US';
-                document.getElementById('sttProvider').value = config.sttProvider || 'browser';
-                
-                // Trigger STT provider change to show/hide Deepgram options
-                handleSTTProviderChange();
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
                 if (config.sheetName) {
+                    // If dropdown has options, try to select the saved value
                     if (sheetNameDropdown.options.length > 1) {
                         sheetNameDropdown.value = config.sheetName;
                     }
@@ -2682,22 +2358,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
