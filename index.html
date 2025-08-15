@@ -361,12 +361,13 @@
         
         /* Avatar video container styling - Enhanced for larger display */
         .avatar-container {
-            flex: 1;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+    flex: 0 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+}
 
         #avatarVideo {
             border: 2px solid var(--border-color);
@@ -575,14 +576,15 @@
             
       /* Review section styling */
         .review-section {
-    margin-top: 20px;
-    padding: 20px;
+    margin-top: 15px;
+    padding: 15px;
     background-color: #f9fafb;
     border: 2px solid var(--warning-color);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-height: 0;
     opacity: 1;
 }
 
@@ -597,8 +599,8 @@
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 15px;
-    min-height: 200px;
     flex: 1;
+    min-height: 200px;
     overflow-y: auto;
     margin: 10px 0;
     font-size: 16px;
@@ -611,7 +613,8 @@
     display: flex;
     gap: 5px;
     justify-content: center;
-    margin-top: 15px;
+    margin-top: auto;
+    padding-top: 10px;
     flex-shrink: 0;
 }
 
@@ -2920,6 +2923,7 @@
     </script>
 </body>
 </html>
+
 
 
 
