@@ -327,6 +327,10 @@
             background-color: #dbeafe;
             color: #1e40af;
         }
+
+        #status {
+    flex-shrink: 0;
+}
         
         /* Loading spinner */
         .spinner {
@@ -361,12 +365,13 @@
         
         /* Avatar video container styling - Enhanced for larger display */
         .avatar-container {
-    flex: 0 0 auto;
+    flex: 1;
     text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     margin-bottom: 15px;
+    min-height: 0;
 }
 
         #avatarVideo {
@@ -583,7 +588,8 @@
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    height: 280px;
+    height: 300px;
+    flex-shrink: 0;
     opacity: 1;
 }
 
@@ -706,7 +712,7 @@
             <!-- Configuration section -->
             <div class="card">
                 <h2>⚙️ Configuration</h2>
-                <div class="card-content">
+                <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
                     <div class="scrollable-section">
                         <!-- n8n webhook URL input -->
                         <div class="form-group">
@@ -2920,6 +2926,7 @@
     </script>
 </body>
 </html>
+
 
 
 
