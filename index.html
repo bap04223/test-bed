@@ -605,16 +605,14 @@
     border-radius: 6px;
     padding: 15px;
     height: 250px;
-    min-height: 250px;
-    max-height: 250px;
     overflow-y: auto;
     margin: 10px 0;
     font-size: 16px;
     line-height: 1.5;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    box-sizing: border-box;
+    font-family: inherit;
     resize: none;
+    box-sizing: border-box;
+    width: 100%;
 }
 
         .review-buttons {
@@ -936,7 +934,7 @@
         Live transcription will appear below as you speak, then review before sending.
     </p>
     
-    <div class="review-transcript" id="reviewTranscript" contenteditable="true">
+    <textarea class="review-transcript" id="reviewTranscript" placeholder="No message to review yet"></textarea>
         No message to review yet
     </div>
     
@@ -1145,7 +1143,7 @@
                         displayText += interimTranscript;
                     }
 
-                    reviewBox.textContent = displayText || 'Listening...';
+                    reviewBox.value = displayText || 'Listening...';
                     
                     console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
                 };
@@ -1418,18 +1416,18 @@
                             const reviewBox = document.getElementById('reviewTranscript');
 
                             if (isFinal) {
-                                // Add to full transcript
-                                fullTranscript += transcript + ' ';
-                                reviewBox.textContent = fullTranscript.trim();
-                            } else {
-                                // Show interim results
-                                let displayText = '';
-                                if (fullTranscript) {
-                                    displayText += fullTranscript.trim() + ' ';
-                                }
-                                displayText += transcript;
-                                reviewBox.textContent = displayText;
-                            }
+    // Add to full transcript
+    fullTranscript += transcript + ' ';
+    reviewBox.value = fullTranscript.trim();
+} else {
+    // Show interim results
+    let displayText = '';
+    if (fullTranscript) {
+        displayText += fullTranscript.trim() + ' ';
+    }
+    displayText += transcript;
+    reviewBox.value = displayText;
+}
                             
                             console.log('Deepgram transcript:', transcript, 'Final:', isFinal);
                         }
@@ -1555,12 +1553,12 @@
 
         // ===== REVIEW SECTION FUNCTIONS =====
         function showReviewSection(transcript) {
-            pendingTranscript = transcript;
-            recordingState = 'reviewing';
-            updateTalkButton();
-            
-            // Update review transcript
-            document.getElementById('reviewTranscript').textContent = transcript;
+    pendingTranscript = transcript;
+    recordingState = 'reviewing';
+    updateTalkButton();
+    
+    // Update review transcript
+    document.getElementById('reviewTranscript').value = transcript;
             
             // Activate review section
             document.getElementById('reviewSection').classList.add('active');
@@ -1580,7 +1578,7 @@
         }
 
         function sendReviewedMessage() {
-            const reviewedText = document.getElementById('reviewTranscript').textContent.trim();
+    const reviewedText = document.getElementById('reviewTranscript').value.trim();
             
             if (!reviewedText) {
                 showStatus('Message is empty. Please add some text or delete to try again.', 'error');
@@ -1601,19 +1599,15 @@
         }
 
         function editTranscript() {
-            // Focus on the editable transcript
-            const transcriptElement = document.getElementById('reviewTranscript');
-            transcriptElement.focus();
-            
-            // Select all text for easy editing
-            const range = document.createRange();
-            range.selectNodeContents(transcriptElement);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            
-            showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
-        }
+    // Focus on the editable transcript
+    const transcriptElement = document.getElementById('reviewTranscript');
+    transcriptElement.focus();
+    
+    // Select all text for easy editing (textarea method)
+    transcriptElement.select();
+    
+    showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
+}
 
         function deleteTranscript() {
             // Hide review section
@@ -1626,14 +1620,14 @@
             fullTranscript = '';
             
             // Clear review box
-            document.getElementById('reviewTranscript').textContent = 'No message to review yet';
+document.getElementById('reviewTranscript').value = '';
             
             showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
         }
 
         function hideReviewSection() {
             document.getElementById('reviewSection').classList.remove('active');
-            document.getElementById('reviewTranscript').textContent = 'No message to review yet';
+            document.getElementById('reviewTranscript').value = '';
             
             // Disable buttons
             document.getElementById('sendBtn').disabled = true;
@@ -2930,6 +2924,7 @@
     </script>
 </body>
 </html>
+
 
 
 
