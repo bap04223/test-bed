@@ -622,6 +622,7 @@
     flex-shrink: 0;
     width: 100%;
     justify-content: space-between;
+    align-items: stretch; /* Add this to ensure equal height */
 }
 
 .review-buttons button {
@@ -638,8 +639,22 @@
     transition: all 0.3s;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Add these properties to ensure consistent sizing */
+    max-width: none;
+    box-sizing: border-box;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
+/* Optional: If you want to make the buttons slightly larger */
+@media (min-width: 768px) {
+    .review-buttons button {
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+}
         /* TTS Provider Styling */
         .tts-provider-group {
             display: flex;
@@ -2930,6 +2945,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
