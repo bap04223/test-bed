@@ -2039,7 +2039,17 @@ function showConnectButton() {
     connectBtn.style.display = 'block';
 }
 
-// Get configuration values
+        // Connect to D-ID streaming
+async function connectStream() {
+    if (peerConnection && peerConnection.connectionState === 'connected') {
+        console.log('Stream already connected');
+        return;
+    }
+    
+    try {
+        updateAvatarStatus('Connecting to D-ID stream...', 'loading');
+        
+        // Get configuration values
         serviceType = document.getElementById('serviceType').value;
         sourceUrl = document.getElementById('sourceUrl').value.trim();
         presenterId = document.getElementById('presenterId').value;
@@ -2119,7 +2129,7 @@ function showConnectButton() {
         updateAvatarStatus(`Connection error: ${error.message}`, 'error');
         closeStreamConnection();
     }
-}
+}      
 
 // Create WebRTC peer connection
 async function createPeerConnection(offer, iceServers) {
@@ -3689,6 +3699,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
