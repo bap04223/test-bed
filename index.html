@@ -4181,7 +4181,7 @@ document.addEventListener('keydown', function(event) {
         sttProvider: currentSttProvider,
         deepgramApiKey: document.getElementById('deepgramApiKey').value,
         deepgramModel: document.getElementById('deepgramModel').value,
-        deepgramLanguage: document.getElementById('deepgramLanguage').value
+        deepgramLanguage: document.getElementById('deepgramLanguage').value,
         voiceSelection: document.getElementById('voiceSelection').value  // Add this line
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
@@ -4256,6 +4256,7 @@ if (config.voiceSelection) {
     </script>
 </body>
 </html>
+
 
 
 
