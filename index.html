@@ -1408,20 +1408,33 @@ function updateServiceFields() {
     const imageUrlGroup = document.getElementById('imageUrlGroup');
     const presenterGroup = document.getElementById('presenterGroup');
     
+    console.log('Updating service fields for:', serviceTypeValue);
+    
     if (serviceTypeValue === 'talks') {
         // Show custom image URL field, hide presenter selection
         imageUrlGroup.style.display = 'block';
         presenterGroup.style.display = 'none';
-    } else {
+        console.log('Switched to Talks mode');
+    } else if (serviceTypeValue === 'clips') {
         // Show presenter selection, hide custom image URL field
         imageUrlGroup.style.display = 'none';
         presenterGroup.style.display = 'block';
+        console.log('Switched to Clips mode');
+        
+        // Add refresh button if it doesn't exist
+        setTimeout(addPresenterRefreshButton, 100);
     }
+    
+    // Update global serviceType variable
+    serviceType = serviceTypeValue;
+    
+    // Save configuration
+    saveConfig();
 }
 
-// Read configuration values from form elements
+// Read configuration values from form elements - FIXED
 function getAvatarConfiguration() {
-    return {
+    const config = {
         didApiKey: document.getElementById('didApiKey').value.trim(),
         serviceType: document.getElementById('serviceType').value,
         sourceUrl: document.getElementById('sourceUrl').value.trim(),
@@ -1429,6 +1442,9 @@ function getAvatarConfiguration() {
         chunkSize: parseInt(document.getElementById('chunkSize').value),
         streamingMode: document.getElementById('streamingMode').checked
     };
+    
+    console.log('Current avatar configuration:', config);
+    return config;
 }
 
 // Text chunking function for streaming
@@ -2067,7 +2083,7 @@ function showConnectButton() {
     connectBtn.style.display = 'block';
 }
 
-        // Connect to D-ID streaming
+        // FIXED: Connect to D-ID streaming with proper service detection
 async function connectStream() {
     if (peerConnection && peerConnection.connectionState === 'connected') {
         console.log('Stream already connected');
@@ -2077,12 +2093,17 @@ async function connectStream() {
     try {
         updateAvatarStatus('Connecting to D-ID stream...', 'loading');
         
-        // Get configuration values
-        serviceType = document.getElementById('serviceType').value;
-        sourceUrl = document.getElementById('sourceUrl').value.trim();
-        presenterId = document.getElementById('presenterId').value;
-        chunkSize = parseInt(document.getElementById('chunkSize').value);
-        streamingMode = document.getElementById('streamingMode').checked;
+        // FIXED: Get configuration values fresh from form
+        const config = getAvatarConfiguration();
+        serviceType = config.serviceType;
+        sourceUrl = config.sourceUrl;
+        presenterId = config.presenterId;
+        chunkSize = config.chunkSize;
+        streamingMode = config.streamingMode;
+        
+        console.log('Using service type:', serviceType);
+        console.log('Using presenter ID:', presenterId);
+        console.log('Using source URL:', sourceUrl);
         
         // Prepare request payload based on service type
         let payload = {
@@ -2094,30 +2115,35 @@ async function connectStream() {
                 throw new Error('Source image URL is required for talks service');
             }
             payload.source_url = sourceUrl;
-        } else {
-            // FIXED: Correct payload structure for Clips API
+            console.log('Talks payload:', payload);
+        } else if (serviceType === 'clips') {
             if (!presenterId) {
                 throw new Error('Presenter selection is required for clips service');
             }
             
-            // For Clips, the presenter_id should be nested in a presenter object
+            // FIXED: Correct payload structure for Clips API
             payload.presenter = {
                 type: 'clip',
                 clip_id: presenterId
             };
             
-            // Optional config for clips
+            // FIXED: Proper config for clips
             payload.config = {
                 fluent: true,
                 pad_audio: 0.0,
                 stitch: true
             };
+            
+            console.log('Clips payload:', payload);
+        } else {
+            throw new Error('Invalid service type selected');
         }
         
-        console.log('Payload for', serviceType, ':', payload);
-        
         // Step 1: Create a new stream
-        const sessionResponse = await fetch(`https://api.d-id.com/${serviceType}/streams`, {
+        const streamUrl = `https://api.d-id.com/${serviceType}/streams`;
+        console.log('Creating stream at URL:', streamUrl);
+        
+        const sessionResponse = await fetch(streamUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2136,13 +2162,14 @@ async function connectStream() {
         streamId = newStreamId;
         didSessionId = newSessionId;
         
-        console.log('Stream created:', { streamId, didSessionId });
+        console.log('Stream created successfully:', { streamId, didSessionId, serviceType });
         
         // Step 2: Create peer connection and set up WebRTC
         const sessionClientAnswer = await createPeerConnection(offer, iceServers);
         
         // Step 3: Send SDP answer
-        const sdpResponse = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}/sdp`, {
+        const sdpUrl = `https://api.d-id.com/${serviceType}/streams/${streamId}/sdp`;
+        const sdpResponse = await fetch(sdpUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2161,7 +2188,7 @@ async function connectStream() {
         }
         
         console.log('SDP answer sent successfully');
-        updateAvatarStatus('Stream connected - Ready for speech', 'success');
+        updateAvatarStatus(`${serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
         
         // Hide connect button
         const connectBtn = document.getElementById('streamConnectBtn');
@@ -2274,9 +2301,9 @@ function setVideoElement(stream) {
     }
 }
 
-// Close streaming connection
+// FIXED: Close streaming connection with proper service type handling
 function closeStreamConnection() {
-    console.log('Closing stream connection');
+    console.log('Closing stream connection for service type:', serviceType);
     
     if (avatarVideo && avatarVideo.srcObject) {
         avatarVideo.srcObject.getTracks().forEach(track => track.stop());
@@ -2301,8 +2328,9 @@ function closeStreamConnection() {
     if (connectBtn) connectBtn.style.display = 'block';
     
     // Delete stream on server if we have IDs
-    if (streamId && didSessionId) {
-        fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+    if (streamId && didSessionId && serviceType) {
+        const deleteUrl = `https://api.d-id.com/${serviceType}/streams/${streamId}`;
+        fetch(deleteUrl, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2316,7 +2344,7 @@ function closeStreamConnection() {
     
     streamId = null;
     didSessionId = null;
-}  
+} 
         
         // Test D-ID API connection
         async function testDIDConnection() {
@@ -2343,7 +2371,8 @@ function closeStreamConnection() {
         // ===== D-ID AVATAR SPEECH FUNCTIONS =====
         // Generate and play avatar speech
 
-        async function speakWithAvatar(text) {
+        // FIXED: Speech function with proper voice and service handling
+async function speakWithAvatar(text) {
     if (!isAvatarInitialized || !didApiKey) {
         console.log('Avatar not initialized, skipping speech');
         return;
@@ -2365,17 +2394,40 @@ function closeStreamConnection() {
 
     try {
         console.log('Sending text to D-ID stream:', text);
+        console.log('Using service type for speech:', serviceType);
         updateAvatarStatus('Generating speech...', 'loading');
+
+        // FIXED: Get the current configuration to determine voice
+        const config = getAvatarConfiguration();
+        
+        // FIXED: Voice selection based on service type and presenter
+        let voiceConfig = {
+            type: 'microsoft',
+            voice_id: 'Sara' // Default voice
+        };
+        
+        // For clips, try to match voice to presenter
+        if (serviceType === 'clips' && config.presenterId) {
+            const voiceMap = {
+                'noelle': 'Sara',
+                'amy-Aq6OmGZnMt': 'Aria',
+                'eric-2UHNp4HyMt': 'Guy',
+                'wayne_20240711': 'Davis',
+                'stacey-G6mPtqx8eS': 'Jenny'
+            };
+            
+            if (voiceMap[config.presenterId]) {
+                voiceConfig.voice_id = voiceMap[config.presenterId];
+                console.log('Using voice for presenter:', config.presenterId, '->', voiceConfig.voice_id);
+            }
+        }
 
         // Prepare the script payload
         let scriptPayload = {
             script: {
                 type: 'text',
                 input: text,
-                provider: {
-                    type: 'microsoft',
-                    voice_id: 'Sara'
-                }
+                provider: voiceConfig
             },
             config: {
                 stitch: true,
@@ -2383,18 +2435,19 @@ function closeStreamConnection() {
             session_id: didSessionId
         };
 
-        // Add different driver_url based on service type
+        // FIXED: Driver URL based on service type
         if (serviceType === 'talks') {
             scriptPayload.driver_url = 'bank://lively/';
-        } else {
-            // For clips, use a different driver or omit it
-            scriptPayload.driver_url = 'bank://lively/';
+        } else if (serviceType === 'clips') {
+            // For clips, we might not need a driver_url or use a different one
+            // scriptPayload.driver_url = 'bank://lively/'; // Test both with and without
         }
 
         console.log('Script payload:', scriptPayload);
 
         // Create talk stream with text
-        const talkResponse = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
+        const talkUrl = `https://api.d-id.com/${serviceType}/streams/${streamId}`;
+        const talkResponse = await fetch(talkUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2416,7 +2469,7 @@ function closeStreamConnection() {
         // Monitor for video events to update status
         if (avatarVideo) {
             const handleVideoPlay = () => {
-                updateAvatarStatus('Avatar speaking...', 'playing');
+                updateAvatarStatus(`Avatar speaking (${serviceType})...`, 'playing');
                 avatarVideo.removeEventListener('play', handleVideoPlay);
             };
             
@@ -4068,6 +4121,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
