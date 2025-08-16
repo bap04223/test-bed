@@ -3286,7 +3286,14 @@ function updateServiceAvailability(results) {
                 const option = document.createElement('option');
                 option.value = i;
                 // Use column A (index 0) for the scenario name
-                option.textContent = `${i}. ${row[0]}`;
+                // Use column A (index 0) for the scenario name, add avatar indicator
+const hasAvatar = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Avatar') || header.includes('Source URL')) && cell && cell.trim() !== '';
+});
+const avatarIndicator = hasAvatar ? ' 🎭' : '';
+option.textContent = `${i}. ${row[0]}${avatarIndicator}`;
+                
                 select.appendChild(option);
             }
             
@@ -3305,27 +3312,30 @@ function updateServiceAvailability(results) {
         
         // Handle scenario selection
         function selectScenario(rowIndex) {
-            const headers = sheetData[0];
-            const row = sheetData[rowIndex];
-            
-            // Create scenario object
-            currentScenario = {};
-            headers.forEach((header, index) => {
-                currentScenario[header] = row[index];
-            });
-            
-            console.log('Selected scenario:', currentScenario);
-            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-            
-            // Update patient image button based on image availability
-            updatePatientImageButton();
-            
-            // Clear previous conversation
-            clearChat();
-            
-            // Add initial message
-            addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
-        }
+    const headers = sheetData[0];
+    const row = sheetData[rowIndex];
+    
+    // Create scenario object
+    currentScenario = {};
+    headers.forEach((header, index) => {
+        currentScenario[header] = row[index];
+    });
+    
+    console.log('Selected scenario:', currentScenario);
+    showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+    
+    // Update patient image button based on image availability
+    updatePatientImageButton();
+    
+    // Update avatar source URL if provided in sheet
+    updateAvatarFromScenario();
+    
+    // Clear previous conversation
+    clearChat();
+    
+    // Add initial message
+    addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
+}
         
         // ===== MULTI-IMAGE PATIENT GALLERY =====
 // Global variables for image gallery
@@ -3637,26 +3647,7 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
-        
-        // Select a random scenario
-        function selectRandomScenario() {
-            if (sheetData.length <= 1) {
-                showStatus('Please load sheet data first', 'error');
-                return;
-            }
-            
-            // Generate random index (skip header row at index 0)
-            const randomIndex = Math.floor(Math.random() * (sheetData.length - 1)) + 1;
-            
-            // Update dropdown to show selected scenario
-            document.getElementById('scenarioSelect').value = randomIndex;
-            
-            // Select the scenario
-            selectScenario(randomIndex);
-            
-            showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
-        }
-
+                      
 // ===== EXPORT CONVERSATION FUNCTION =====
         // Export conversation as a downloadable text file
         
@@ -4311,9 +4302,59 @@ if (config.voiceSelection) {
             
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
+
+        // UPDATE AVATAR CONFIGURATION BASED ON SCENARIO DATA
+        function updateAvatarFromScenario() {
+            if (!currentScenario) return;
+            
+            // Check for avatar URL in various possible column names
+            const avatarUrl = currentScenario['Avatar URL'] || 
+                             currentScenario['Talking Head URL'] || 
+                             currentScenario['Avatar Image'] || 
+                             currentScenario['Avatar'] || 
+                             currentScenario['Speaker Image'] ||
+                             currentScenario['D-ID Image URL'] ||
+                             currentScenario['Source URL'];
+            
+            if (avatarUrl && avatarUrl.trim() !== '') {
+                console.log('Found avatar URL in scenario:', avatarUrl);
+                
+                // Convert Google Drive URLs if needed
+                const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+                
+                // Set the service type to 'talks' (custom image)
+                document.getElementById('serviceType').value = 'talks';
+                
+                // Set the source URL
+                document.getElementById('sourceUrl').value = convertedUrl;
+                
+                // Update the UI
+                updateServiceFields();
+                
+                // Save the configuration
+                saveConfig();
+                
+                // Show status message
+                showStatus(`Avatar URL loaded from scenario: ${convertedUrl.substring(0, 50)}...`, 'success');
+                
+                // If avatar is already initialized, close existing connection to force reconnection with new image
+                if (isAvatarInitialized && isStreamConnected) {
+                    console.log('Reconnecting stream with new avatar image...');
+                    closeStreamConnection();
+                    
+                    // Auto-reconnect after a short delay
+                    setTimeout(() => {
+                        connectStream();
+                    }, 1000);
+                }
+            } else {
+                console.log('No avatar URL found in scenario');
+            }
+        }        
     </script>
 </body>
 </html>
+
 
 
 
