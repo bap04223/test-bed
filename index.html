@@ -1284,29 +1284,30 @@ function getPresenterVoice(presenterId) {
         // This runs when the page loads
         
         window.onload = function() {
-            // Generate unique session ID for this training session
-            generateSessionId();
-            
-            // Initialize speech recognition if available
-            initializeSpeechRecognition();
-            
-            // Set up event listeners
-            setupEventListeners();
-            
-            // Load saved configuration from localStorage
-            loadSavedConfig();
-            
-            // Display session info
-            displaySessionInfo();
-            
-            // Initialize avatar video element reference
-            avatarVideo = document.getElementById('avatarVideo');
-            
-            // D-ID Streaming API is ready
-updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
-            // Initialize D-ID streaming setup
-initializeDIDElements();
-        };
+    // Generate unique session ID for this training session
+    generateSessionId();
+    
+    // Initialize speech recognition if available
+    initializeSpeechRecognition();
+    
+    // Load saved configuration FIRST
+    loadSavedConfig();
+    
+    // Set up event listeners AFTER loading config
+    setupEventListeners();
+    
+    // Display session info
+    displaySessionInfo();
+    
+    // Initialize avatar video element reference
+    avatarVideo = document.getElementById('avatarVideo');
+    
+    // D-ID Streaming API is ready
+    updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+    
+    // Initialize D-ID streaming setup LAST
+    initializeDIDElements();
+};
         
         // ===== SESSION MANAGEMENT =====
         // Generate and manage unique session IDs
@@ -1399,17 +1400,55 @@ closeStreamConnection();
     hideReviewSection();
     
     // Show confirmation
-    showStatus(`✅ New session started! Session ID: ${sessionId}`, 'success');
-    
-    // Add welcome message if scenario is selected
-    if (currentScenario) {
-        addMessage('New session started. Start recording to begin the consultation.', 'ai');
-    } else {
-        addMessage('New session started. Select a scenario and start recording to begin.', 'ai');
-    }
-    
-    console.log('New session created:', sessionId);
+    // Show confirmation with settings reset indicator
+showStatus(`✅ New session started! Avatar settings reset to defaults. Session ID: ${sessionId}`, 'success');
+
+// Add visual feedback that settings have been reset
+setTimeout(() => {
+    showStatus('Session and avatar settings reset to defaults', 'success');
+}, 2000);
+
+// Add welcome message if scenario is selected
+if (currentScenario) {
+    addMessage('New session started. Start recording to begin the consultation.', 'ai');
+} else {
+    addMessage('New session started. Select a scenario and start recording to begin.', 'ai');
 }
+
+console.log('New session created:', sessionId);
+}
+
+   // Reset configuration fields to default state (but keep API keys and URLs)
+const currentWebhookUrl = document.getElementById('webhookUrl').value;
+const currentSubmitUrl = document.getElementById('submitWebhookUrl').value;
+const currentSheetId = document.getElementById('sheetId').value;
+const currentDidApiKey = document.getElementById('didApiKey').value;
+const currentDeepgramKey = document.getElementById('deepgramApiKey').value;
+
+// Reset avatar configuration to defaults
+document.getElementById('serviceType').value = 'talks';
+document.getElementById('sourceUrl').value = '';
+document.getElementById('presenterId').value = '';
+document.getElementById('voiceSelection').value = '';
+document.getElementById('chunkSize').value = '200';
+document.getElementById('streamingMode').checked = true;
+
+// Reset STT to browser default
+selectSttProvider('browser');
+
+// Update UI to reflect defaults
+updateServiceFields();
+
+// Restore important settings that should persist
+document.getElementById('webhookUrl').value = currentWebhookUrl;
+document.getElementById('submitWebhookUrl').value = currentSubmitUrl;
+document.getElementById('sheetId').value = currentSheetId;
+document.getElementById('didApiKey').value = currentDidApiKey;
+document.getElementById('deepgramApiKey').value = currentDeepgramKey;
+
+// Reset avatar initialization status
+isAvatarInitialized = false;
+updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');     
 
 // Helper function to update session info display
 function updateSessionInfo() {
@@ -1456,20 +1495,26 @@ function updateSessionInfo() {
 
 // Initialize D-ID elements and set up event listeners
 function initializeDIDElements() {
-    updateServiceFields();
+    // Don't call updateServiceFields() here as it resets to defaults
+    // Instead, just set up the event listeners
     
     // Add the refresh button when clips service is selected
     const serviceSelect = document.getElementById('serviceType');
     serviceSelect.addEventListener('change', function() {
+        updateServiceFields();  // Only update when user changes
+        saveConfig();
+        
         if (this.value === 'clips') {
-            setTimeout(addPresenterRefreshButton, 100); // Small delay to ensure DOM is ready
+            setTimeout(addPresenterRefreshButton, 100);
         }
     });
     
-    // Add refresh button if clips is already selected
-    if (serviceSelect.value === 'clips') {
-        setTimeout(addPresenterRefreshButton, 100);
-    }
+    // Add refresh button if clips is already selected (after config is loaded)
+    setTimeout(() => {
+        if (serviceSelect.value === 'clips') {
+            addPresenterRefreshButton();
+        }
+    }, 200);
 }
 
 // Toggle between Talks (custom image) and Clips (preset avatars) service
@@ -1498,8 +1543,8 @@ function updateServiceFields() {
     // Update global serviceType variable
     serviceType = serviceTypeValue;
     
-    // Save configuration
-    saveConfig();
+    // DON'T save config here to prevent loops
+    // saveConfig(); // REMOVED - save will be called by the event listener
 }
 
 // FIXED: Correct Avatar Configuration Reading
@@ -2497,6 +2542,12 @@ let voiceConfig = {
     voice_id: 'en-US-AriaNeural' // Default voice
 };
 
+// Enhanced Voice Selection Logic with Scenario Support
+let voiceConfig = {
+    type: 'microsoft',
+    voice_id: 'en-US-AriaNeural' // Default voice
+};
+
 // Check if user has manually selected a specific voice
 const manualVoiceSelection = document.getElementById('voiceSelection').value;
 
@@ -2504,6 +2555,12 @@ if (manualVoiceSelection) {
     // User has manually selected a voice - use it
     voiceConfig.voice_id = manualVoiceSelection;
     console.log('Using manually selected voice:', manualVoiceSelection);
+    
+    // Check if this was set by scenario
+    if (currentScenario && (currentScenario['Voice Selection'] || currentScenario['Voice'])) {
+        console.log('Voice was configured by scenario:', currentScenario['Patient Name']);
+        showStatus(`Using scenario voice: ${manualVoiceSelection.split('-').pop()}`, 'info');
+    }
     
 } else {
     // Auto voice selection based on service type and presenter
@@ -2518,14 +2575,49 @@ if (manualVoiceSelection) {
         if (presenterDatabase[config.presenterId]) {
             const presenterInfo = presenterDatabase[config.presenterId];
             console.log('Presenter details:', presenterInfo);
+            
+            // Show user which voice was auto-selected
+            const voiceName = optimalVoice.split('-').pop().replace('Neural', '');
+            showStatus(`Auto-selected ${presenterInfo.gender} voice: ${voiceName}`, 'info');
+        }
+        
+        // Check if presenter was set by scenario
+        if (currentScenario && (currentScenario['Avatar Image/Presenter'] || currentScenario['Presenter ID'])) {
+            console.log('Presenter was configured by scenario:', currentScenario['Patient Name']);
         }
         
     } else if (config.serviceType === 'talks') {
-        // For talks with custom image, try to determine gender from image or use default
-        voiceConfig.voice_id = 'en-US-AriaNeural'; // Default professional female voice
-        console.log('Using default voice for talks service');
+        // For talks with custom image, check scenario for gender hints
+        let defaultVoice = 'en-US-AriaNeural'; // Default professional female voice
+        
+        if (currentScenario) {
+            const genderHint = currentScenario['Voice Gender'] || currentScenario['Gender'] || currentScenario['Patient Gender'];
+            if (genderHint && genderHint.trim() !== '') {
+                const genderBasedVoice = getVoiceByGender(genderHint.trim().toLowerCase());
+                if (genderBasedVoice) {
+                    defaultVoice = genderBasedVoice;
+                    console.log('Using gender-based voice from scenario:', genderHint, '->', defaultVoice);
+                    showStatus(`Auto-selected voice based on patient gender: ${genderHint}`, 'info');
+                }
+            }
+        }
+        
+        voiceConfig.voice_id = defaultVoice;
+        console.log('Using voice for talks service:', defaultVoice);
+        
+        // Check if image was set by scenario
+        if (currentScenario && (currentScenario['Avatar Image/Presenter'] || currentScenario['Avatar Image'])) {
+            console.log('Custom image was configured by scenario:', currentScenario['Patient Name']);
+        }
     }
 }
+
+console.log('Final voice configuration:', voiceConfig);
+
+// Show comprehensive voice info to user
+const finalVoiceName = voiceConfig.voice_id.split('-').pop().replace('Neural', '');
+const serviceInfo = config.serviceType === 'clips' ? `${config.presenterId}` : 'Custom Image';
+console.log(`Speaking with: ${finalVoiceName} voice on ${config.serviceType} (${serviceInfo})`);
 
 console.log('Final voice configuration:', voiceConfig);
 
@@ -4233,8 +4325,22 @@ document.addEventListener('keydown', function(event) {
 if (config.voiceSelection) {
     document.getElementById('voiceSelection').value = config.voiceSelection;
 }
-            }
-        }
+
+// Load service type and update fields
+if (config.serviceType) {
+    document.getElementById('serviceType').value = config.serviceType;
+    setTimeout(() => {
+        updateServiceFields(); // Update after a delay to ensure DOM is ready
+    }, 100);
+}
+
+// Load presenter ID after service type is set
+if (config.presenterId) {
+    setTimeout(() => {
+        document.getElementById('presenterId').value = config.presenterId;
+    }, 150);
+}
+                
         // Select a random scenario
         function selectRandomScenario() {
             if (sheetData.length <= 1) {
@@ -4256,6 +4362,7 @@ if (config.voiceSelection) {
     </script>
 </body>
 </html>
+
 
 
 
