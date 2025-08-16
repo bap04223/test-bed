@@ -5,25 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Consultation Training - AI Patient Simulator</title>
     
-    <!-- D-ID SDK Integration - Alternative approach -->
-    <script>
-        // Load D-ID SDK dynamically with fallback
-        (function loadDIDSDK() {
-            const script = document.createElement('script');
-            script.src = 'https://d-id-public-bucket.s3.us-west-2.amazonaws.com/api-studio-sdk/0.0.4/d-id-client.js';
-            script.onload = function() {
-                console.log('D-ID SDK loaded successfully');
-                window.didSDKLoaded = true;
-            };
-            script.onerror = function() {
-                console.warn('Primary D-ID SDK failed, trying fallback...');
-                // Fallback to REST API approach
-                window.didSDKLoaded = false;
-                window.didUseFallback = true;
-            };
-            document.head.appendChild(script);
-        })();
-    </script>
+    
     
     <!-- Modern styling for the interface -->
     <style>
@@ -968,6 +950,14 @@
                                 >
                                     🚀 Initialize Avatar
                                 </button>
+                                <button 
+    type="button"
+    class="btn-danger" 
+    onclick="closeStreamConnection()" 
+    style="margin-top: 10px; width: 100%;"
+>
+    🔌 Disconnect Stream
+</button>
                             </form>
                         </div>
                     </div>
@@ -1159,13 +1149,15 @@
         let fullTranscript = '';         // Store the complete transcript during recording
         let forceStopRecognition = false; // Flag to force stop recognition
         
-        // ===== D-ID GLOBAL VARIABLES =====
-        let didApiKey = '';               // D-ID API key
-        let didClient = null;             // D-ID client instance
-        let avatarVideo = null;           // Video element reference
-        let currentPresenter = null;      // Selected presenter/avatar
-        let isAvatarInitialized = false;  // Track initialization status
-        let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+        // ===== D-ID STREAMING GLOBAL VARIABLES =====
+let didApiKey = '';               // D-ID API key
+let peerConnection = null;        // WebRTC peer connection
+let streamId = null;              // D-ID stream ID
+let sessionId = null;             // D-ID session ID
+let avatarVideo = null;           // Video element reference
+let isAvatarInitialized = false;  // Track initialization status
+let isStreamConnected = false;    // Track streaming connection status
+let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
         
         // ===== STT PROVIDER VARIABLES =====
         let currentSttProvider = 'browser'; // Current STT provider (browser or deepgram)
@@ -1197,20 +1189,8 @@
             // Initialize avatar video element reference
             avatarVideo = document.getElementById('avatarVideo');
             
-            // Check if D-ID SDK is loaded with better detection
-            setTimeout(() => {
-                if (window.didSDKLoaded && typeof DID !== 'undefined') {
-                    console.log('D-ID SDK loaded successfully');
-                    updateAvatarStatus('D-ID SDK ready - Enter API key to initialize', 'info');
-                } else if (window.didUseFallback) {
-                    console.log('D-ID SDK using fallback method');
-                    updateAvatarStatus('D-ID ready (REST API) - Enter API key to initialize', 'info');
-                } else {
-                    console.warn('D-ID SDK not loaded, using REST API fallback');
-                    window.didUseFallback = true;
-                    updateAvatarStatus('D-ID ready (fallback) - Enter API key to initialize', 'info');
-                }
-            }, 1000);
+            // D-ID Streaming API is ready
+updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -1290,12 +1270,8 @@ function newSession() {
         mediaRecorder = null;
     }
     
-    // D-ID Avatar specific cleanup
-    if (avatarVideo) {
-        avatarVideo.pause();
-        avatarVideo.src = '';
-        avatarVideo.load();
-    }
+    // D-ID Streaming specific cleanup
+closeStreamConnection();
     
     // Update session info display
     updateSessionInfo();
@@ -1889,65 +1865,274 @@ document.getElementById('reviewTranscript').value = '';
         // Initialize D-ID client and video element
 
         async function initializeDID() {
-            try {
-                console.log('Initializing D-ID...');
-                updateAvatarStatus('Initializing D-ID...', 'loading');
-                
-                // Get API key from configuration
-                didApiKey = document.getElementById('didApiKey').value;
-                
-                if (!didApiKey) {
-                    throw new Error('D-ID API key not provided');
-                }
-                
-                // Get video element
-                avatarVideo = document.getElementById('avatarVideo');
-                
-                if (!avatarVideo) {
-                    throw new Error('Avatar video element not found');
-                }
-                
-                // Check if we should use fallback method
-                if (window.didUseFallback || typeof DID === 'undefined') {
-                    console.log('Using D-ID REST API fallback method');
-                    // For now, we'll use REST API calls directly
-                    didClient = {
-                        apiKey: didApiKey,
-                        baseURL: 'https://api.d-id.com',
-                        method: 'rest'
-                    };
-                    
-                    // Test the API key by making a simple request
-                    await testDIDConnection();
-                    
-                    console.log('D-ID REST API initialized successfully');
-                    isAvatarInitialized = true;
-                    updateAvatarStatus('Avatar initialized (REST API)', 'success');
-                    
-                    return true;
-                } else {
-                    // Use SDK if available
-                    didClient = new DID.default({
-                        auth: {
-                            apiKey: didApiKey
-                        }
-                    });
-                    
-                    console.log('D-ID SDK client initialized successfully');
-                    isAvatarInitialized = true;
-                    updateAvatarStatus('Avatar initialized (SDK)', 'success');
-                    
-                    return true;
-                }
-                
-            } catch (error) {
-                console.error('D-ID initialization error:', error);
-                updateAvatarStatus(`Error: ${error.message}`, 'error');
-                isAvatarInitialized = false;
-                return false;
-            }
+    try {
+        console.log('Initializing D-ID Streaming...');
+        updateAvatarStatus('Initializing D-ID Streaming...', 'loading');
+        
+        // Get API key from configuration
+        didApiKey = document.getElementById('didApiKey').value;
+        
+        if (!didApiKey) {
+            throw new Error('D-ID API key not provided');
         }
+        
+        // Get video element
+        avatarVideo = document.getElementById('avatarVideo');
+        
+        if (!avatarVideo) {
+            throw new Error('Avatar video element not found');
+        }
+        
+        // Test the API key by making a simple request
+        await testDIDConnection();
+        
+        console.log('D-ID Streaming API initialized successfully');
+        isAvatarInitialized = true;
+        updateAvatarStatus('Avatar ready - Click "Connect Stream" to start', 'info');
+        
+        // Show connect button instead of auto-connecting
+        showConnectButton();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('D-ID initialization error:', error);
+        updateAvatarStatus(`Error: ${error.message}`, 'error');
+        isAvatarInitialized = false;
+        return false;
+    }
+}
 
+      // ===== D-ID STREAMING CONNECTION FUNCTIONS =====
+
+// Show connect button for streaming
+function showConnectButton() {
+    const avatarContainer = document.getElementById('avatarContainer');
+    let connectBtn = document.getElementById('streamConnectBtn');
+    
+    if (!connectBtn) {
+        connectBtn = document.createElement('button');
+        connectBtn.id = 'streamConnectBtn';
+        connectBtn.className = 'btn-primary';
+        connectBtn.style.marginTop = '15px';
+        connectBtn.innerHTML = '🔗 Connect Stream';
+        connectBtn.onclick = connectStream;
+        avatarContainer.appendChild(connectBtn);
+    }
+    
+    connectBtn.style.display = 'block';
+}
+
+// Connect to D-ID streaming
+async function connectStream() {
+    if (peerConnection && peerConnection.connectionState === 'connected') {
+        console.log('Stream already connected');
+        return;
+    }
+    
+    try {
+        updateAvatarStatus('Connecting to D-ID stream...', 'loading');
+        
+        // Step 1: Create a new stream
+        const sessionResponse = await fetch('https://api.d-id.com/talks/streams', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                source_url: defaultPresenterUrl
+            }),
+        });
+        
+        if (!sessionResponse.ok) {
+            throw new Error(`Failed to create stream: ${sessionResponse.status}`);
+        }
+        
+        const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = await sessionResponse.json();
+        streamId = newStreamId;
+        sessionId = newSessionId;
+        
+        console.log('Stream created:', { streamId, sessionId });
+        
+        // Step 2: Create peer connection and set up WebRTC
+        const sessionClientAnswer = await createPeerConnection(offer, iceServers);
+        
+        // Step 3: Send SDP answer
+        const sdpResponse = await fetch(`https://api.d-id.com/talks/streams/${streamId}/sdp`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                answer: sessionClientAnswer,
+                session_id: sessionId,
+            }),
+        });
+        
+        if (!sdpResponse.ok) {
+            throw new Error(`Failed to send SDP answer: ${sdpResponse.status}`);
+        }
+        
+        console.log('SDP answer sent successfully');
+        updateAvatarStatus('Stream connected - Ready for speech', 'success');
+        
+        // Hide connect button
+        const connectBtn = document.getElementById('streamConnectBtn');
+        if (connectBtn) connectBtn.style.display = 'none';
+        
+    } catch (error) {
+        console.error('Stream connection error:', error);
+        updateAvatarStatus(`Connection error: ${error.message}`, 'error');
+        closeStreamConnection();
+    }
+}
+
+// Create WebRTC peer connection
+async function createPeerConnection(offer, iceServers) {
+    if (peerConnection) {
+        closeStreamConnection();
+    }
+    
+    peerConnection = new RTCPeerConnection({ iceServers });
+    
+    // Set up event listeners
+    peerConnection.addEventListener('icegatheringstatechange', onIceGatheringStateChange);
+    peerConnection.addEventListener('icecandidate', onIceCandidate);
+    peerConnection.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
+    peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
+    peerConnection.addEventListener('signalingstatechange', onSignalingStateChange);
+    peerConnection.addEventListener('track', onTrack);
+    
+    await peerConnection.setRemoteDescription(offer);
+    console.log('Set remote SDP OK');
+    
+    const sessionClientAnswer = await peerConnection.createAnswer();
+    console.log('Create local SDP OK');
+    
+    await peerConnection.setLocalDescription(sessionClientAnswer);
+    console.log('Set local SDP OK');
+    
+    return sessionClientAnswer;
+}
+
+// WebRTC event handlers
+function onIceGatheringStateChange() {
+    console.log('ICE gathering state:', peerConnection.iceGatheringState);
+}
+
+function onIceCandidate(event) {
+    console.log('ICE candidate:', event);
+    if (event.candidate && streamId && sessionId) {
+        const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
+        
+        fetch(`https://api.d-id.com/talks/streams/${streamId}/ice`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                candidate,
+                sdpMid,
+                sdpMLineIndex,
+                session_id: sessionId,
+            }),
+        }).catch(error => {
+            console.error('Error sending ICE candidate:', error);
+        });
+    }
+}
+
+function onIceConnectionStateChange() {
+    console.log('ICE connection state:', peerConnection.iceConnectionState);
+    
+    if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+        isStreamConnected = true;
+        updateAvatarStatus('Stream ready for speech', 'success');
+    } else if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'closed') {
+        isStreamConnected = false;
+        updateAvatarStatus('Stream connection lost', 'error');
+        closeStreamConnection();
+    }
+}
+
+function onConnectionStateChange() {
+    console.log('Connection state:', peerConnection.connectionState);
+}
+
+function onSignalingStateChange() {
+    console.log('Signaling state:', peerConnection.signalingState);
+}
+
+function onTrack(event) {
+    console.log('Received remote stream');
+    const remoteStream = event.streams[0];
+    setVideoElement(remoteStream);
+}
+
+function setVideoElement(stream) {
+    if (!stream || !avatarVideo) return;
+    
+    avatarVideo.srcObject = stream;
+    avatarVideo.muted = false;
+    avatarVideo.volume = 0.8;
+    
+    // Safari hotfix
+    if (avatarVideo.paused) {
+        avatarVideo.play().then(() => {
+            console.log('Video playback started');
+        }).catch(error => {
+            console.error('Video play failed:', error);
+        });
+    }
+}
+
+// Close streaming connection
+function closeStreamConnection() {
+    console.log('Closing stream connection');
+    
+    if (avatarVideo && avatarVideo.srcObject) {
+        avatarVideo.srcObject.getTracks().forEach(track => track.stop());
+        avatarVideo.srcObject = null;
+    }
+    
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection.removeEventListener('icegatheringstatechange', onIceGatheringStateChange);
+        peerConnection.removeEventListener('icecandidate', onIceCandidate);
+        peerConnection.removeEventListener('iceconnectionstatechange', onIceConnectionStateChange);
+        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+        peerConnection.removeEventListener('signalingstatechange', onSignalingStateChange);
+        peerConnection.removeEventListener('track', onTrack);
+        peerConnection = null;
+    }
+    
+    isStreamConnected = false;
+    
+    // Show connect button again
+    const connectBtn = document.getElementById('streamConnectBtn');
+    if (connectBtn) connectBtn.style.display = 'block';
+    
+    // Delete stream on server if we have IDs
+    if (streamId && sessionId) {
+        fetch(`https://api.d-id.com/talks/streams/${streamId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ session_id: sessionId }),
+        }).catch(error => {
+            console.error('Error deleting stream:', error);
+        });
+    }
+    
+    streamId = null;
+    sessionId = null;
+}  
+        
         // Test D-ID API connection
         async function testDIDConnection() {
             try {
@@ -1974,42 +2159,88 @@ document.getElementById('reviewTranscript').value = '';
         // Generate and play avatar speech
 
         async function speakWithAvatar(text) {
-            if (!isAvatarInitialized || !didApiKey) {
-                console.log('Avatar not initialized, skipping speech');
-                return;
-            }
-
-            try {
-                console.log('Generating avatar speech for:', text);
-                updateAvatarStatus('Generating avatar speech...', 'loading');
-
-                // Create talk using D-ID REST API
-                const talkResponse = await createTalk(text);
-                
-                if (talkResponse && talkResponse.id) {
-                    console.log('Talk created successfully:', talkResponse.id);
-                    
-                    // Wait for video generation to complete
-                    const videoUrl = await waitForTalkCompletion(talkResponse.id);
-                    
-                    if (videoUrl) {
-                        // Play the generated video
-                        await playAvatarVideo(videoUrl);
-                    }
-                } else {
-                    throw new Error('Failed to create talk');
-                }
-
-            } catch (error) {
-                console.error('Avatar speech error:', error);
-                updateAvatarStatus(`Speech error: ${error.message}`, 'error');
-                
-                // Reset status after a delay
-                setTimeout(() => {
-                    updateAvatarStatus('Avatar ready', 'info');
-                }, 3000);
-            }
+    if (!isAvatarInitialized || !didApiKey) {
+        console.log('Avatar not initialized, skipping speech');
+        return;
+    }
+    
+    if (!isStreamConnected || !streamId || !sessionId) {
+        console.log('Stream not connected, attempting to connect...');
+        await connectStream();
+        
+        // Wait a moment for connection to establish
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (!isStreamConnected) {
+            console.error('Failed to establish stream connection');
+            updateAvatarStatus('Connection failed - check API key and network', 'error');
+            return;
         }
+    }
+
+    try {
+        console.log('Sending text to D-ID stream:', text);
+        updateAvatarStatus('Generating speech...', 'loading');
+
+        // Create talk stream with text
+        const talkResponse = await fetch(`https://api.d-id.com/talks/streams/${streamId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                script: {
+                    type: 'text',
+                    input: text,
+                    provider: {
+                        type: 'microsoft',
+                        voice_id: 'Sara'
+                    }
+                },
+                driver_url: 'bank://lively/',
+                config: {
+                    stitch: true,
+                },
+                session_id: sessionId
+            }),
+        });
+
+        if (!talkResponse.ok) {
+            const errorText = await talkResponse.text();
+            throw new Error(`Talk stream failed: ${talkResponse.status} - ${errorText}`);
+        }
+
+        console.log('Talk stream sent successfully');
+        updateAvatarStatus('Speaking...', 'playing');
+
+        // The video will automatically appear via the WebRTC stream
+        // Monitor for video events to update status
+        if (avatarVideo) {
+            const handleVideoPlay = () => {
+                updateAvatarStatus('Avatar speaking...', 'playing');
+                avatarVideo.removeEventListener('play', handleVideoPlay);
+            };
+            
+            const handleVideoEnd = () => {
+                updateAvatarStatus('Avatar ready', 'info');
+                avatarVideo.removeEventListener('ended', handleVideoEnd);
+            };
+            
+            avatarVideo.addEventListener('play', handleVideoPlay);
+            avatarVideo.addEventListener('ended', handleVideoEnd);
+        }
+
+    } catch (error) {
+        console.error('Avatar speech error:', error);
+        updateAvatarStatus(`Speech error: ${error.message}`, 'error');
+        
+        // Reset status after a delay
+        setTimeout(() => {
+            updateAvatarStatus('Avatar ready', 'info');
+        }, 3000);
+    }
+}
 
         // Create a new talk using D-ID REST API
         async function createTalk(text) {
@@ -3311,6 +3542,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
