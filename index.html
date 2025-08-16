@@ -1304,15 +1304,11 @@ function getPresenterVoice(presenterId) {
             // Initialize avatar video element reference
             avatarVideo = document.getElementById('avatarVideo');
             
-            // D-ID Streaming API is ready
+// D-ID Streaming API is ready
 updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
-            // Initialize D-ID streaming setup
+
+// Initialize D-ID streaming setup
 initializeDIDElements();
-            // Force initial service field update
-setTimeout(() => {
-    console.log('Forcing initial service field update');
-    updateServiceFields();
-}, 200);
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -1490,17 +1486,7 @@ function updateSessionInfo() {
     document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
     document.getElementById('voiceSelection').addEventListener('change', saveConfig);  // Add this line
 
-    // Fix the service type change listener
-document.getElementById('serviceType').addEventListener('change', function() {
-    console.log('Service type changed to:', this.value);
-    updateServiceFields();
-    saveConfig();
-});
-
-// Force initial update on page load
-setTimeout(() => {
-    updateServiceFields();
-}, 100);
+    
 }
 
         // ===== AVATAR CONFIGURATION FUNCTIONS =====
@@ -1509,27 +1495,17 @@ setTimeout(() => {
 function initializeDIDElements() {
     console.log('Initializing D-ID elements...');
     
-    // Force update service fields on initialization
+    // DON'T replace the element - just ensure event listeners are properly set
+    const serviceSelect = document.getElementById('serviceType');
+    
+    // Force update service fields based on current selection
     setTimeout(() => {
+        console.log('Current service type on init:', serviceSelect.value);
         updateServiceFields();
     }, 50);
     
-    // Remove any existing event listeners to prevent duplicates
-    const serviceSelect = document.getElementById('serviceType');
-    const newServiceSelect = serviceSelect.cloneNode(true);
-    serviceSelect.parentNode.replaceChild(newServiceSelect, serviceSelect);
-    
-    // Add fresh event listener
-    document.getElementById('serviceType').addEventListener('change', function() {
-        console.log('Service type changed to:', this.value);
-        updateServiceFields();
-        if (this.value === 'clips') {
-            setTimeout(addPresenterRefreshButton, 100);
-        }
-    });
-    
     // Add refresh button if clips is already selected
-    if (document.getElementById('serviceType').value === 'clips') {
+    if (serviceSelect.value === 'clips') {
         setTimeout(addPresenterRefreshButton, 100);
     }
 }
@@ -1541,17 +1517,32 @@ function updateServiceFields() {
     const imageUrlGroup = document.getElementById('imageUrlGroup');
     const presenterGroup = document.getElementById('presenterGroup');
     
-    console.log('Updating service fields for:', serviceTypeValue);
+    console.log('=== updateServiceFields DEBUG ===');
+    console.log('Service type value:', serviceTypeValue);
+    console.log('Image URL group display:', imageUrlGroup ? imageUrlGroup.style.display : 'NOT FOUND');
+    console.log('Presenter group display:', presenterGroup ? presenterGroup.style.display : 'NOT FOUND');
     
     if (serviceTypeValue === 'talks') {
         // Show custom image URL field, hide presenter selection
-        if (imageUrlGroup) imageUrlGroup.style.display = 'block';
-        if (presenterGroup) presenterGroup.style.display = 'none';
+        if (imageUrlGroup) {
+            imageUrlGroup.style.display = 'block';
+            console.log('✅ Set imageUrlGroup to block');
+        }
+        if (presenterGroup) {
+            presenterGroup.style.display = 'none';
+            console.log('✅ Set presenterGroup to none');
+        }
         console.log('Switched to Talks mode - showing URL field');
     } else if (serviceTypeValue === 'clips') {
         // Show presenter selection, hide custom image URL field
-        if (imageUrlGroup) imageUrlGroup.style.display = 'none';
-        if (presenterGroup) presenterGroup.style.display = 'block';
+        if (imageUrlGroup) {
+            imageUrlGroup.style.display = 'none';
+            console.log('✅ Set imageUrlGroup to none');
+        }
+        if (presenterGroup) {
+            presenterGroup.style.display = 'block';
+            console.log('✅ Set presenterGroup to block');
+        }
         console.log('Switched to Clips mode - showing presenter field');
         
         // Add refresh button if it doesn't exist
@@ -1563,6 +1554,8 @@ function updateServiceFields() {
     
     // Save configuration
     saveConfig();
+    
+    console.log('=== updateServiceFields COMPLETE ===');
 }
 
 // FIXED: Correct Avatar Configuration Reading
@@ -4321,5 +4314,6 @@ if (config.voiceSelection) {
     </script>
 </body>
 </html>
+
 
 
