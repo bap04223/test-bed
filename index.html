@@ -579,22 +579,112 @@
             text-align: center;
         }
         
-        /* Modal Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-            from { 
-                opacity: 0;
-                transform: scale(0.8) translateY(-20px);
-            }
-            to { 
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
+        /* Image Gallery Styles */
+.image-gallery {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 10;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.gallery-nav:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.gallery-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: translateY(-50%) scale(1);
+}
+
+.gallery-nav-prev {
+    left: 10px;
+}
+
+.gallery-nav-next {
+    right: 10px;
+}
+
+/* Gallery Indicators (Dots) */
+.gallery-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 10px;
+}
+
+.gallery-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gallery-dot:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.gallery-dot.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Enhanced Patient Image for Gallery */
+.patient-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Mobile Responsive Gallery */
+@media (max-width: 768px) {
+    .gallery-nav {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .gallery-nav-prev {
+        left: 5px;
+    }
+    
+    .gallery-nav-next {
+        right: 5px;
+    }
+    
+    .gallery-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
             
       /* Review section styling */
         .review-section {
@@ -2256,39 +2346,62 @@ document.getElementById('reviewTranscript').value = '';
             addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
         }
         
-        // Update patient image button state based on scenario
-        function updatePatientImageButton() {
-            const button = document.getElementById('patientImageBtn');
-            
-            if (!currentScenario) {
-                // No scenario selected
-                button.className = 'patient-image-btn disabled';
-                button.textContent = '📷 No Scenario Selected';
-                button.disabled = true;
-                return;
-            }
-            
-            // Check for image URL in various possible column names
-            const imageUrl = currentScenario['Patient Image'] || 
-                           currentScenario['Image URL'] || 
-                           currentScenario['Photo URL'] || 
-                           currentScenario['Image'] || 
-                           currentScenario['Photo'] ||
-                           currentScenario['Picture URL'] ||
-                           currentScenario['Picture'];
-            
-            if (imageUrl && imageUrl.trim() !== '') {
-                // Image available
-                button.className = 'patient-image-btn available';
+        // ===== MULTI-IMAGE PATIENT GALLERY =====
+// Global variables for image gallery
+let currentImageIndex = 0;
+let patientImages = [];
+
+// Update patient image button state based on scenario
+function updatePatientImageButton() {
+    const button = document.getElementById('patientImageBtn');
+    
+    if (!currentScenario) {
+        // No scenario selected
+        button.className = 'patient-image-btn disabled';
+        button.textContent = '📷 No Scenario Selected';
+        button.disabled = true;
+        return;
+    }
+    
+    // Check for image URL in various possible column names
+    const imageData = currentScenario['Patient Image'] || 
+                     currentScenario['Image URL'] || 
+                     currentScenario['Photo URL'] || 
+                     currentScenario['Image'] || 
+                     currentScenario['Photo'] ||
+                     currentScenario['Picture URL'] ||
+                     currentScenario['Picture'];
+    
+    if (imageData && imageData.trim() !== '') {
+        // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
+        patientImages = imageData
+            .split(/[,;\n\r]+/)
+            .map(url => url.trim())
+            .filter(url => url !== '');
+        
+        if (patientImages.length > 0) {
+            // Images available
+            button.className = 'patient-image-btn available';
+            if (patientImages.length === 1) {
                 button.innerHTML = '👁️ View Patient Image';
-                button.disabled = false;
             } else {
-                // No image URL
-                button.className = 'patient-image-btn unavailable';
-                button.innerHTML = '❌ No Patient Image';
-                button.disabled = true;
+                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
             }
+            button.disabled = false;
+        } else {
+            // No valid images
+            button.className = 'patient-image-btn unavailable';
+            button.innerHTML = '❌ No Patient Image';
+            button.disabled = true;
         }
+    } else {
+        // No image data
+        patientImages = [];
+        button.className = 'patient-image-btn unavailable';
+        button.innerHTML = '❌ No Patient Image';
+        button.disabled = true;
+    }
+}
         
         // Helper function to convert Google Drive share links to direct image URLs
         function convertGoogleDriveUrl(url) {
@@ -2312,119 +2425,210 @@ document.getElementById('reviewTranscript').value = '';
             return url;
         }
         
-        // Show patient image modal
+        // Show patient image modal with gallery functionality
         function showPatientImage() {
-            if (!currentScenario) {
-                showStatus('No scenario selected', 'error');
+            if (!currentScenario || patientImages.length === 0) {
+                showStatus('No scenario selected or no images available', 'error');
                 return;
             }
             
-            // Get image URL from scenario data
-            const imageUrl = currentScenario['Patient Image'] || 
-                           currentScenario['Image URL'] || 
-                           currentScenario['Photo URL'] || 
-                           currentScenario['Image'] || 
-                           currentScenario['Photo'] ||
-                           currentScenario['Picture URL'] ||
-                           currentScenario['Picture'];
-            
-            if (!imageUrl || imageUrl.trim() === '') {
-                showStatus('No image URL available for this patient', 'error');
-                return;
-            }
-            
-            // Convert Google Drive share links to direct image URLs
-            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
-            
-            // Log URL conversion for debugging
-            if (convertedImageUrl !== imageUrl.trim()) {
-                console.log('Original URL:', imageUrl.trim());
-                console.log('Converted URL:', convertedImageUrl);
-            }
+            // Reset to first image
+            currentImageIndex = 0;
             
             // Set modal title
             const patientName = currentScenario['Patient Name'] || 'Patient';
-            document.getElementById('imageModalTitle').textContent = `${patientName} - Patient Image`;
+            const titleElement = document.getElementById('imageModalTitle');
+            if (patientImages.length === 1) {
+                titleElement.textContent = `${patientName} - Patient Image`;
+            } else {
+                titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
+            }
             
             // Show modal
             const modal = document.getElementById('imageModal');
-            const modalBody = document.getElementById('imageModalBody');
-            
-            // Show loading state
-            modalBody.innerHTML = `
-                <div class="image-loading">
-                    <div class="spinner"></div>
-                    Loading image...
-                </div>
-            `;
-            
             modal.classList.add('show');
             
-            // Create image element
-            const img = new Image();
+            // Load the first image
+            loadImageAtIndex(0);
+        }
+
+        }
+
+// Load image at specific index
+function loadImageAtIndex(index) {
+    if (index < 0 || index >= patientImages.length) return;
+    
+    currentImageIndex = index;
+    const imageUrl = patientImages[index];
+    const convertedImageUrl = convertGoogleDriveUrl(imageUrl);
+    
+    // Update modal title with current image number
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    const titleElement = document.getElementById('imageModalTitle');
+    if (patientImages.length > 1) {
+        titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+    }
+    
+    // Update modal body
+    const modalBody = document.getElementById('imageModalBody');
+    
+    // Show loading state
+    modalBody.innerHTML = `
+        <div class="image-loading">
+            <div class="spinner"></div>
+            Loading image ${index + 1} of ${patientImages.length}...
+        </div>
+    `;
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
+        modalBody.innerHTML = galleryHTML;
+        
+        // Update navigation button states
+        updateNavigationButtons();
+    };
+    
+    img.onerror = function() {
+        // Try alternative Google Drive format
+        if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            console.log('First Google Drive format failed, trying alternative...');
+            img.hasTriedAlternative = true;
             
-            img.onload = function() {
-                // Image loaded successfully
-                modalBody.innerHTML = `<img src="${convertedImageUrl}" alt="${patientName}" class="patient-image">`;
-            };
-            
-            img.onerror = function() {
-                // Image failed to load - try alternative Google Drive formats
-                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First Google Drive format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    // Extract file ID and try different format
-                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        // Try the uc format as backup
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely
-                modalBody.innerHTML = `
-                    <div class="image-error">
-                        <h4>Failed to Load Image</h4>
-                        <p>The image could not be loaded. This might be due to:</p>
-                        <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                            <li>The image is not set to "Anyone with the link can view"</li>
-                            <li>Google Drive is blocking the image embedding</li>
-                            <li>The file is not an image format</li>
-                            <li>The URL is incorrect or the file was deleted</li>
-                        </ul>
-                        
-                        <p><strong>Attempted URL:</strong></p>
-                        <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
-                        
-                        ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
-                        
-                        <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
-                            <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
-                            <ol style="margin: 5px 0 10px 20px; color: #92400e;">
-                                <li>Right-click the image → "Get link"</li>
-                                <li>Change to "Anyone with the link"</li>
-                                <li>Use a direct image hosting service instead</li>
-                            </ol>
-                            <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
-                        </div>
-                        
-                        <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            🔗 Open Original Link
-                        </button>
-                    </div>
-                `;
-            };
-            
-            // Start loading the image
-            img.src = convertedImageUrl;
+            const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log('Trying alternative URL:', alternativeUrl);
+                img.src = alternativeUrl;
+                return;
+            }
         }
         
+        // Image failed to load completely
+        modalBody.innerHTML = createErrorHTML(imageUrl, convertedImageUrl);
+        updateNavigationButtons();
+    };
+    
+    // Start loading the image
+    img.src = convertedImageUrl;
+}
+
+// Create gallery HTML with navigation
+function createGalleryHTML(imageUrl, patientName) {
+    const showNavigation = patientImages.length > 1;
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
+            
+            <img src="${imageUrl}" alt="${patientName}" class="patient-image">
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${patientImages.map((_, index) => `
+                    <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                            onclick="loadImageAtIndex(${index})">
+                    </button>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+}
+
+// Create error HTML with navigation
+function createErrorHTML(originalUrl, convertedUrl) {
+    const showNavigation = patientImages.length > 1;
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
+            
+            <div class="image-error">
+                <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
+                <p>The image could not be loaded. This might be due to:</p>
+                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                    <li>The image is not set to "Anyone with the link can view"</li>
+                    <li>Google Drive is blocking the image embedding</li>
+                    <li>The file is not an image format</li>
+                    <li>The URL is incorrect or the file was deleted</li>
+                </ul>
+                
+                <p><strong>Attempted URL:</strong></p>
+                <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedUrl}</p>
+                
+                <button onclick="window.open('${originalUrl}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🔗 Open Original Link
+                </button>
+            </div>
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${patientImages.map((_, index) => `
+                    <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                            onclick="loadImageAtIndex(${index})">
+                    </button>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+}
+
+// Navigation functions
+function nextImage() {
+    const nextIndex = (currentImageIndex + 1) % patientImages.length;
+    loadImageAtIndex(nextIndex);
+}
+
+function previousImage() {
+    const prevIndex = (currentImageIndex - 1 + patientImages.length) % patientImages.length;
+    loadImageAtIndex(prevIndex);
+}
+
+// Update navigation button states
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (prevBtn && nextBtn) {
+        // For circular navigation, buttons are always enabled
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
+        
+        // Update indicators
+        const dots = document.querySelectorAll('.gallery-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentImageIndex);
+        });
+    }
+}
+
+       
         // Close patient image modal
         function closeImageModal(event) {
             // If event is passed and it's not the backdrop click, ignore
@@ -2437,11 +2641,23 @@ document.getElementById('reviewTranscript').value = '';
         }
         
         // Add keyboard support for modal
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeImageModal();
-            }
-        });
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+    
+    // Add gallery navigation
+    const modal = document.getElementById('imageModal');
+    if (modal.classList.contains('show') && patientImages.length > 1) {
+        if (event.key === 'ArrowLeft') {
+            previousImage();
+            event.preventDefault();
+        } else if (event.key === 'ArrowRight') {
+            nextImage();
+            event.preventDefault();
+        }
+    }
+});
         
         // Select a random scenario
         function selectRandomScenario() {
@@ -3097,6 +3313,7 @@ document.getElementById('reviewTranscript').value = '';
     </script>
 </body>
 </html>
+
 
 
 
