@@ -1074,11 +1074,7 @@
     </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
-</div>
-    </video>
-    <div id="avatarStatus" class="avatar-status">
-    </div>
-</div>
+</div></div>
 
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
@@ -1148,16 +1144,16 @@ let didApiKey = '';               // D-ID API key
 let peerConnection = null;        // WebRTC peer connection
 let streamId = null;              // D-ID stream ID
 let didSessionId = null;          // D-ID session ID (renamed to avoid conflict)
-        
-        // ===== D-ID STREAMING GLOBAL VARIABLES =====
-let didApiKey = '';               // D-ID API key
-let peerConnection = null;        // WebRTC peer connection
-let streamId = null;              // D-ID stream ID
-let sessionId = null;             // D-ID session ID
 let avatarVideo = null;           // Video element reference
 let isAvatarInitialized = false;  // Track initialization status
 let isStreamConnected = false;    // Track streaming connection status
 let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+
+        // ===== SPEECH RECOGNITION VARIABLES =====
+let recognition = null;           // Speech recognition object
+let isRecording = false;          // Track if we're currently recording
+let fullTranscript = '';         // Store the complete transcript during recording
+let forceStopRecognition = false; // Flag to force stop recognition
         
         // ===== STT PROVIDER VARIABLES =====
         let currentSttProvider = 'browser'; // Current STT provider (browser or deepgram)
@@ -1953,7 +1949,7 @@ async function connectStream() {
         streamId = newStreamId;
         didSessionId = newSessionId;
         
-        console.log('Stream created:', { streamId, sessionId });
+        console.log('Stream created:', { streamId, didSessionId });
         
         // Step 2: Create peer connection and set up WebRTC
         const sessionClientAnswer = await createPeerConnection(offer, iceServers);
@@ -3542,6 +3538,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
