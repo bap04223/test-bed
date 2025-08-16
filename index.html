@@ -2697,6 +2697,7 @@ function addPresenterRefreshButton() {
 }
 
 // Enhanced API key testing with permissions check
+// Enhanced API key testing with correct permissions check
 async function testDIDPermissions() {
     const apiKey = document.getElementById('didApiKey').value;
     
@@ -2714,41 +2715,118 @@ async function testDIDPermissions() {
     };
     
     try {
-        // Test Talks API access
+        // Test 1: Basic Talks API access
         console.log('Testing Talks API...');
-        const talksResponse = await fetch('https://api.d-id.com/talks', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${apiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        testResults.talks = talksResponse.ok;
-        console.log('Talks API access:', testResults.talks ? 'OK' : 'DENIED');
+        try {
+            const talksResponse = await fetch('https://api.d-id.com/talks', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            testResults.talks = talksResponse.ok;
+            console.log('Talks API access:', testResults.talks ? 'OK' : `DENIED (${talksResponse.status})`);
+        } catch (error) {
+            console.log('Talks API error:', error.message);
+            testResults.talks = false;
+        }
         
-        // Test Clips API access
+        // Test 2: Basic Clips API access
         console.log('Testing Clips API...');
-        const clipsResponse = await fetch('https://api.d-id.com/clips', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${apiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        testResults.clips = clipsResponse.ok;
-        console.log('Clips API access:', testResults.clips ? 'OK' : 'DENIED');
+        try {
+            const clipsResponse = await fetch('https://api.d-id.com/clips', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            testResults.clips = clipsResponse.ok;
+            console.log('Clips API access:', testResults.clips ? 'OK' : `DENIED (${clipsResponse.status})`);
+        } catch (error) {
+            console.log('Clips API error:', error.message);
+            testResults.clips = false;
+        }
         
-        // Test Streams API access
-        console.log('Testing Streams API...');
-        const streamTestResponse = await fetch('https://api.d-id.com/talks/streams', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Basic ${apiKey}`,
-                'Content-Type': 'application/json'
+        // Test 3: Streams API access - Test by trying to create a minimal stream
+        console.log('Testing Streams API (creating test stream)...');
+        try {
+            // Try creating a minimal talks stream first
+            const talksStreamResponse = await fetch('https://api.d-id.com/talks/streams', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    source_url: 'https://clips-presenters.d-id.com/amy/image.png',
+                    stream_warmup: true
+                })
+            });
+            
+            if (talksStreamResponse.ok) {
+                const streamData = await talksStreamResponse.json();
+                console.log('Talks Streams API: OK');
+                testResults.streams = true;
+                
+                // Clean up the test stream
+                setTimeout(() => {
+                    fetch(`https://api.d-id.com/talks/streams/${streamData.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Basic ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ session_id: streamData.session_id })
+                    }).catch(err => console.log('Stream cleanup error:', err));
+                }, 1000);
+                
+            } else {
+                console.log('Talks Streams API: DENIED', talksStreamResponse.status);
+                
+                // If talks streams fail, try clips streams
+                const clipsStreamResponse = await fetch('https://api.d-id.com/clips/streams', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        presenter: {
+                            type: 'clip',
+                            clip_id: 'noelle'
+                        },
+                        stream_warmup: true
+                    })
+                });
+                
+                if (clipsStreamResponse.ok) {
+                    const streamData = await clipsStreamResponse.json();
+                    console.log('Clips Streams API: OK');
+                    testResults.streams = true;
+                    
+                    // Clean up the test stream
+                    setTimeout(() => {
+                        fetch(`https://api.d-id.com/clips/streams/${streamData.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Basic ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ session_id: streamData.session_id })
+                        }).catch(err => console.log('Stream cleanup error:', err));
+                    }, 1000);
+                } else {
+                    console.log('Clips Streams API: DENIED', clipsStreamResponse.status);
+                    testResults.streams = false;
+                }
             }
-        });
-        testResults.streams = streamTestResponse.ok;
-        console.log('Streams API access:', testResults.streams ? 'OK' : 'DENIED');
+            
+        } catch (error) {
+            console.log('Streams API error:', error.message);
+            testResults.streams = false;
+        }
         
         // Display results
         displayPermissionResults(testResults);
@@ -2780,8 +2858,7 @@ function displayPermissionResults(results) {
         updateAvatarStatus('All API permissions verified ✅', 'success');
         showStatus('API key has full access to all services', 'success');
     } else {
-        updateAvatarStatus('Limited API permissions detected ⚠️', 'error');
-        showStatus('API key has limited access - check your D-ID plan', 'error');
+        updateAvatarStatus('Permissions checked - see console for details', 'info');
         
         // Show specific missing permissions
         const missing = [];
@@ -2789,73 +2866,53 @@ function displayPermissionResults(results) {
         if (!results.clips) missing.push('Clips');
         if (!results.streams) missing.push('Streams');
         
-        console.warn(`Missing permissions for: ${missing.join(', ')}`);
+        if (missing.length > 0) {
+            console.warn(`Limited permissions for: ${missing.join(', ')}`);
+            showStatus(`Limited access: ${missing.join(', ')} - check D-ID plan`, 'error');
+        } else {
+            showStatus('All basic APIs accessible', 'success');
+        }
     }
+    
+    // Update service availability in UI
+    updateServiceAvailability(results);
 }
 
-// Simple test function for Clips service
-async function testSimpleClips() {
-    const apiKey = document.getElementById('didApiKey').value;
+function updateServiceAvailability(results) {
+    const serviceSelect = document.getElementById('serviceType');
     
-    if (!apiKey) {
-        showStatus('Please enter D-ID API key first', 'error');
-        return;
+    // Reset options first
+    serviceSelect.innerHTML = `
+        <option value="talks">Talks (Custom Image)</option>
+        <option value="clips">Clips (Preset Avatars)</option>
+    `;
+    
+    const options = serviceSelect.options;
+    
+    // Disable unavailable services
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        if (option.value === 'talks' && (!results.talks || !results.streams)) {
+            option.disabled = true;
+            option.textContent += ' (Limited Access)';
+        } else if (option.value === 'clips' && (!results.clips || !results.streams)) {
+            option.disabled = true;
+            option.textContent += ' (Limited Access)';
+        }
     }
     
-    try {
-        updateAvatarStatus('Testing Clips with simple presenter...', 'loading');
+    // Switch to available service if current selection is unavailable
+    const currentService = serviceSelect.value;
+    if ((currentService === 'talks' && (!results.talks || !results.streams)) || 
+        (currentService === 'clips' && (!results.clips || !results.streams))) {
         
-        // Test with the most basic presenter
-        const testPayload = {
-            presenter: {
-                type: 'clip',
-                clip_id: 'noelle'  // Most basic presenter
-            },
-            stream_warmup: true
-        };
-        
-        console.log('Testing Clips with payload:', testPayload);
-        
-        const response = await fetch('https://api.d-id.com/clips/streams', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(testPayload),
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Clips test successful:', data);
-            updateAvatarStatus('Clips service working! ✅', 'success');
-            showStatus('Clips service test passed', 'success');
-            
-            // Clean up test stream
-            if (data.id) {
-                setTimeout(() => {
-                    fetch(`https://api.d-id.com/clips/streams/${data.id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Basic ${apiKey}`,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ session_id: data.session_id }),
-                    }).catch(err => console.log('Test cleanup error:', err));
-                }, 1000);
-            }
-            
-        } else {
-            const errorText = await response.text();
-            console.error('Clips test failed:', response.status, errorText);
-            updateAvatarStatus('Clips service failed ❌', 'error');
-            showStatus(`Clips test failed: ${response.status}`, 'error');
+        // Find an available service
+        if (results.talks && results.streams) {
+            serviceSelect.value = 'talks';
+        } else if (results.clips && results.streams) {
+            serviceSelect.value = 'clips';
         }
-        
-    } catch (error) {
-        console.error('Clips test error:', error);
-        updateAvatarStatus('Clips test error ❌', 'error');
-        showStatus(`Clips test error: ${error.message}`, 'error');
+        updateServiceFields();
     }
 }
 
@@ -4011,6 +4068,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
