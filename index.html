@@ -924,33 +924,73 @@
                         </button>
                         
                         <!-- D-ID Configuration -->
-                        <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                            <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Avatar Settings</h3>
-                            
-                            <form style="margin: 0;" onsubmit="return false;">
-                                <input type="text" name="username" style="display: none;" autocomplete="username">
-                                <label for="didApiKey">D-ID API Key:</label>
-                                <input 
-                                    type="password" 
-                                    id="didApiKey" 
-                                    name="password"
-                                    placeholder="Enter your D-ID API key"
-                                    title="Get your API key from studio.d-id.com"
-                                    autocomplete="current-password"
-                                >
-                                <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
-                                    Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
-                                </small>
-                                
-                                <button 
-                                    type="button"
-                                    class="btn-primary" 
-                                    onclick="initializeDID()" 
-                                    style="margin-top: 10px; width: 100%;"
-                                >
-                                    🚀 Initialize Avatar
-                                </button>
-                                <button 
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Streaming Avatar</h3>
+    
+    <form style="margin: 0;" onsubmit="return false;">
+        <input type="text" name="username" style="display: none;" autocomplete="username">
+        <label for="didApiKey">D-ID API Key:</label>
+        <input 
+            type="password" 
+            id="didApiKey" 
+            name="password"
+            placeholder="Enter your D-ID API key"
+            title="Get your API key from studio.d-id.com"
+            autocomplete="current-password"
+        >
+        <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
+            Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
+        </small>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label for="serviceType">Avatar Service:</label>
+            <select id="serviceType">
+                <option value="talks">Talks (Custom Image)</option>
+                <option value="clips">Clips (Preset Avatars)</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="imageUrlGroup">
+            <label for="sourceUrl">Source Image URL (for Talks):</label>
+            <input type="url" id="sourceUrl" placeholder="https://example.com/your-image.jpg">
+        </div>
+        
+        <div class="form-group" id="presenterGroup" style="display: none;">
+            <label for="presenterId">Presenter (for Clips):</label>
+            <select id="presenterId">
+                <option value="">Select presenter...</option>
+                <option value="wayne_20240711">Wayne (Recommended)</option>
+                <option value="amy-Aq6OmGZnMt">Amy (Professional)</option>
+                <option value="noelle">Noelle (Default)</option>
+                <option value="eric-2UHNp4HyMt">Eric (Casual)</option>
+                <option value="stacey-G6mPtqx8eS">Stacey (Friendly)</option>
+            </select>
+            <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 11px;">
+                Note: Some presenters may require specific API access levels
+            </small>
+        </div>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label for="chunkSize">Text Chunk Size:</label>
+            <input type="number" id="chunkSize" value="200" min="50" max="500">
+            <small style="color: var(--text-secondary); font-size: 11px;">
+                Smaller = more natural speech, larger = fewer API calls
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <input type="checkbox" id="streamingMode" checked style="width: auto; margin-right: 8px;">
+            <label for="streamingMode" style="display: inline;">Enable Streaming Mode</label>
+        </div>
+        
+        <button 
+            type="button"
+            class="btn-primary" 
+            onclick="initializeDID()" 
+            style="margin-top: 10px; width: 100%;"
+        >
+            🚀 Initialize Avatar
+        </button> 
     type="button"
     class="btn-danger" 
     onclick="closeStreamConnection()" 
@@ -1149,6 +1189,13 @@ let isAvatarInitialized = false;  // Track initialization status
 let isStreamConnected = false;    // Track streaming connection status
 let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
 
+        // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
+let serviceType = 'talks';        // Service type (talks or clips)
+let sourceUrl = '';               // Source image URL for talks
+let presenterId = '';             // Presenter ID for clips  
+let chunkSize = 200;              // Text chunk size for streaming
+let streamingMode = true;         // Enable streaming mode
+
         // ===== SPEECH RECOGNITION VARIABLES =====
 let recognition = null;           // Speech recognition object
 let isRecording = false;          // Track if we're currently recording
@@ -1187,6 +1234,8 @@ let forceStopRecognition = false; // Flag to force stop recognition
             
             // D-ID Streaming API is ready
 updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+            // Initialize D-ID streaming setup
+initializeDIDElements();
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -1310,17 +1359,87 @@ function updateSessionInfo() {
         // Set up various UI interactions
         
        function setupEventListeners() {
-            // Save configuration when changed
-            document.getElementById('webhookUrl').addEventListener('change', saveConfig);
-            document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
-            document.getElementById('sheetId').addEventListener('change', saveConfig);
-            document.getElementById('didApiKey').addEventListener('change', saveConfig);
-            
-            // Add new Deepgram listeners
-            document.getElementById('deepgramApiKey').addEventListener('change', saveConfig);
-            document.getElementById('deepgramModel').addEventListener('change', saveConfig);
-            document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
+    // Save configuration when changed
+    document.getElementById('webhookUrl').addEventListener('change', saveConfig);
+    document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
+    document.getElementById('sheetId').addEventListener('change', saveConfig);
+    document.getElementById('didApiKey').addEventListener('change', saveConfig);
+    
+    // Avatar configuration event listeners
+    document.getElementById('serviceType').addEventListener('change', function() {
+        updateServiceFields();
+        saveConfig();
+    });
+    document.getElementById('sourceUrl').addEventListener('change', saveConfig);
+    document.getElementById('presenterId').addEventListener('change', saveConfig);
+    document.getElementById('chunkSize').addEventListener('change', saveConfig);
+    document.getElementById('streamingMode').addEventListener('change', saveConfig);
+    
+    // Add new Deepgram listeners
+    document.getElementById('deepgramApiKey').addEventListener('change', saveConfig);
+    document.getElementById('deepgramModel').addEventListener('change', saveConfig);
+    document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
+}
+
+        // ===== AVATAR CONFIGURATION FUNCTIONS =====
+
+// Initialize D-ID elements and set up event listeners
+function initializeDIDElements() {
+    updateServiceFields();
+}
+
+// Toggle between Talks (custom image) and Clips (preset avatars) service
+function updateServiceFields() {
+    const serviceTypeValue = document.getElementById('serviceType').value;
+    const imageUrlGroup = document.getElementById('imageUrlGroup');
+    const presenterGroup = document.getElementById('presenterGroup');
+    
+    if (serviceTypeValue === 'talks') {
+        // Show custom image URL field, hide presenter selection
+        imageUrlGroup.style.display = 'block';
+        presenterGroup.style.display = 'none';
+    } else {
+        // Show presenter selection, hide custom image URL field
+        imageUrlGroup.style.display = 'none';
+        presenterGroup.style.display = 'block';
+    }
+}
+
+// Read configuration values from form elements
+function getAvatarConfiguration() {
+    return {
+        didApiKey: document.getElementById('didApiKey').value.trim(),
+        serviceType: document.getElementById('serviceType').value,
+        sourceUrl: document.getElementById('sourceUrl').value.trim(),
+        presenterId: document.getElementById('presenterId').value,
+        chunkSize: parseInt(document.getElementById('chunkSize').value),
+        streamingMode: document.getElementById('streamingMode').checked
+    };
+}
+
+// Text chunking function for streaming
+function splitTextIntoChunks(text, chunkSize) {
+    const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+    const chunks = [];
+    let currentChunk = '';
+    
+    for (const sentence of sentences) {
+        if (currentChunk.length + sentence.length <= chunkSize) {
+            currentChunk += sentence;
+        } else {
+            if (currentChunk) {
+                chunks.push(currentChunk.trim());
+            }
+            currentChunk = sentence;
         }
+    }
+    
+    if (currentChunk) {
+        chunks.push(currentChunk.trim());
+    }
+    
+    return chunks.filter(chunk => chunk.length > 0);
+}
         
         // ===== SPEECH RECOGNITION SETUP =====
         // Configure the browser's speech recognition API
@@ -1919,26 +2038,42 @@ function showConnectButton() {
     connectBtn.style.display = 'block';
 }
 
-// Connect to D-ID streaming
-async function connectStream() {
-    if (peerConnection && peerConnection.connectionState === 'connected') {
-        console.log('Stream already connected');
-        return;
-    }
-    
-    try {
-        updateAvatarStatus('Connecting to D-ID stream...', 'loading');
+// Get configuration values
+        serviceType = document.getElementById('serviceType').value;
+        sourceUrl = document.getElementById('sourceUrl').value.trim();
+        presenterId = document.getElementById('presenterId').value;
+        chunkSize = parseInt(document.getElementById('chunkSize').value);
+        streamingMode = document.getElementById('streamingMode').checked;
+        
+        // Prepare request payload based on service type
+        let payload = {
+            stream_warmup: true
+        };
+        
+        if (serviceType === 'talks') {
+            if (!sourceUrl) {
+                throw new Error('Source image URL is required for talks service');
+            }
+            payload.source_url = sourceUrl;
+        } else {
+            if (!presenterId) {
+                throw new Error('Presenter selection is required for clips service');
+            }
+            payload.presenter_id = presenterId;
+            payload.config = {
+                fluent: true,
+                pad_audio: 0
+            };
+        }
         
         // Step 1: Create a new stream
-        const sessionResponse = await fetch('https://api.d-id.com/talks/streams', {
+        const sessionResponse = await fetch(`https://api.d-id.com/${serviceType}/streams`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                source_url: defaultPresenterUrl
-            }),
+            body: JSON.stringify(payload),
         });
         
         if (!sessionResponse.ok) {
@@ -1955,7 +2090,7 @@ async function connectStream() {
         const sessionClientAnswer = await createPeerConnection(offer, iceServers);
         
         // Step 3: Send SDP answer
-        const sdpResponse = await fetch(`https://api.d-id.com/talks/streams/${streamId}/sdp`, {
+        const sdpResponse = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}/sdp`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2023,7 +2158,7 @@ function onIceCandidate(event) {
     if (event.candidate && streamId && didSessionId) {
         const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
         
-        fetch(`https://api.d-id.com/talks/streams/${streamId}/ice`, {
+        fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}/ice`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2113,7 +2248,7 @@ function closeStreamConnection() {
     
     // Delete stream on server if we have IDs
     if (streamId && didSessionId) {
-        fetch(`https://api.d-id.com/talks/streams/${streamId}`, {
+        fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2179,7 +2314,7 @@ function closeStreamConnection() {
         updateAvatarStatus('Generating speech...', 'loading');
 
         // Create talk stream with text
-        const talkResponse = await fetch(`https://api.d-id.com/talks/streams/${streamId}`, {
+        const talkResponse = await fetch(`https://api.d-id.com/${serviceType}/streams/${streamId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -3468,19 +3603,25 @@ document.addEventListener('keydown', function(event) {
 }
         
         function saveConfig() {
-            const config = {
-                webhookUrl: document.getElementById('webhookUrl').value,
-                submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
-                sheetId: document.getElementById('sheetId').value,
-                sheetName: getSelectedSheetName(),
-                didApiKey: document.getElementById('didApiKey').value,
-                sttProvider: currentSttProvider,
-                deepgramApiKey: document.getElementById('deepgramApiKey').value,
-                deepgramModel: document.getElementById('deepgramModel').value,
-                deepgramLanguage: document.getElementById('deepgramLanguage').value
-            };
-            localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
-        }
+    const config = {
+        webhookUrl: document.getElementById('webhookUrl').value,
+        submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
+        sheetId: document.getElementById('sheetId').value,
+        sheetName: getSelectedSheetName(),
+        didApiKey: document.getElementById('didApiKey').value,
+        // Avatar configuration options
+        serviceType: document.getElementById('serviceType').value,
+        sourceUrl: document.getElementById('sourceUrl').value,
+        presenterId: document.getElementById('presenterId').value,
+        chunkSize: document.getElementById('chunkSize').value,
+        streamingMode: document.getElementById('streamingMode').checked,
+        sttProvider: currentSttProvider,
+        deepgramApiKey: document.getElementById('deepgramApiKey').value,
+        deepgramModel: document.getElementById('deepgramModel').value,
+        deepgramLanguage: document.getElementById('deepgramLanguage').value
+    };
+    localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
+}
         
         function loadSavedConfig() {
             const saved = localStorage.getItem('pharmacyChatConfig');
@@ -3490,6 +3631,15 @@ document.addEventListener('keydown', function(event) {
                 document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
                 document.getElementById('sheetId').value = config.sheetId || '';
                 document.getElementById('didApiKey').value = config.didApiKey || '';
+                // Load avatar configuration
+        document.getElementById('serviceType').value = config.serviceType || 'talks';
+        document.getElementById('sourceUrl').value = config.sourceUrl || '';
+        document.getElementById('presenterId').value = config.presenterId || '';
+        document.getElementById('chunkSize').value = config.chunkSize || 200;
+        document.getElementById('streamingMode').checked = config.streamingMode !== false;
+        
+        // Update service fields based on saved service type
+        updateServiceFields();
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
@@ -3538,6 +3688,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
