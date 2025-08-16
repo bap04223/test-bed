@@ -3286,13 +3286,22 @@ function updateServiceAvailability(results) {
                 const option = document.createElement('option');
                 option.value = i;
                 // Use column A (index 0) for the scenario name
-                // Use column A (index 0) for the scenario name, add avatar indicator
+                // Use column A (index 0) for the scenario name, add avatar and voice indicators
 const hasAvatar = row.some((cell, index) => {
     const header = sheetData[0][index];
     return header && (header.includes('Avatar') || header.includes('Source URL')) && cell && cell.trim() !== '';
 });
-const avatarIndicator = hasAvatar ? ' 🎭' : '';
-option.textContent = `${i}. ${row[0]}${avatarIndicator}`;
+
+const hasVoice = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Voice') || header === 'TTS Voice' || header === 'Voice ID') && cell && cell.trim() !== '';
+});
+
+let indicators = '';
+if (hasAvatar) indicators += ' 🎭';
+if (hasVoice) indicators += ' 🎤';
+
+option.textContent = `${i}. ${row[0]}${indicators}`;
                 
                 select.appendChild(option);
             }
@@ -4304,56 +4313,102 @@ if (config.voiceSelection) {
         }
 
         // UPDATE AVATAR CONFIGURATION BASED ON SCENARIO DATA
-        function updateAvatarFromScenario() {
-            if (!currentScenario) return;
+        // UPDATE AVATAR CONFIGURATION BASED ON SCENARIO DATA
+function updateAvatarFromScenario() {
+    if (!currentScenario) return;
+    
+    // Check for avatar URL in various possible column names
+    const avatarUrl = currentScenario['Avatar URL'] || 
+                     currentScenario['Talking Head URL'] || 
+                     currentScenario['Avatar Image'] || 
+                     currentScenario['Avatar'] || 
+                     currentScenario['Speaker Image'] ||
+                     currentScenario['D-ID Image URL'] ||
+                     currentScenario['Source URL'];
+    
+    // Check for voice selection in various possible column names
+    const voiceSelection = currentScenario['Voice'] || 
+                          currentScenario['Voice Selection'] || 
+                          currentScenario['Avatar Voice'] || 
+                          currentScenario['TTS Voice'] || 
+                          currentScenario['Voice ID'];
+    
+    let hasChanges = false;
+    
+    // Handle avatar URL
+    if (avatarUrl && avatarUrl.trim() !== '') {
+        console.log('Found avatar URL in scenario:', avatarUrl);
+        
+        // Convert Google Drive URLs if needed
+        const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+        
+        // Set the service type to 'talks' (custom image)
+        document.getElementById('serviceType').value = 'talks';
+        
+        // Set the source URL
+        document.getElementById('sourceUrl').value = convertedUrl;
+        
+        // Update the UI
+        updateServiceFields();
+        
+        hasChanges = true;
+        
+        console.log('Avatar URL set to:', convertedUrl);
+    }
+    
+    // Handle voice selection
+    if (voiceSelection && voiceSelection.trim() !== '') {
+        console.log('Found voice selection in scenario:', voiceSelection);
+        
+        // Validate that the voice exists in the dropdown
+        const voiceDropdown = document.getElementById('voiceSelection');
+        const voiceOptions = Array.from(voiceDropdown.options).map(option => option.value);
+        
+        if (voiceOptions.includes(voiceSelection.trim())) {
+            // Set the voice selection
+            document.getElementById('voiceSelection').value = voiceSelection.trim();
+            hasChanges = true;
+            console.log('Voice selection set to:', voiceSelection.trim());
+        } else {
+            console.warn('Voice not found in dropdown:', voiceSelection.trim());
+            console.log('Available voices:', voiceOptions);
+            showStatus(`Warning: Voice "${voiceSelection.trim()}" not found in voice options`, 'warning');
+        }
+    }
+    
+    // Save configuration if changes were made
+    if (hasChanges) {
+        saveConfig();
+        
+        // Show comprehensive status message
+        let statusParts = [];
+        if (avatarUrl && avatarUrl.trim() !== '') {
+            statusParts.push(`Avatar: ${convertGoogleDriveUrl(avatarUrl.trim()).substring(0, 30)}...`);
+        }
+        if (voiceSelection && voiceSelection.trim() !== '') {
+            statusParts.push(`Voice: ${voiceSelection.trim()}`);
+        }
+        
+        showStatus(`Loaded from scenario - ${statusParts.join(', ')}`, 'success');
+        
+        // If avatar is already initialized, close existing connection to force reconnection with new settings
+        if (isAvatarInitialized && isStreamConnected && avatarUrl && avatarUrl.trim() !== '') {
+            console.log('Reconnecting stream with new avatar settings...');
+            closeStreamConnection();
             
-            // Check for avatar URL in various possible column names
-            const avatarUrl = currentScenario['Avatar URL'] || 
-                             currentScenario['Talking Head URL'] || 
-                             currentScenario['Avatar Image'] || 
-                             currentScenario['Avatar'] || 
-                             currentScenario['Speaker Image'] ||
-                             currentScenario['D-ID Image URL'] ||
-                             currentScenario['Source URL'];
-            
-            if (avatarUrl && avatarUrl.trim() !== '') {
-                console.log('Found avatar URL in scenario:', avatarUrl);
-                
-                // Convert Google Drive URLs if needed
-                const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-                
-                // Set the service type to 'talks' (custom image)
-                document.getElementById('serviceType').value = 'talks';
-                
-                // Set the source URL
-                document.getElementById('sourceUrl').value = convertedUrl;
-                
-                // Update the UI
-                updateServiceFields();
-                
-                // Save the configuration
-                saveConfig();
-                
-                // Show status message
-                showStatus(`Avatar URL loaded from scenario: ${convertedUrl.substring(0, 50)}...`, 'success');
-                
-                // If avatar is already initialized, close existing connection to force reconnection with new image
-                if (isAvatarInitialized && isStreamConnected) {
-                    console.log('Reconnecting stream with new avatar image...');
-                    closeStreamConnection();
-                    
-                    // Auto-reconnect after a short delay
-                    setTimeout(() => {
-                        connectStream();
-                    }, 1000);
-                }
-            } else {
-                console.log('No avatar URL found in scenario');
-            }
-        }        
+            // Auto-reconnect after a short delay
+            setTimeout(() => {
+                connectStream();
+            }, 1000);
+        }
+    } else {
+        console.log('No avatar URL or voice selection found in scenario');
+    }
+}        
     </script>
 </body>
 </html>
+
 
 
 
