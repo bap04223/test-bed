@@ -1308,6 +1308,11 @@ function getPresenterVoice(presenterId) {
 updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
             // Initialize D-ID streaming setup
 initializeDIDElements();
+            // Force initial service field update
+setTimeout(() => {
+    console.log('Forcing initial service field update');
+    updateServiceFields();
+}, 200);
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -1389,6 +1394,38 @@ function newSession() {
     
     // D-ID Streaming specific cleanup
 closeStreamConnection();
+
+// Reset avatar initialization state
+isAvatarInitialized = false;
+isStreamConnected = false;
+
+// Clear video source
+if (avatarVideo) {
+    avatarVideo.src = '';
+    avatarVideo.srcObject = null;
+}
+
+// Reset D-ID session variables (but keep API key)
+streamId = null;
+didSessionId = null;
+
+// Reset avatar status
+updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+
+// Reset service fields to default (talks) but preserve API key
+const currentApiKey = document.getElementById('didApiKey').value;
+document.getElementById('serviceType').value = 'talks';
+document.getElementById('sourceUrl').value = '';
+document.getElementById('presenterId').value = '';
+document.getElementById('chunkSize').value = '200';
+document.getElementById('streamingMode').checked = true;
+document.getElementById('voiceSelection').value = '';
+
+// Force update service fields display
+updateServiceFields();
+
+// Restore API key
+document.getElementById('didApiKey').value = currentApiKey;
     
     // Update session info display
     updateSessionInfo();
@@ -1452,31 +1489,55 @@ function updateSessionInfo() {
     document.getElementById('deepgramModel').addEventListener('change', saveConfig);
     document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
     document.getElementById('voiceSelection').addEventListener('change', saveConfig);  // Add this line
+
+    // Fix the service type change listener
+document.getElementById('serviceType').addEventListener('change', function() {
+    console.log('Service type changed to:', this.value);
+    updateServiceFields();
+    saveConfig();
+});
+
+// Force initial update on page load
+setTimeout(() => {
+    updateServiceFields();
+}, 100);
 }
 
         // ===== AVATAR CONFIGURATION FUNCTIONS =====
 
 // Initialize D-ID elements and set up event listeners
 function initializeDIDElements() {
-    updateServiceFields();
+    console.log('Initializing D-ID elements...');
     
-    // Add the refresh button when clips service is selected
+    // Force update service fields on initialization
+    setTimeout(() => {
+        updateServiceFields();
+    }, 50);
+    
+    // Remove any existing event listeners to prevent duplicates
     const serviceSelect = document.getElementById('serviceType');
-    serviceSelect.addEventListener('change', function() {
+    const newServiceSelect = serviceSelect.cloneNode(true);
+    serviceSelect.parentNode.replaceChild(newServiceSelect, serviceSelect);
+    
+    // Add fresh event listener
+    document.getElementById('serviceType').addEventListener('change', function() {
+        console.log('Service type changed to:', this.value);
+        updateServiceFields();
         if (this.value === 'clips') {
-            setTimeout(addPresenterRefreshButton, 100); // Small delay to ensure DOM is ready
+            setTimeout(addPresenterRefreshButton, 100);
         }
     });
     
     // Add refresh button if clips is already selected
-    if (serviceSelect.value === 'clips') {
+    if (document.getElementById('serviceType').value === 'clips') {
         setTimeout(addPresenterRefreshButton, 100);
     }
 }
 
 // Toggle between Talks (custom image) and Clips (preset avatars) service
 function updateServiceFields() {
-    const serviceTypeValue = document.getElementById('serviceType').value;
+    const serviceTypeSelect = document.getElementById('serviceType');
+    const serviceTypeValue = serviceTypeSelect.value;
     const imageUrlGroup = document.getElementById('imageUrlGroup');
     const presenterGroup = document.getElementById('presenterGroup');
     
@@ -1484,14 +1545,14 @@ function updateServiceFields() {
     
     if (serviceTypeValue === 'talks') {
         // Show custom image URL field, hide presenter selection
-        imageUrlGroup.style.display = 'block';
-        presenterGroup.style.display = 'none';
-        console.log('Switched to Talks mode');
+        if (imageUrlGroup) imageUrlGroup.style.display = 'block';
+        if (presenterGroup) presenterGroup.style.display = 'none';
+        console.log('Switched to Talks mode - showing URL field');
     } else if (serviceTypeValue === 'clips') {
         // Show presenter selection, hide custom image URL field
-        imageUrlGroup.style.display = 'none';
-        presenterGroup.style.display = 'block';
-        console.log('Switched to Clips mode');
+        if (imageUrlGroup) imageUrlGroup.style.display = 'none';
+        if (presenterGroup) presenterGroup.style.display = 'block';
+        console.log('Switched to Clips mode - showing presenter field');
         
         // Add refresh button if it doesn't exist
         setTimeout(addPresenterRefreshButton, 100);
@@ -4198,14 +4259,16 @@ document.addEventListener('keydown', function(event) {
                 document.getElementById('sheetId').value = config.sheetId || '';
                 document.getElementById('didApiKey').value = config.didApiKey || '';
                 // Load avatar configuration
-        document.getElementById('serviceType').value = config.serviceType || 'talks';
-        document.getElementById('sourceUrl').value = config.sourceUrl || '';
-        document.getElementById('presenterId').value = config.presenterId || '';
-        document.getElementById('chunkSize').value = config.chunkSize || 200;
-        document.getElementById('streamingMode').checked = config.streamingMode !== false;
-        
-        // Update service fields based on saved service type
-        updateServiceFields();
+document.getElementById('serviceType').value = config.serviceType || 'talks';
+document.getElementById('sourceUrl').value = config.sourceUrl || '';
+document.getElementById('presenterId').value = config.presenterId || '';
+document.getElementById('chunkSize').value = config.chunkSize || 200;
+document.getElementById('streamingMode').checked = config.streamingMode !== false;
+
+// Force update service fields based on saved service type
+setTimeout(() => {
+    updateServiceFields();
+}, 100);
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
@@ -4258,4 +4321,5 @@ if (config.voiceSelection) {
     </script>
 </body>
 </html>
+
 
