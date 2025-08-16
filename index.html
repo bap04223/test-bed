@@ -1142,12 +1142,12 @@
         let conversationHistory = [];     // Store all messages in the conversation
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
-        
-        // ===== SPEECH RECOGNITION VARIABLES =====
-        let recognition = null;           // Speech recognition object
-        let isRecording = false;          // Track if we're currently recording
-        let fullTranscript = '';         // Store the complete transcript during recording
-        let forceStopRecognition = false; // Flag to force stop recognition
+
+// ===== D-ID STREAMING GLOBAL VARIABLES =====
+let didApiKey = '';               // D-ID API key
+let peerConnection = null;        // WebRTC peer connection
+let streamId = null;              // D-ID stream ID
+let didSessionId = null;          // D-ID session ID (renamed to avoid conflict)
         
         // ===== D-ID STREAMING GLOBAL VARIABLES =====
 let didApiKey = '';               // D-ID API key
@@ -1191,7 +1191,7 @@ let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // 
             
             // D-ID Streaming API is ready
 updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
-    
+        };
         
         // ===== SESSION MANAGEMENT =====
         // Generate and manage unique session IDs
@@ -1951,7 +1951,7 @@ async function connectStream() {
         
         const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = await sessionResponse.json();
         streamId = newStreamId;
-        sessionId = newSessionId;
+        didSessionId = newSessionId;
         
         console.log('Stream created:', { streamId, sessionId });
         
@@ -1967,7 +1967,7 @@ async function connectStream() {
             },
             body: JSON.stringify({
                 answer: sessionClientAnswer,
-                session_id: sessionId,
+                session_id: didSessionId,
             }),
         });
         
@@ -2024,7 +2024,7 @@ function onIceGatheringStateChange() {
 
 function onIceCandidate(event) {
     console.log('ICE candidate:', event);
-    if (event.candidate && streamId && sessionId) {
+    if (event.candidate && streamId && didSessionId) {
         const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
         
         fetch(`https://api.d-id.com/talks/streams/${streamId}/ice`, {
@@ -2037,7 +2037,7 @@ function onIceCandidate(event) {
                 candidate,
                 sdpMid,
                 sdpMLineIndex,
-                session_id: sessionId,
+                session_id: didSessionId,
             }),
         }).catch(error => {
             console.error('Error sending ICE candidate:', error);
@@ -2116,21 +2116,21 @@ function closeStreamConnection() {
     if (connectBtn) connectBtn.style.display = 'block';
     
     // Delete stream on server if we have IDs
-    if (streamId && sessionId) {
+    if (streamId && didSessionId) {
         fetch(`https://api.d-id.com/talks/streams/${streamId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ session_id: sessionId }),
+            body: JSON.stringify({ session_id: didSessionId }),
         }).catch(error => {
             console.error('Error deleting stream:', error);
         });
     }
     
     streamId = null;
-    sessionId = null;
+    didSessionId = null;
 }  
         
         // Test D-ID API connection
@@ -2164,7 +2164,7 @@ function closeStreamConnection() {
         return;
     }
     
-    if (!isStreamConnected || !streamId || !sessionId) {
+    if (!isStreamConnected || !streamId || !didSessionId) {
         console.log('Stream not connected, attempting to connect...');
         await connectStream();
         
@@ -2202,7 +2202,7 @@ function closeStreamConnection() {
                 config: {
                     stitch: true,
                 },
-                session_id: sessionId
+                session_id: didSessionId
             }),
         });
 
@@ -3542,6 +3542,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>
+
 
 
 
