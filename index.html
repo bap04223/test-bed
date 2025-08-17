@@ -230,16 +230,16 @@
         }
         
         /* Chat display area - Flexible height */
-        .chat-container {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #fafafa;
-            margin-bottom: 15px;
-            min-height: 400px;
-        }
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fafafa;
+    margin-bottom: 15px;
+    min-height: 200px;
+}
         
         /* Individual message styling */
 .message {
@@ -1247,14 +1247,14 @@
 </div>
                     
                     <!-- Conversation History -->
-                    <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-                        <label for="chatContainer">💬 Conversation History:</label>
-                        <div class="chat-container" id="chatContainer">
-                            <p style="text-align: center; color: var(--text-secondary);">
-                                Select a scenario and start recording to begin the consultation...
-                            </p>
-                        </div>
-                    </div>
+<div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+    <label for="chatContainer" style="flex-shrink: 0;">💬 Conversation History:</label>
+    <div class="chat-container" id="chatContainer">
+        <p style="text-align: center; color: var(--text-secondary);">
+            Select a scenario and start recording to begin the consultation...
+        </p>
+    </div>
+</div>
                     
                     <!-- Control buttons -->
 <div class="button-group">
@@ -4716,6 +4716,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
