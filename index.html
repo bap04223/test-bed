@@ -853,30 +853,11 @@
                 <h2>⚙️ Configuration</h2>
                 <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
                     <div class="scrollable-section">
-                        <!-- n8n webhook URL input -->
-                        <div class="form-group">
-                            <label for="webhookUrl">n8n Webhook URL (Chat):</label>
-                            <input 
-                                type="password" 
-                                id="webhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/..."
-                                title="Enter your n8n webhook URL that will receive the messages"
-                                autocomplete="new-password"
-                            >
-                        </div>
-                        
-                        <!-- Submit webhook URL input -->
-                        <div class="form-group">
-                            <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
-                            <input 
-                                type="password"
-                                id="submitWebhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/submit..."
-                                title="Enter your n8n webhook URL for submitting conversation history"
-                                autocomplete="new-password"
-                            >
-                        </div>
 
+<!-- Hidden webhook fields - populated by chatbot configuration -->
+<input type="hidden" id="webhookUrl" />
+<input type="hidden" id="submitWebhookUrl" />
+                        
                         <!-- Google Sheets configuration - MOVED UP -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">📊 Google Sheets</h3>
@@ -4748,6 +4729,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
