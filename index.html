@@ -876,6 +876,56 @@
                                 autocomplete="new-password"
                             >
                         </div>
+
+                        <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎤 Speech Recognition</h3>
+    <label>Speech Recognition Provider:</label>
+    <div class="tts-provider-group">
+        <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
+            🌐 Browser STT
+        </button>
+        <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
+            🎯 Deepgram (Medical)
+        </button>
+    </div>
+</div>
+
+<!-- Deepgram STT Settings - MOVED FROM VOICE CONTROL -->
+<div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
+    <div class="form-group">
+        <label for="deepgramApiKey">Deepgram API Key:</label>
+        <input 
+            type="password" 
+            id="deepgramApiKey" 
+            placeholder="Enter your Deepgram API key"
+            autocomplete="new-password"
+        >
+        <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+            Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
+        </small>
+    </div>
+    
+    <div class="form-group">
+        <label for="deepgramModel">Deepgram Model:</label>
+        <select id="deepgramModel">
+            <option value="nova-2-medical">Nova 2 Medical (Recommended)</option>
+            <option value="nova-2">Nova 2 General</option>
+            <option value="nova">Nova</option>
+            <option value="enhanced">Enhanced</option>
+            <option value="base">Base</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="deepgramLanguage">Language:</label>
+        <select id="deepgramLanguage">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="en-AU">English (AU)</option>
+        </select>
+    </div>
+</div>
                         
                         <!-- Google Sheets configuration -->
                         <div class="form-group">
@@ -887,43 +937,7 @@
                                 title="The ID from your Google Sheets URL"
                                 autocomplete="new-password"
                             >
-                            <button 
-                                class="btn-secondary" 
-                                onclick="loadSheetNames()" 
-                                style="margin-top: 10px; width: 100%;"
-                            >
-                                📋 Get Sheet Names
-                            </button>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="sheetName">Sheet Name:</label>
-                            <select id="sheetName" disabled>
-                                <option value="">Get sheet names first...</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Scenario selection dropdown -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label for="scenarioSelect">Select Scenario:</label>
-                            <select id="scenarioSelect" disabled>
-                                <option value="">Load sheet data first...</option>
-                            </select>
-                        </div>
-                        
-                        <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
-                            🎲 Random Scenario
-                        </button>
-                        
-                        <!-- Patient Image Button -->
-                        <button 
-                            class="patient-image-btn disabled" 
-                            id="patientImageBtn"
-                            onclick="showPatientImage()"
-                            disabled
-                        >
-                            📷 No Scenario Selected
-                        </button>
+                            
                         
                         <!-- D-ID Configuration -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
@@ -1137,23 +1151,7 @@
             <label for="streamingMode" style="display: inline;">Enable Streaming Mode</label>
         </div>
         
-        <button 
-            type="button"
-            class="btn-primary" 
-            onclick="initializeDID()" 
-            style="margin-top: 10px; width: 100%;"
-        >
-            🚀 Initialize Avatar
-        </button>
-        <button 
-            type="button"
-            class="btn-danger" 
-            onclick="closeStreamConnection()" 
-            style="margin-top: 10px; width: 100%;"
-        >
-            🔌 Disconnect Stream
-        </button>
-                            </form>
+                           </form>
                         </div>
                     </div>
                 </div>
@@ -1163,55 +1161,71 @@
             <div class="card">
                 <h2>🎙️ Voice Control</h2>
                 <div class="card-content">
-                    <!-- STT Provider Selection -->
-                    <div class="form-group">
-                        <label>Speech Recognition Provider:</label>
-                        <div class="tts-provider-group">
-                            <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
-                                🌐 Browser STT
-                            </button>
-                            <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
-                                🎯 Deepgram (Medical)
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- Deepgram STT Settings -->
-                    <div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
-                        <div class="form-group">
-                            <label for="deepgramApiKey">Deepgram API Key:</label>
-                            <input 
-                                type="password" 
-                                id="deepgramApiKey" 
-                                placeholder="Enter your Deepgram API key"
-                                autocomplete="new-password"
-                            >
-                            <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
-                                Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
-                            </small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="deepgramModel">Deepgram Model:</label>
-                            <select id="deepgramModel">
-                                <option value="nova-2-medical">Nova 2 Medical (Recommended)</option>
-                                <option value="nova-2">Nova 2 General</option>
-                                <option value="nova">Nova</option>
-                                <option value="enhanced">Enhanced</option>
-                                <option value="base">Base</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="deepgramLanguage">Language:</label>
-                            <select id="deepgramLanguage">
-                                <option value="en-US">English (US)</option>
-                                <option value="en-GB">English (UK)</option>
-                                <option value="en-AU">English (AU)</option>
-                            </select>
-                        </div>
-                    </div>
+                    <!-- Scenario Management Section - MOVED FROM CONFIGURATION -->
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">📊 Scenario Management</h3>
+    
+    <button 
+        class="btn-secondary" 
+        onclick="loadSheetNames()" 
+        style="margin-bottom: 10px; width: 100%;"
+    >
+        📋 Get Sheet Names
+    </button>
 
+    <div class="form-group">
+        <label for="sheetName">Sheet Name:</label>
+        <select id="sheetName" disabled>
+            <option value="">Get sheet names first...</option>
+        </select>
+    </div>
+    
+    <!-- Scenario selection dropdown -->
+    <div class="form-group">
+        <label for="scenarioSelect">Select Scenario:</label>
+        <select id="scenarioSelect" disabled>
+            <option value="">Load sheet data first...</option>
+        </select>
+    </div>
+    
+    <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-bottom: 10px; width: 100%;">
+        🎲 Random Scenario
+    </button>
+    
+    <!-- Patient Image Button - MOVED FROM CONFIGURATION -->
+    <button 
+        class="patient-image-btn disabled" 
+        id="patientImageBtn"
+        onclick="showPatientImage()"
+        disabled
+    >
+        📷 No Scenario Selected
+    </button>
+</div>
+
+<!-- Avatar Control Section - MOVED FROM CONFIGURATION -->
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 Avatar Control</h3>
+    
+    <button 
+        type="button"
+        class="btn-primary" 
+        onclick="initializeDID()" 
+        style="margin-bottom: 10px; width: 100%;"
+    >
+        🚀 Initialize Avatar
+    </button>
+    <button 
+        type="button"
+        class="btn-danger" 
+        onclick="closeStreamConnection()" 
+        style="margin-bottom: 10px; width: 100%;"
+    >
+        🔌 Disconnect Stream
+    </button>
+</div>
+                    
                     <!-- Conversation History -->
                     <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
                         <label for="chatContainer">💬 Conversation History:</label>
@@ -4533,6 +4547,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
