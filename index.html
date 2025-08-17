@@ -877,50 +877,6 @@
                             >
                         </div>
 
-                        <!-- NEW: Chatbot Configuration Management -->
-<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🤖 Chatbot Configuration</h3>
-    
-    <div class="form-group">
-        <label for="configSheetId">Configuration Sheet ID:</label>
-        <input 
-            type="password" 
-            id="configSheetId" 
-            placeholder="Google Sheet ID containing chatbot configurations"
-            title="The Google Sheet ID containing your chatbot configurations"
-            autocomplete="new-password"
-        >
-        <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
-            Sheet should have columns: Chatbot Name | Webhook URL | Submit Webhook URL
-        </small>
-    </div>
-    
-    <button 
-        class="btn-secondary" 
-        onclick="loadChatbotConfigurations()" 
-        style="margin-bottom: 15px; width: 100%;"
-    >
-        🔄 Load Chatbot Configurations
-    </button>
-    
-    <div class="form-group">
-        <label for="chatbotSelect">Select Chatbot:</label>
-        <select id="chatbotSelect" disabled>
-            <option value="">Load configurations first...</option>
-        </select>
-    </div>
-    
-    <button 
-        class="btn-info" 
-        onclick="applyChatbotConfiguration()" 
-        style="width: 100%;"
-        disabled
-        id="applyChatbotBtn"
-    >
-        ✅ Apply Selected Configuration
-    </button>
-</div>
-
                         <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎤 Speech Recognition</h3>
@@ -1202,28 +1158,58 @@
             </div>
             
             <!-- Voice control section -->
-            <div class="card">
-                <h2>🎙️ Voice Control</h2>
-                <div class="card-content">
+<div class="card">
+    <h2>🎙️ Voice Control</h2>
+    <div class="card-content">
 
-                    <!-- Scenario Management Section - MOVED FROM CONFIGURATION -->
-<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
-    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">📊 Scenario Management</h3>
-    
-    <button 
-        class="btn-secondary" 
-        onclick="loadSheetNames()" 
-        style="margin-bottom: 10px; width: 100%;"
-    >
-        📋 Get Sheet Names
-    </button>
+        <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
+        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🤖 Chatbot Configuration</h3>
+            
+            <div class="form-group">
+                <label for="configSheetId">Configuration Sheet ID:</label>
+                <input 
+                    type="password" 
+                    id="configSheetId" 
+                    placeholder="Google Sheet ID containing chatbot configurations"
+                    title="The Google Sheet ID containing your chatbot configurations"
+                    autocomplete="new-password"
+                    style="font-size: 14px;"
+                >
+                <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+                    Sheet should have columns: Chatbot Name | Webhook URL | Submit Webhook URL
+                </small>
+            </div>
+            
+            <button 
+                class="btn-secondary" 
+                onclick="loadChatbotConfigurations()" 
+                style="margin-bottom: 10px; width: 100%; font-size: 14px;"
+            >
+                🔄 Load Chatbot Configurations
+            </button>
+            
+            <div class="form-group">
+                <label for="chatbotSelect">Select Chatbot:</label>
+                <select id="chatbotSelect" disabled style="font-size: 14px;">
+                    <option value="">Load configurations first...</option>
+                </select>
+            </div>
+            
+            <button 
+                class="btn-info" 
+                onclick="applyChatbotConfiguration()" 
+                style="width: 100%; font-size: 14px;"
+                disabled
+                id="applyChatbotBtn"
+            >
+                ✅ Apply Selected Configuration
+            </button>
+        </div>
 
-    <div class="form-group">
-        <label for="sheetName">Sheet Name:</label>
-        <select id="sheetName" disabled>
-            <option value="">Get sheet names first...</option>
-        </select>
-    </div>
+        <!-- Scenario Management Section - MOVED FROM CONFIGURATION -->
+        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+            <!-- ... rest of your existing scenario management code ... -->
     
     <!-- Scenario selection dropdown -->
     <div class="form-group">
@@ -4741,6 +4727,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
