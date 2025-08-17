@@ -136,6 +136,10 @@
             margin-bottom: 15px;
             flex-shrink: 0;
         }
+
+        .form-group.no-margin {
+    margin-bottom: 0;
+}
         
         label {
             display: block;
@@ -1252,9 +1256,9 @@
     After initialization, just click "Start Recording" to begin
 </small>
                     
-                    <!-- Conversation History -->
-<div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-    <label for="chatContainer" style="flex-shrink: 0;">💬 Conversation History:</label>
+                   <!-- Conversation History -->
+<div class="form-group no-margin" style="flex: 1; display: flex; flex-direction: column;">
+    <label for="chatContainer" style="flex-shrink: 0;">Conversation History:</label>
     <div class="chat-container" id="chatContainer" style="flex: 1; margin-bottom: 0;">
     <p style="text-align: center; color: var(--text-secondary);">
         Select a scenario and start recording to begin the consultation...
@@ -4754,6 +4758,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
