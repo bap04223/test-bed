@@ -877,6 +877,50 @@
                             >
                         </div>
 
+                        <!-- NEW: Chatbot Configuration Management -->
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🤖 Chatbot Configuration</h3>
+    
+    <div class="form-group">
+        <label for="configSheetId">Configuration Sheet ID:</label>
+        <input 
+            type="password" 
+            id="configSheetId" 
+            placeholder="Google Sheet ID containing chatbot configurations"
+            title="The Google Sheet ID containing your chatbot configurations"
+            autocomplete="new-password"
+        >
+        <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+            Sheet should have columns: Chatbot Name | Webhook URL | Submit Webhook URL
+        </small>
+    </div>
+    
+    <button 
+        class="btn-secondary" 
+        onclick="loadChatbotConfigurations()" 
+        style="margin-bottom: 15px; width: 100%;"
+    >
+        🔄 Load Chatbot Configurations
+    </button>
+    
+    <div class="form-group">
+        <label for="chatbotSelect">Select Chatbot:</label>
+        <select id="chatbotSelect" disabled>
+            <option value="">Load configurations first...</option>
+        </select>
+    </div>
+    
+    <button 
+        class="btn-info" 
+        onclick="applyChatbotConfiguration()" 
+        style="width: 100%;"
+        disabled
+        id="applyChatbotBtn"
+    >
+        ✅ Apply Selected Configuration
+    </button>
+</div>
+
                         <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎤 Speech Recognition</h3>
@@ -1349,6 +1393,9 @@ margin: 0 auto;
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
         let currentVoiceMethod = 'text'; // Add this line
+        // ===== CHATBOT CONFIGURATION VARIABLES =====
+let chatbotConfigurations = [];     // Store loaded chatbot configurations
+let currentChatbotConfig = null;    // Currently selected chatbot configuration
 
 // ===== D-ID STREAMING GLOBAL VARIABLES =====
 let didApiKey = '';               // D-ID API key
@@ -3484,7 +3531,7 @@ option.textContent = `${i}. ${row[0]}${indicators}`;
     
     // Add initial message
     addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
-}
+}     
         
         // ===== MULTI-IMAGE PATIENT GALLERY =====
 // Global variables for image gallery
@@ -3796,7 +3843,137 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
-                      
+
+       // ===== CHATBOT CONFIGURATION MANAGEMENT =====
+
+// Load chatbot configurations from Google Sheet
+async function loadChatbotConfigurations() {
+    const configSheetId = document.getElementById('configSheetId').value;
+    
+    if (!configSheetId) {
+        showStatus('Please enter Configuration Sheet ID first', 'error');
+        return;
+    }
+    
+    showStatus('Loading chatbot configurations...', 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
+        
+        // Load from the first sheet (you could also make this configurable)
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${configSheetId}/values/Sheet1?key=${apiKey}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.values && data.values.length > 1) {
+            // Process the configuration data
+            chatbotConfigurations = [];
+            
+            // Skip header row, process configuration rows
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 3 && row[0] && row[1] && row[2]) {
+                    chatbotConfigurations.push({
+                        name: row[0].trim(),
+                        webhookUrl: row[1].trim(),
+                        submitWebhookUrl: row[2].trim(),
+                        description: row[3] ? row[3].trim() : '' // Optional description column
+                    });
+                }
+            }
+            
+            populateChatbotDropdown();
+            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+            
+        } else {
+            showStatus('No configuration data found in the sheet', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error loading chatbot configurations:', error);
+        showStatus('Error loading configurations. Check console for details.', 'error');
+    }
+}
+
+// Populate the chatbot selection dropdown
+function populateChatbotDropdown() {
+    const select = document.getElementById('chatbotSelect');
+    select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
+    select.disabled = false;
+    
+    chatbotConfigurations.forEach((config, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Show name and description if available
+        if (config.description) {
+            option.textContent = `${config.name} - ${config.description}`;
+        } else {
+            option.textContent = config.name;
+        }
+        
+        select.appendChild(option);
+    });
+    
+    // Enable the apply button when a selection is available
+    document.getElementById('applyChatbotBtn').disabled = false;
+    
+    // Add change event listener
+    select.addEventListener('change', function() {
+        const applyBtn = document.getElementById('applyChatbotBtn');
+        if (this.value !== '') {
+            applyBtn.disabled = false;
+            applyBtn.textContent = `✅ Apply ${chatbotConfigurations[this.value].name}`;
+        } else {
+            applyBtn.disabled = true;
+            applyBtn.textContent = '✅ Apply Selected Configuration';
+        }
+    });
+}
+
+// Apply the selected chatbot configuration
+function applyChatbotConfiguration() {
+    const selectElement = document.getElementById('chatbotSelect');
+    const selectedIndex = selectElement.value;
+    
+    if (selectedIndex === '' || !chatbotConfigurations[selectedIndex]) {
+        showStatus('Please select a chatbot configuration first', 'error');
+        return;
+    }
+    
+    const config = chatbotConfigurations[selectedIndex];
+    currentChatbotConfig = config;
+    
+    // Apply the configuration to the existing webhook fields
+    document.getElementById('webhookUrl').value = config.webhookUrl;
+    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+    
+    // Save the configuration
+    saveConfig();
+    
+    // Show success message
+    showStatus(`✅ Applied configuration: ${config.name}`, 'success');
+    
+    // Optional: Clear chat if there's an existing conversation
+    if (conversationHistory.length > 0) {
+        const shouldClear = confirm('Apply new chatbot configuration? This will clear the current conversation.');
+        if (shouldClear) {
+            clearChat();
+            addMessage(`Switched to: ${config.name}`, 'system');
+        }
+    } else {
+        addMessage(`Chatbot configured: ${config.name}`, 'system');
+    }
+    
+    console.log('Applied chatbot configuration:', config);
+} 
+        
 // ===== EXPORT CONVERSATION FUNCTION =====
         // Export conversation as a downloadable text file
         
@@ -4378,7 +4555,9 @@ document.addEventListener('keydown', function(event) {
         deepgramApiKey: document.getElementById('deepgramApiKey').value,
         deepgramModel: document.getElementById('deepgramModel').value,
         deepgramLanguage: document.getElementById('deepgramLanguage').value,
-        voiceSelection: document.getElementById('voiceSelection').value  // Add this line
+        voiceSelection: document.getElementById('voiceSelection').value 
+        configSheetId: document.getElementById('configSheetId').value,
+        selectedChatbot: document.getElementById('chatbotSelect').value,
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
 }
@@ -4397,6 +4576,20 @@ document.getElementById('sourceUrl').value = config.sourceUrl || '';
 document.getElementById('presenterId').value = config.presenterId || '';
 document.getElementById('chunkSize').value = config.chunkSize || 200;
 document.getElementById('streamingMode').checked = config.streamingMode !== false;
+                // Add these lines to your existing loadSavedConfig function
+document.getElementById('configSheetId').value = config.configSheetId || '';
+
+// If we have a saved config sheet ID, auto-load configurations
+if (config.configSheetId) {
+    setTimeout(() => {
+        loadChatbotConfigurations().then(() => {
+            // Try to restore the selected chatbot
+            if (config.selectedChatbot) {
+                document.getElementById('chatbotSelect').value = config.selectedChatbot;
+            }
+        });
+    }, 1000);
+}
 
 // Force update service fields based on saved service type
 setTimeout(() => {
@@ -4548,6 +4741,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
