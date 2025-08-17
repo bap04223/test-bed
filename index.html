@@ -3448,7 +3448,7 @@ function updateServiceAvailability(results) {
                 const option = document.createElement('option');
                 option.value = i;
                 // Use column A (index 0) for the scenario name
-                // Use column A (index 0) for the scenario name, add avatar and voice indicators
+                // Use column A (index 0) for the scenario name, add avatar, voice, and image indicators
 const hasAvatar = row.some((cell, index) => {
     const header = sheetData[0][index];
     return header && (header.includes('Avatar') || header.includes('Source URL')) && cell && cell.trim() !== '';
@@ -3459,9 +3459,15 @@ const hasVoice = row.some((cell, index) => {
     return header && (header.includes('Voice') || header === 'TTS Voice' || header === 'Voice ID') && cell && cell.trim() !== '';
 });
 
+const hasPatientImage = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Patient Image') || header.includes('Image URL') || header.includes('Photo URL') || header.includes('Image') || header.includes('Photo') || header.includes('Picture URL') || header.includes('Picture')) && cell && cell.trim() !== '';
+});
+
 let indicators = '';
 if (hasAvatar) indicators += ' 🎭';
 if (hasVoice) indicators += ' 🎤';
+if (hasPatientImage) indicators += ' 📷';
 
 option.textContent = `${i}. ${row[0]}${indicators}`;
                 
@@ -4716,6 +4722,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
