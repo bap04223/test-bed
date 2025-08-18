@@ -1645,11 +1645,9 @@ initializeDIDElements();
             header.appendChild(sessionInfo);
         }
 
-        // ===== NEW SESSION FUNCTION =====
-// Function to start a new session without page refresh
-
+        // FIXED: Enhanced New Session Function with Complete Avatar Reset
 function newSession() {
-    console.log('Starting new session...');
+    console.log('=== newSession() called ===');
     
     // Generate new session ID
     generateSessionId();
@@ -1677,9 +1675,14 @@ function newSession() {
     isRecording = false;
     fullTranscript = '';
     forceStopRecognition = false;
+    recordingState = 'stopped';
+    pendingTranscript = '';
     
     // Update talk button
     updateTalkButton();
+    
+    // Hide review section
+    hideReviewSection();
     
     // Close any WebSocket connections
     if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
@@ -1699,66 +1702,79 @@ function newSession() {
         mediaRecorder = null;
     }
     
-    // D-ID Streaming specific cleanup
-closeStreamConnection();
-
-// Reset avatar initialization state
-isAvatarInitialized = false;
-isStreamConnected = false;
-
-// Clear video source
-if (avatarVideo) {
-    avatarVideo.src = '';
-    avatarVideo.srcObject = null;
-}
-
-// Reset D-ID session variables (but keep API key)
-streamId = null;
-didSessionId = null;
-
-// Hide connect avatar button
-hideConnectAvatarButton();
-
-// Reset service fields to default (talks) but preserve API key
-const currentApiKey = document.getElementById('didApiKey').value;
-document.getElementById('serviceType').value = 'talks';
-document.getElementById('sourceUrl').value = '';
-document.getElementById('presenterId').value = '';
-document.getElementById('chunkSize').value = '200';
-document.getElementById('streamingMode').checked = true;
-document.getElementById('voiceSelection').value = '';
-
-// Force update service fields display
-updateServiceFields();
-
-// Restore API key
-document.getElementById('didApiKey').value = currentApiKey;
+    // FIXED: Complete D-ID Streaming Cleanup
+    console.log('Performing complete D-ID cleanup...');
+    
+    // Close stream connection completely
+    closeStreamConnection().then(() => {
+        console.log('Stream connection closed for new session');
+    });
+    
+    // Reset avatar initialization state
+    isAvatarInitialized = false;
+    isStreamConnected = false;
+    
+    // Clear video source completely
+    if (avatarVideo) {
+        if (avatarVideo.srcObject) {
+            avatarVideo.srcObject.getTracks().forEach(track => track.stop());
+        }
+        avatarVideo.src = '';
+        avatarVideo.srcObject = null;
+        avatarVideo.load(); // Force video element reset
+    }
+    
+    // Reset D-ID session variables but PRESERVE API key and configuration
+    const currentApiKey = document.getElementById('didApiKey').value;
+    const currentServiceType = document.getElementById('serviceType').value;
+    const currentSourceUrl = document.getElementById('sourceUrl').value;
+    const currentPresenterId = document.getElementById('presenterId').value;
+    const currentChunkSize = document.getElementById('chunkSize').value;
+    const currentStreamingMode = document.getElementById('streamingMode').checked;
+    const currentVoiceSelection = document.getElementById('voiceSelection').value;
+    
+    // Clear stream IDs
+    streamId = null;
+    didSessionId = null;
+    
+    // Reset to default values but preserve configuration
+    document.getElementById('didApiKey').value = currentApiKey;
+    document.getElementById('serviceType').value = currentServiceType;
+    document.getElementById('sourceUrl').value = currentSourceUrl;
+    document.getElementById('presenterId').value = currentPresenterId;
+    document.getElementById('chunkSize').value = currentChunkSize;
+    document.getElementById('streamingMode').checked = currentStreamingMode;
+    document.getElementById('voiceSelection').value = currentVoiceSelection;
+    
+    // Force update service fields display
+    updateServiceFields();
+    
+    // Hide connect avatar button initially
+    hideConnectAvatarButton();
+    
+    // Update avatar status
+    if (currentApiKey) {
+        updateAvatarStatus('D-ID ready - Click "Initialize Avatar" to setup', 'info');
+    } else {
+        updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+    }
     
     // Update session info display
     updateSessionInfo();
-
-    // Reset recording state
-    recordingState = 'stopped';
-    pendingTranscript = '';
-    
-    // Hide review section
-    hideReviewSection();
     
     // Show confirmation
     showStatus(`✅ New session started! Session ID: ${sessionId}`, 'success');
     
     // Add welcome message if scenario is selected
     if (currentScenario) {
-        addMessage('New session started. Start recording to begin the consultation.', 'ai');
+        addMessage('New session started. Initialize avatar and start recording to begin the consultation.', 'ai');
     } else {
-        addMessage('New session started. Select a scenario and start recording to begin.', 'ai');
+        addMessage('New session started. Select a scenario, initialize avatar, and start recording to begin.', 'ai');
     }
     
+    console.log('=== newSession() completed ===');
     console.log('New session created:', sessionId);
 }
-
-// Helper function to update session info display
-function updateSessionInfo() {
     // Find and update the existing session info paragraph
     const header = document.querySelector('.header');
     const existingSessionInfo = header.querySelector('p:last-child');
@@ -1821,17 +1837,25 @@ function initializeDIDElements() {
     }
 }
 
-// Toggle between Talks (custom image) and Clips (preset avatars) service
+// FIXED: Enhanced Service Type Update with Proper Cleanup
 function updateServiceFields() {
     const serviceTypeSelect = document.getElementById('serviceType');
     const serviceTypeValue = serviceTypeSelect.value;
     const imageUrlGroup = document.getElementById('imageUrlGroup');
     const presenterGroup = document.getElementById('presenterGroup');
     
-    console.log('=== updateServiceFields DEBUG ===');
-    console.log('Service type value:', serviceTypeValue);
-    console.log('Image URL group display:', imageUrlGroup ? imageUrlGroup.style.display : 'NOT FOUND');
-    console.log('Presenter group display:', presenterGroup ? presenterGroup.style.display : 'NOT FOUND');
+    console.log('=== updateServiceFields() called ===');
+    console.log('Changing service type to:', serviceTypeValue);
+    console.log('Current stream connected:', isStreamConnected);
+    console.log('Current stream ID:', streamId);
+    
+    // FIXED: Close existing stream connection when switching service types
+    if (isStreamConnected && streamId) {
+        console.log('Service type changed - closing existing stream connection...');
+        closeStreamConnection().then(() => {
+            console.log('Stream closed due to service type change');
+        });
+    }
     
     if (serviceTypeValue === 'talks') {
         // Show custom image URL field, hide presenter selection
@@ -1844,6 +1868,7 @@ function updateServiceFields() {
             console.log('✅ Set presenterGroup to none');
         }
         console.log('Switched to Talks mode - showing URL field');
+        
     } else if (serviceTypeValue === 'clips') {
         // Show presenter selection, hide custom image URL field
         if (imageUrlGroup) {
@@ -1866,7 +1891,7 @@ function updateServiceFields() {
     // Save configuration
     saveConfig();
     
-    console.log('=== updateServiceFields COMPLETE ===');
+    console.log('=== updateServiceFields() completed ===');
 }
 
 // FIXED: Correct Avatar Configuration Reading
@@ -2477,9 +2502,10 @@ document.getElementById('reviewTranscript').value = '';
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
 
-        async function initializeDID() {
+        // FIXED: Enhanced Avatar Initialization with Better State Management
+async function initializeDID() {
     try {
-        console.log('Initializing D-ID Streaming...');
+        console.log('=== initializeDID() called ===');
         updateAvatarStatus('Initializing D-ID Streaming...', 'loading');
         
         // Get API key from configuration
@@ -2496,18 +2522,26 @@ document.getElementById('reviewTranscript').value = '';
             throw new Error('Avatar video element not found');
         }
         
+        // FIXED: Clean up any existing connections before initializing
+        if (peerConnection || streamId) {
+            console.log('Cleaning up existing connections before initialization...');
+            await closeStreamConnection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         // Test the API key by making a simple request
         await testDIDConnection();
         
         console.log('D-ID Streaming API initialized successfully');
         isAvatarInitialized = true;
         
-        // NEW: Test permissions and fetch presenters
+        // Test permissions and fetch presenters
         try {
             updateAvatarStatus('Testing API permissions...', 'loading');
             await testDIDPermissions();
             
-            if (serviceType === 'clips') {
+            const currentServiceType = document.getElementById('serviceType').value;
+            if (currentServiceType === 'clips') {
                 updateAvatarStatus('Fetching available presenters...', 'loading');
                 await fetchAvailablePresenters();
             }
@@ -2518,8 +2552,8 @@ document.getElementById('reviewTranscript').value = '';
         
         updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
 
-// Show the connect avatar button
-showConnectAvatarButton();
+        // Show the connect avatar button
+        showConnectAvatarButton();
         
         return true;
         
@@ -2527,6 +2561,7 @@ showConnectAvatarButton();
         console.error('D-ID initialization error:', error);
         updateAvatarStatus(`Error: ${error.message}`, 'error');
         isAvatarInitialized = false;
+        hideConnectAvatarButton();
         return false;
     }
 }
@@ -2575,11 +2610,16 @@ function hideConnectAvatarButton() {
     }
 }       
         
-// FIXED: Correct Stream Connection with Proper Service Detection
+// FIXED: Enhanced Stream Connection with Proper Service Detection and Cleanup
 async function connectStream() {
-    if (peerConnection && peerConnection.connectionState === 'connected') {
-        console.log('Stream already connected');
-        return;
+    console.log('=== connectStream() called ===');
+    
+    // Always close existing connection first, regardless of state
+    if (peerConnection) {
+        console.log('Closing existing peer connection before creating new one...');
+        await closeStreamConnection();
+        // Wait for cleanup to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     try {
@@ -2589,9 +2629,17 @@ async function connectStream() {
         const config = getAvatarConfiguration();
         didApiKey = config.didApiKey;
         
+        if (!didApiKey) {
+            throw new Error('D-ID API key not provided');
+        }
+        
         console.log('Using service type:', config.serviceType);
         console.log('Using presenter ID:', config.presenterId);
         console.log('Using source URL:', config.sourceUrl);
+        
+        // FIXED: Clear any existing stream data before creating new stream
+        streamId = null;
+        didSessionId = null;
         
         // Prepare request payload based on service type
         let payload = {
@@ -2617,9 +2665,15 @@ async function connectStream() {
             payload.presenter_id = config.presenterId;
             
             // Try to get a driver for this presenter
-            const driverId = await getPresenterDrivers(config.presenterId);
-            if (driverId) {
-                payload.driver_id = driverId;
+            try {
+                const driverId = await getPresenterDrivers(config.presenterId);
+                if (driverId) {
+                    payload.driver_id = driverId;
+                    console.log('Using driver ID:', driverId);
+                }
+            } catch (driverError) {
+                console.warn('Could not get driver for presenter:', driverError);
+                // Continue without driver - it's optional
             }
             
             streamUrl = 'https://api.d-id.com/clips/streams';
@@ -2646,11 +2700,20 @@ async function connectStream() {
             throw new Error(`Failed to create stream: ${sessionResponse.status} - ${errorText}`);
         }
         
-        const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = await sessionResponse.json();
+        const streamResponse = await sessionResponse.json();
+        const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = streamResponse;
+        
+        // FIXED: Store the new stream data
         streamId = newStreamId;
         didSessionId = newSessionId;
         
-        console.log('Stream created successfully:', { streamId, didSessionId, serviceType: config.serviceType });
+        console.log('Stream created successfully:', { 
+            streamId, 
+            didSessionId, 
+            serviceType: config.serviceType,
+            hasOffer: !!offer,
+            iceServersCount: iceServers?.length || 0
+        });
         
         // Step 2: Create peer connection and set up WebRTC
         const sessionClientAnswer = await createPeerConnection(offer, iceServers);
@@ -2676,25 +2739,36 @@ async function connectStream() {
         }
         
         console.log('SDP answer sent successfully');
-updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
 
-// Hide connect avatar button
-hideConnectAvatarButton();
+        // Hide connect avatar button
+        hideConnectAvatarButton();
         
     } catch (error) {
         console.error('Stream connection error:', error);
         updateAvatarStatus(`Connection error: ${error.message}`, 'error');
-        closeStreamConnection();
+        
+        // FIXED: Ensure cleanup on error
+        await closeStreamConnection();
     }
-}     
+}
 
-// Create WebRTC peer connection
+// FIXED: Enhanced Peer Connection Creation with Better Cleanup
 async function createPeerConnection(offer, iceServers) {
+    console.log('=== createPeerConnection() called ===');
+    
+    // FIXED: Always close existing connection first
     if (peerConnection) {
-        closeStreamConnection();
+        console.log('Closing existing peer connection...');
+        peerConnection.close();
+        peerConnection = null;
+        // Wait for cleanup
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
     
+    // Create new peer connection
     peerConnection = new RTCPeerConnection({ iceServers });
+    console.log('Created new peer connection with ice servers:', iceServers);
     
     // Set up event listeners
     peerConnection.addEventListener('icegatheringstatechange', onIceGatheringStateChange);
@@ -2721,13 +2795,19 @@ function onIceGatheringStateChange() {
     console.log('ICE gathering state:', peerConnection.iceGatheringState);
 }
 
+// FIXED: Enhanced ICE Candidate Handler with Better Error Handling
 function onIceCandidate(event) {
-    console.log('ICE candidate:', event);
+    console.log('ICE candidate event:', event);
+    
     if (event.candidate && streamId && didSessionId) {
         const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
         
+        // Get current service type at the time of sending
         const currentServiceType = document.getElementById('serviceType').value;
-fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}/ice`, {
+        
+        console.log('Sending ICE candidate for service type:', currentServiceType);
+        
+        fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}/ice`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -2739,27 +2819,44 @@ fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}/ice`, {
                 sdpMLineIndex,
                 session_id: didSessionId,
             }),
+        }).then(response => {
+            if (response.ok) {
+                console.log('ICE candidate sent successfully');
+            } else {
+                console.error('Failed to send ICE candidate:', response.status);
+            }
         }).catch(error => {
             console.error('Error sending ICE candidate:', error);
+        });
+    } else {
+        console.log('ICE candidate not sent - missing required data:', {
+            hasCandidate: !!event.candidate,
+            streamId,
+            didSessionId
         });
     }
 }
 
+// FIXED: Enhanced Connection State Handler
 function onIceConnectionStateChange() {
-    console.log('ICE connection state:', peerConnection.iceConnectionState);
+    console.log('ICE connection state changed to:', peerConnection.iceConnectionState);
     
     if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
         isStreamConnected = true;
-        updateAvatarStatus('Stream ready for speech', 'success');
+        const currentServiceType = document.getElementById('serviceType').value;
+        updateAvatarStatus(`${currentServiceType.toUpperCase()} stream ready for speech`, 'success');
+        console.log('Stream connection established successfully');
+        
     } else if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'closed') {
         isStreamConnected = false;
         updateAvatarStatus('Stream connection lost', 'error');
-        closeStreamConnection();
+        console.log('Stream connection lost or failed');
+        
+        // Auto-cleanup on failure
+        setTimeout(() => {
+            closeStreamConnection();
+        }, 1000);
     }
-}
-
-function onConnectionStateChange() {
-    console.log('Connection state:', peerConnection.connectionState);
 }
 
 function onSignalingStateChange() {
@@ -2789,53 +2886,82 @@ function setVideoElement(stream) {
     }
 }
 
-// FIXED: Close streaming connection with proper service type handling
-function closeStreamConnection() {
-    // Get current service type
-    const currentServiceType = document.getElementById('serviceType').value || 'talks';
+// FIXED: Enhanced Close Stream Connection with Proper Service Detection and Cleanup
+async function closeStreamConnection() {
+    console.log('=== closeStreamConnection() called ===');
+    
+    // Get current service type BEFORE clearing variables
+    const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
     console.log('Closing stream connection for service type:', currentServiceType);
     
+    // Reset connection state immediately
+    isStreamConnected = false;
+    
+    // Clean up video element
     if (avatarVideo && avatarVideo.srcObject) {
-        avatarVideo.srcObject.getTracks().forEach(track => track.stop());
+        console.log('Stopping video tracks...');
+        avatarVideo.srcObject.getTracks().forEach(track => {
+            track.stop();
+            console.log('Stopped track:', track.kind);
+        });
         avatarVideo.srcObject = null;
+        avatarVideo.src = '';
     }
     
+    // Clean up peer connection
     if (peerConnection) {
-        peerConnection.close();
+        console.log('Closing peer connection...');
+        
+        // Remove all event listeners first
         peerConnection.removeEventListener('icegatheringstatechange', onIceGatheringStateChange);
         peerConnection.removeEventListener('icecandidate', onIceCandidate);
         peerConnection.removeEventListener('iceconnectionstatechange', onIceConnectionStateChange);
         peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
         peerConnection.removeEventListener('signalingstatechange', onSignalingStateChange);
         peerConnection.removeEventListener('track', onTrack);
+        
+        // Close the connection
+        peerConnection.close();
         peerConnection = null;
+        console.log('Peer connection closed and nullified');
     }
-    
-    isStreamConnected = false;
-
-// Show connect avatar button again if avatar is initialized
-if (isAvatarInitialized) {
-    showConnectAvatarButton();
-    updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
-}
     
     // Delete stream on server if we have IDs
     if (streamId && didSessionId) {
+        console.log('Deleting stream on server:', streamId);
         const deleteUrl = `https://api.d-id.com/${currentServiceType}/streams/${streamId}`;
-        fetch(deleteUrl, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Basic ${didApiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ session_id: didSessionId }),
-        }).catch(error => {
-            console.error('Error deleting stream:', error);
-        });
+        
+        try {
+            const deleteResponse = await fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session_id: didSessionId }),
+            });
+            
+            if (deleteResponse.ok) {
+                console.log('Stream deleted successfully on server');
+            } else {
+                console.warn('Failed to delete stream on server:', deleteResponse.status);
+            }
+        } catch (error) {
+            console.error('Error deleting stream on server:', error);
+        }
     }
     
+    // Clear stream variables
     streamId = null;
     didSessionId = null;
+    
+    console.log('Stream cleanup completed');
+
+    // Show connect avatar button again if avatar is initialized
+    if (isAvatarInitialized) {
+        showConnectAvatarButton();
+        updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
+    }
 } 
         
         // Test D-ID API connection
@@ -4970,6 +5096,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
