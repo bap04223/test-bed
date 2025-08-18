@@ -427,9 +427,12 @@ body {
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* ADDED: Subtle shadow for separation */
 }
         .button-group button {
-            flex: 1;
-            min-width: 140px;
-        }
+    flex: 1;
+    min-width: 140px;
+    height: 80px; /* Double the default button height */
+    font-size: 16px; /* Slightly larger font for better proportion */
+    line-height: 1.2; /* Better line spacing for multi-line text */
+}
         
         /* Avatar video container styling - Enhanced for larger display */
         .avatar-container {
@@ -5401,6 +5404,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
