@@ -3264,13 +3264,6 @@ if (config.idleAnimationEnabled && config.serviceType === 'clips') {
 } else {
     console.log('❌ Idle animations DISABLED in speech payload');
 }
-    
-    console.log('✅ Added idle animations to clips payload');
-} else if (config.idleAnimationEnabled && config.serviceType === 'talks') {
-    console.log('⚠️ Idle animations not fully supported for talks service');
-} else {
-    console.log('❌ Idle animations DISABLED in speech payload');
-}
 
 console.log('Final speech payload:', JSON.stringify(scriptPayload, null, 2));
 
@@ -5609,6 +5602,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
