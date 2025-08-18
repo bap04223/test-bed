@@ -1047,14 +1047,44 @@ body {
                         <!-- Google Sheets configuration - MOVED UP -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     
-    <label for="sheetId">Scenario ID's:</label>
+    <label for="scenarioSetsId">Scenario Sets List:</label>
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+        class="btn-secondary" 
+        onclick="loadScenarioSets()" 
+        style="width: 100%; margin-top: 10px; font-size: 14px;"
+        id="loadSetsBtn"
+    >
+        Load Scenario Sets
+    </button>
+    
+    <div class="form-group" style="margin-top: 15px;">
+        <label for="scenarioSetSelect">Select Scenario Set:</label>
+        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+            <option value="">Load scenario sets first...</option>
+        </select>
+    </div>
+    
+    <label for="sheetId" style="margin-top: 15px; display: block;">Current Scenario Sheet ID:</label>
     <input 
         type="password" 
         id="sheetId" 
         placeholder="1ABC...xyz"
         title="The ID from your Google Sheets URL"
         autocomplete="new-password"
+        readonly
+        style="background-color: #f3f4f6;"
     >
+    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+        This field is automatically populated when you select a scenario set above
+    </small>
 </div>
 
 <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
@@ -1537,9 +1567,14 @@ margin: 0 auto;
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
         let currentVoiceMethod = 'text'; // Add this line
+        
         // ===== CHATBOT CONFIGURATION VARIABLES =====
 let chatbotConfigurations = [];     // Store loaded chatbot configurations
 let currentChatbotConfig = null;    // Currently selected chatbot configuration
+
+        // ===== SCENARIO SETS VARIABLES =====
+let scenarioSets = [];              // Store loaded scenario sets
+let currentScenarioSet = null;      // Currently selected scenario set
 
 // ===== D-ID STREAMING GLOBAL VARIABLES =====
 let didApiKey = '';               // D-ID API key
@@ -4347,6 +4382,153 @@ function applyChatbotConfiguration() {
     
     console.log('Applied chatbot configuration:', config);
 } 
+
+        // ===== SCENARIO SETS MANAGEMENT =====
+
+// Load scenario sets from Google Sheet
+async function loadScenarioSets() {
+    const scenarioSetsId = document.getElementById('scenarioSetsId').value;
+    
+    if (!scenarioSetsId) {
+        showStatus('Please enter Scenario Sets Sheet ID first', 'error');
+        return;
+    }
+    
+    // Disable the load button and show loading state
+    const loadBtn = document.getElementById('loadSetsBtn');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.disabled = true;
+    loadBtn.innerHTML = '⏳ Loading...';
+    
+    showStatus('Loading scenario sets...', 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
+        
+        // Load from the first sheet (you could also make this configurable)
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${scenarioSetsId}/values/Sheet1?key=${apiKey}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.values && data.values.length > 1) {
+            // Process the scenario sets data
+            scenarioSets = [];
+            
+            // Skip header row, process scenario set rows
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 2 && row[0] && row[1]) {
+                    scenarioSets.push({
+                        name: row[0].trim(),
+                        sheetId: row[1].trim(),
+                        description: row[2] ? row[2].trim() : '' // Optional description column
+                    });
+                }
+            }
+            
+            populateScenarioSetsDropdown();
+            showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
+            
+            // Re-enable the load button
+            const loadBtn = document.getElementById('loadSetsBtn');
+            loadBtn.disabled = false;
+            loadBtn.innerHTML = '✅ Sets Loaded';
+            
+            // Try to restore saved selection
+            const savedConfig = localStorage.getItem('pharmacyChatConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.selectedScenarioSet) {
+                    document.getElementById('scenarioSetSelect').value = config.selectedScenarioSet;
+                    // Auto-apply the saved selection
+                    applyScenarioSet();
+                }
+            }
+            
+        } else {
+            showStatus('No scenario sets data found in the sheet', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error loading scenario sets:', error);
+        showStatus('Error loading scenario sets. Check console for details.', 'error');
+        
+        // Re-enable the load button on error
+        const loadBtn = document.getElementById('loadSetsBtn');
+        loadBtn.disabled = false;
+        loadBtn.innerHTML = '❌ Load Failed - Retry';
+    }
+}
+
+// Populate the scenario sets selection dropdown
+function populateScenarioSetsDropdown() {
+    const select = document.getElementById('scenarioSetSelect');
+    select.innerHTML = '<option value="">Select a scenario set...</option>';
+    select.disabled = false;
+    
+    scenarioSets.forEach((scenarioSet, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Show name and description if available
+        if (scenarioSet.description) {
+            option.textContent = `${scenarioSet.name} - ${scenarioSet.description}`;
+        } else {
+            option.textContent = scenarioSet.name;
+        }
+        
+        select.appendChild(option);
+    });
+    
+    // Add change event listener
+    select.addEventListener('change', function() {
+        if (this.value !== '') {
+            applyScenarioSet();
+        }
+    });
+}
+
+// Apply the selected scenario set
+function applyScenarioSet() {
+    const selectElement = document.getElementById('scenarioSetSelect');
+    const selectedIndex = selectElement.value;
+    
+    if (selectedIndex === '' || !scenarioSets[selectedIndex]) {
+        showStatus('Please select a scenario set first', 'error');
+        return;
+    }
+    
+    const scenarioSet = scenarioSets[selectedIndex];
+    currentScenarioSet = scenarioSet;
+    
+    // Apply the scenario set's sheet ID to the scenario ID field
+    document.getElementById('sheetId').value = scenarioSet.sheetId;
+    
+    // Clear any existing scenario data
+    sheetData = [];
+    document.getElementById('sheetName').innerHTML = '<option value="">Load Scenarios first</option>';
+    document.getElementById('sheetName').disabled = true;
+    document.getElementById('scenarioSelect').innerHTML = '<option value="">Load sheet data first...</option>';
+    document.getElementById('scenarioSelect').disabled = true;
+    
+    // Clear current scenario
+    currentScenario = null;
+    updatePatientImageButton();
+    
+    // Save the configuration
+    saveConfig();
+    
+    // Show success message
+    showStatus(`✅ Applied scenario set: ${scenarioSet.name}`, 'success');
+    
+    console.log('Applied scenario set:', scenarioSet);
+}
         
 // ===== EXPORT CONVERSATION FUNCTION =====
         // Export conversation as a downloadable text file
@@ -4942,6 +5124,8 @@ function forceScrollToBottom() {
         voiceSelection: document.getElementById('voiceSelection').value, 
         configSheetId: document.getElementById('configSheetId').value,
         selectedChatbot: document.getElementById('chatbotSelect').value,
+        scenarioSetsId: document.getElementById('scenarioSetsId').value,
+        selectedScenarioSet: document.getElementById('scenarioSetSelect').value,
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
 }
@@ -4962,6 +5146,14 @@ document.getElementById('chunkSize').value = config.chunkSize || 200;
 document.getElementById('streamingMode').checked = config.streamingMode !== false;
                 // Add these lines to your existing loadSavedConfig function
 document.getElementById('configSheetId').value = config.configSheetId || '';
+document.getElementById('scenarioSetsId').value = config.scenarioSetsId || '';
+
+// If we have a saved scenario sets ID, auto-load scenario sets
+if (config.scenarioSetsId && config.scenarioSetsId.trim() !== '') {
+    setTimeout(() => {
+        loadScenarioSets();
+    }, 500);
+}
 
 // Restore saved chatbot selection if configurations are already loaded
 if (config.selectedChatbot && chatbotConfigurations.length > 0) {
@@ -5182,6 +5374,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
