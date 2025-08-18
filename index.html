@@ -883,6 +883,32 @@ body {
     text-align: center;
     font-size: 14px;
     white-space: nowrap;
+    position: relative;
+    cursor: pointer; /* ADDED: Make the whole header clickable */
+}
+
+/* Make the collapse button more visible when collapsed */
+.card.collapsed .collapse-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    padding: 5px;
+    font-size: 14px;
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card.collapsed .collapse-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* Adjust grid when configuration is collapsed */
@@ -895,7 +921,32 @@ body {
 .card {
     transition: all 0.3s ease;
 }
-        
+
+/* Ensure smooth transitions */
+.card {
+    transition: all 0.3s ease;
+}
+
+/* Make entire collapsed header clickable */
+.card.collapsed h2:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Hover expansion for collapsed configuration */
+.card.collapsed:hover {
+    width: 80px !important;
+    transition: width 0.2s ease;
+}
+
+.card.collapsed:hover h2 {
+    font-size: 12px;
+}
+
+.card.collapsed:hover .collapse-btn {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+}
+ 
     </style>
 </head>
 
@@ -940,7 +991,7 @@ body {
         <div class="grid">
             <!-- Configuration section -->
            <div class="card" id="configCard">
-    <h2>Configuration
+    <h2 onclick="handleHeaderClick(event)">Configuration
         <button class="collapse-btn" onclick="toggleConfigCollapse()" id="configCollapseBtn">
             ◀
         </button>
@@ -4891,9 +4942,32 @@ function loadCollapsedState() {
         }, 100);
     }
 }
+
+// Load collapsed state on page load
+function loadCollapsedState() {
+    const savedState = localStorage.getItem('configCollapsed');
+    if (savedState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleConfigCollapse();
+        }, 100);
+    }
+}
+
+// Handle clicks on the configuration header
+function handleHeaderClick(event) {
+    const configCard = document.getElementById('configCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (configCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleConfigCollapse();
+    }
+}
+        
     </script>
 </body>
 </html>
+
 
 
 
