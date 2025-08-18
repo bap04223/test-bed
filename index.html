@@ -1828,6 +1828,9 @@ function newSession() {
     } else {
         updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
     }
+
+    // Reset Initialize Avatar button to pending status
+setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
     
     // Update session info display
     updateSessionInfo();
@@ -5420,6 +5423,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
