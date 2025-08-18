@@ -1021,7 +1021,7 @@ body {
 
 <!-- Configuration Sheet ID - MOVED UP -->
 <div class="form-group">
-    <label for="configSheetId">Configuration Sheet ID:</label>
+    <label for="configSheetId">Chatbot ID's:</label>
     <input 
         type="password" 
         id="configSheetId" 
@@ -1036,7 +1036,7 @@ body {
                         <!-- Google Sheets configuration - MOVED UP -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     
-    <label for="sheetId">Google Sheet ID:</label>
+    <label for="sheetId">Scenario ID's:</label>
     <input 
         type="password" 
         id="sheetId" 
@@ -1335,7 +1335,7 @@ body {
                 disabled
                 id="applyChatbotBtn"
             >
-                Apply Selected Configuration
+                Apply Selected Chatbot
             </button>
         </div>
 
@@ -1349,13 +1349,13 @@ body {
     onclick="loadSheetNames()" 
     style="margin-bottom: 10px; width: 100%;"
 >
-    Get Sheet Names
+    Load Scenario's
 </button>
 
 <div class="form-group">
     <label for="sheetName">Sheet Name:</label>
     <select id="sheetName" disabled>
-        <option value="">Get sheet names first...</option>
+        <option value="">Load Scenario's first</option>
     </select>
 </div>
     
@@ -1392,7 +1392,7 @@ body {
     onclick="initializeDID()" 
     style="margin-bottom: 10px; width: 100%;"
 >
-    Initialize Avatar
+    Initialise and Connect Avatar
 </button>
 
 <button 
@@ -5154,6 +5154,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
