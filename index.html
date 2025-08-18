@@ -1390,20 +1390,11 @@ body {
 <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
     
 
-<!-- Get Sheet Names - MOVED FROM CONFIGURATION -->
-<button 
-    class="btn-secondary" 
-    onclick="loadSheetNames()" 
-    style="margin-bottom: 10px; width: 100%;"
->
-    Load Scenario's
-</button>
-
 <div class="form-group">
     <label for="sheetName">Sheet Name:</label>
     <select id="sheetName" disabled>
-        <option value="">Load Scenario's first</option>
-    </select>
+    <option value="">Select scenario set first</option>
+</select>
 </div>
     
     <!-- Scenario selection dropdown -->
@@ -4534,7 +4525,7 @@ function applyScenarioSet() {
     
     // Clear any existing scenario data
     sheetData = [];
-    document.getElementById('sheetName').innerHTML = '<option value="">Load Scenarios first</option>';
+    document.getElementById('sheetName').innerHTML = '<option value="">Loading sheet names...</option>';
     document.getElementById('sheetName').disabled = true;
     document.getElementById('scenarioSelect').innerHTML = '<option value="">Load sheet data first...</option>';
     document.getElementById('scenarioSelect').disabled = true;
@@ -4549,7 +4540,12 @@ function applyScenarioSet() {
     // Show success message
     showStatus(`✅ Applied scenario set: ${scenarioSet.name}`, 'success');
     
+    // AUTO-LOAD SHEET NAMES
+    console.log('Auto-loading sheet names for scenario set:', scenarioSet.name);
+    loadSheetNames();
+    
     console.log('Applied scenario set:', scenarioSet);
+}
 }
         
 // ===== EXPORT CONVERSATION FUNCTION =====
@@ -5389,6 +5385,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
