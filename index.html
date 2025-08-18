@@ -1044,6 +1044,75 @@ body {
     <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
     </small>
 </div>
+
+    <label for="scenarioSetsId">Scenario Sets List:</label>
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+        class="btn-secondary" 
+        onclick="loadScenarioSets()" 
+        style="width: 100%; margin-top: 10px; font-size: 14px;"
+        id="loadSetsBtn"
+    >
+        Load Scenario Sets
+    </button>
+    
+        <label for="sheetId" style="margin-top: 15px; display: block;">Current Scenario Sheet ID:</label>
+    <input 
+        type="password" 
+        id="sheetId" 
+        placeholder="1ABC...xyz"
+        title="The ID from your Google Sheets URL"
+        autocomplete="new-password"
+        readonly
+        style="background-color: #f3f4f6;"
+    >
+    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+        This field is automatically populated when you select a scenario set above
+     </small>
+</div>                   
+                        
+                        
+<!-- Scenario Sets List Field -->
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    <label for="scenarioSetsId">Scenario Sets List:</label>
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+        class="btn-secondary" 
+        onclick="loadScenarioSets()" 
+        style="width: 100%; margin-top: 10px; font-size: 14px;"
+        id="loadSetsBtn"
+    >
+        Load Scenario Sets
+    </button>
+    
+    <label for="sheetId" style="margin-top: 15px; display: block;">Current Scenario Sheet ID:</label>
+    <input 
+        type="password" 
+        id="sheetId" 
+        placeholder="1ABC...xyz"
+        title="The ID from your Google Sheets URL"
+        autocomplete="new-password"
+        readonly
+        style="background-color: #f3f4f6;"
+    >
+    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+        This field is automatically populated when you select a scenario set above
+    </small>
+</div>
        
                         
 <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
@@ -1341,45 +1410,13 @@ body {
 
 
         <!-- Scenario Sets Management Section -->
-<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
-    <label for="scenarioSetsId">Scenario Sets List:</label>
-    <input 
-        type="password" 
-        id="scenarioSetsId" 
-        placeholder="Google Sheet ID containing list of scenario sets"
-        title="The Google Sheet ID containing your scenario sets list"
-        autocomplete="new-password"
-        style="font-size: 14px;"
-    >
-    <button 
-        class="btn-secondary" 
-        onclick="loadScenarioSets()" 
-        style="width: 100%; margin-top: 10px; font-size: 14px;"
-        id="loadSetsBtn"
-    >
-        Load Scenario Sets
-    </button>
-    
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">  
     <div class="form-group" style="margin-top: 15px;">
         <label for="scenarioSetSelect">Select Scenario Set:</label>
         <select id="scenarioSetSelect" disabled style="font-size: 14px;">
             <option value="">Load scenario sets first...</option>
         </select>
     </div>
-    
-    <label for="sheetId" style="margin-top: 15px; display: block;">Current Scenario Sheet ID:</label>
-    <input 
-        type="password" 
-        id="sheetId" 
-        placeholder="1ABC...xyz"
-        title="The ID from your Google Sheets URL"
-        autocomplete="new-password"
-        readonly
-        style="background-color: #f3f4f6;"
-    >
-    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
-        This field is automatically populated when you select a scenario set above
-    </small>
 </div>
 
         
@@ -5393,6 +5430,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
