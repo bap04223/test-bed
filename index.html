@@ -1273,9 +1273,16 @@ body {
 >
     Initialize Avatar
 </button>
-<small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px; text-align: center;">
-    After initialization, just click "Start Recording" to begin
-</small>
+
+<button 
+    type="button"
+    class="btn-danger" 
+    onclick="connectStream()" 
+    style="margin-bottom: 10px; width: 100%; display: none;"
+    id="connectAvatarBtn"
+>
+    🔗 Connect Avatar Stream
+</button>
 </div>
 
                 <!-- Conversation History -->
@@ -1598,8 +1605,8 @@ if (avatarVideo) {
 streamId = null;
 didSessionId = null;
 
-// Reset avatar status
-updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+// Hide connect avatar button
+hideConnectAvatarButton();
 
 // Reset service fields to default (talks) but preserve API key
 const currentApiKey = document.getElementById('didApiKey').value;
@@ -1952,20 +1959,13 @@ function splitTextIntoChunks(text, chunkSize) {
             return;
         }
         
-        // AUTO-CONNECT AVATAR STREAM IF NEEDED
-        if (isAvatarInitialized && !isStreamConnected) {
-            showStatus('Connecting avatar stream...', 'info');
-            connectStream().then(() => {
-                // Continue with recording after connection
-                proceedWithRecording();
-            }).catch(error => {
-                console.error('Failed to connect stream:', error);
-                showStatus('Avatar connection failed, continuing with recording', 'warning');
-                proceedWithRecording();
-            });
-        } else {
-            proceedWithRecording();
-        }
+        // Check if avatar stream is connected
+if (isAvatarInitialized && !isStreamConnected) {
+    showStatus('Please connect avatar stream first using the "Connect Avatar Stream" button', 'error');
+    return;
+}
+
+proceedWithRecording();
     }
     
     function proceedWithRecording() {
@@ -2405,10 +2405,10 @@ document.getElementById('reviewTranscript').value = '';
             // Continue anyway - don't fail initialization
         }
         
-        updateAvatarStatus('Avatar ready - Start recording to begin', 'info');
+        updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
 
-// Hide the connect button since we'll auto-connect on recording
-hideConnectButton();
+// Show the connect avatar button
+showConnectAvatarButton();
         
         return true;
         
@@ -2448,6 +2448,21 @@ function hideConnectButton() {
     }
 }
         
+ // Show the dedicated connect avatar button
+function showConnectAvatarButton() {
+    const connectBtn = document.getElementById('connectAvatarBtn');
+    if (connectBtn) {
+        connectBtn.style.display = 'block';
+    }
+}
+
+// Hide the dedicated connect avatar button
+function hideConnectAvatarButton() {
+    const connectBtn = document.getElementById('connectAvatarBtn');
+    if (connectBtn) {
+        connectBtn.style.display = 'none';
+    }
+}       
         
 // FIXED: Correct Stream Connection with Proper Service Detection
 async function connectStream() {
@@ -2550,11 +2565,10 @@ async function connectStream() {
         }
         
         console.log('SDP answer sent successfully');
-        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
-        
-        // Hide connect button
-        const connectBtn = document.getElementById('streamConnectBtn');
-        if (connectBtn) connectBtn.style.display = 'none';
+updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+
+// Hide connect avatar button
+hideConnectAvatarButton();
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -2687,10 +2701,12 @@ function closeStreamConnection() {
     }
     
     isStreamConnected = false;
-    
-    // Show connect button again
-    const connectBtn = document.getElementById('streamConnectBtn');
-    if (connectBtn) connectBtn.style.display = 'block';
+
+// Show connect avatar button again if avatar is initialized
+if (isAvatarInitialized) {
+    showConnectAvatarButton();
+    updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
+}
     
     // Delete stream on server if we have IDs
     if (streamId && didSessionId) {
@@ -4779,6 +4795,7 @@ function updateAvatarFromScenario() {
     </script>
 </body>
 </html>
+
 
 
 
