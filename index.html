@@ -3081,11 +3081,6 @@ async function closeStreamConnection() {
     // Reset connection state immediately
     isStreamConnected = false;
     
-    // Get current service type BEFORE clearing variables
-    const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
-    console.log('Closing stream connection for service type:', currentServiceType);
-    
-   
     // Clean up video element
     if (avatarVideo && avatarVideo.srcObject) {
         console.log('Stopping video tracks...');
@@ -5565,6 +5560,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
