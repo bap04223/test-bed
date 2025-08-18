@@ -259,6 +259,31 @@ body {
         .btn-warning:hover {
             background-color: #d97706;
         }
+
+        /* Status Button States - Add this after existing button styles */
+.btn-status-pending {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    position: relative;
+}
+
+.btn-status-pending:hover {
+    background-color: #dc2626 !important;
+}
+
+.btn-status-completed {
+    background-color: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-status-completed:hover {
+    background-color: #047857 !important;
+}
+
+.btn-status-completed::after {
+    content: " ✓";
+    font-weight: bold;
+}
         
         /* LOCKED CHAT CONTAINER - Fixed boundaries */
 .chat-container {
@@ -1034,13 +1059,13 @@ body {
         style="font-size: 14px;"
     >
     <button 
-        class="btn-secondary" 
-        onclick="loadChatbotConfigurations()" 
-        style="width: 100%; margin-top: 10px; font-size: 14px;"
-        id="loadChatbotBtn"
-    >
-        Load Chatbot Configurations
-    </button>
+    class="btn-secondary btn-status-pending" 
+    onclick="loadChatbotConfigurations()" 
+    style="width: 100%; margin-top: 10px; font-size: 14px;"
+    id="loadChatbotBtn"
+>
+    Load Chatbot Configurations
+</button>
     <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
     </small>
 </div>              
@@ -1057,13 +1082,13 @@ body {
         style="font-size: 14px;"
     >
     <button 
-        class="btn-secondary" 
-        onclick="loadScenarioSets()" 
-        style="width: 100%; margin-top: 10px; font-size: 14px;"
-        id="loadSetsBtn"
-    >
-        Load Scenario Sets
-    </button>
+    class="btn-secondary btn-status-pending" 
+    onclick="loadScenarioSets()" 
+    style="width: 100%; margin-top: 10px; font-size: 14px;"
+    id="loadSetsBtn"
+>
+    Load Scenario Sets
+</button>
     
     <!-- Hidden field - automatically populated from scenario set selection -->
 <input 
@@ -1356,14 +1381,14 @@ body {
             </div>
             
             <button 
-                class="btn-info" 
-                onclick="applyChatbotConfiguration()" 
-                style="width: 100%; font-size: 14px;"
-                disabled
-                id="applyChatbotBtn"
-            >
-                Apply Selected Chatbot
-            </button>
+    class="btn-info btn-status-pending" 
+    onclick="applyChatbotConfiguration()" 
+    style="width: 100%; font-size: 14px;"
+    disabled
+    id="applyChatbotBtn"
+>
+    Apply Selected Chatbot
+</button>
         </div>       
 
 
@@ -1415,9 +1440,10 @@ body {
     
     <button 
     type="button"
-    class="btn-primary" 
+    class="btn-primary btn-status-pending" 
     onclick="initializeDID()" 
     style="margin-bottom: 10px; width: 100%;"
+    id="initializeAvatarBtn"
 >
     Initialize & Connect Avatar
 </button>
@@ -2598,17 +2624,22 @@ async function initializeDID() {
         }
         
         // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
-        updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
-        await connectStream();
-        
-        return true;
+updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
+await connectStream();
+
+// Set button to completed status
+setButtonCompleted('initializeAvatarBtn', 'Avatar Connected');
+
+return true;
         
     } catch (error) {
         console.error('D-ID initialization error:', error);
         updateAvatarStatus(`Error: ${error.message}`, 'error');
-        isAvatarInitialized = false;
-        hideConnectAvatarButton();
-        return false;
+isAvatarInitialized = false;
+hideConnectAvatarButton();
+// Reset button to pending status on error
+setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+return false;
     }
 }
 
@@ -4266,10 +4297,8 @@ async function loadChatbotConfigurations() {
             populateChatbotDropdown();
 showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
 
-// Re-enable the load button
-const loadBtn = document.getElementById('loadChatbotBtn');
-loadBtn.disabled = false;
-loadBtn.innerHTML = '✅ Configurations Loaded';
+// Set button to completed status
+setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
 
 // Try to restore saved selection
 const savedConfig = localStorage.getItem('pharmacyChatConfig');
@@ -4288,10 +4317,8 @@ if (savedConfig) {
     console.error('Error loading chatbot configurations:', error);
     showStatus('Error loading configurations. Check console for details.', 'error');
     
-    // Re-enable the load button on error
-    const loadBtn = document.getElementById('loadChatbotBtn');
-    loadBtn.disabled = false;
-    loadBtn.innerHTML = '❌ Load Failed - Retry';
+    // Set button back to pending status on error
+setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
 }
 } // ADD THIS MISSING CLOSING BRACE
 
@@ -4353,6 +4380,8 @@ function applyChatbotConfiguration() {
     
     // Show success message
     showStatus(`✅ Applied configuration: ${config.name}`, 'success');
+    // Set button to completed status
+setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
     
     // Optional: Clear chat if there's an existing conversation
     if (conversationHistory.length > 0) {
@@ -4428,11 +4457,10 @@ async function loadScenarioSets() {
             }
             
             populateScenarioSetsDropdown();
-            showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
-            
-            // Re-enable the load button
-            loadBtn.disabled = false;
-            loadBtn.innerHTML = '✅ Sets Loaded';
+showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
+
+// Set button to completed status
+setButtonCompleted('loadSetsBtn', 'Sets Loaded');
             
             // Try to restore saved selection
             const savedConfig = localStorage.getItem('pharmacyChatConfig');
@@ -4461,9 +4489,8 @@ async function loadScenarioSets() {
             showStatus('Error loading scenario sets. Check console for details.', 'error');
         }
         
-        // Re-enable the load button on error
-        loadBtn.disabled = false;
-        loadBtn.innerHTML = '❌ Load Failed - Retry';
+        // Set button back to pending status on error
+setButtonStatus('loadSetsBtn', 'pending', 'Load Failed - Retry');
     }
 }
 
@@ -5349,16 +5376,36 @@ function loadCollapsedState() {
     }
 }
 
-// Load collapsed state on page load
-function loadCollapsedState() {
-    const savedState = localStorage.getItem('configCollapsed');
-    if (savedState === 'true') {
-        // Delay to ensure DOM is ready
-        setTimeout(() => {
-            toggleConfigCollapse();
-        }, 100);
+        // ===== BUTTON STATUS MANAGEMENT =====
+// Functions to manage button status colors
+
+function setButtonStatus(buttonId, status, newText = null) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    
+    // Remove existing status classes
+    button.classList.remove('btn-status-pending', 'btn-status-completed');
+    
+    if (status === 'pending') {
+        button.classList.add('btn-status-pending');
+    } else if (status === 'completed') {
+        button.classList.add('btn-status-completed');
+    }
+    
+    // Update button text if provided
+    if (newText) {
+        button.innerHTML = newText;
     }
 }
+
+function setButtonCompleted(buttonId, successText = null) {
+    setButtonStatus(buttonId, 'completed', successText);
+}
+
+function setButtonPending(buttonId, pendingText = null) {
+    setButtonStatus(buttonId, 'pending', pendingText);
+}
+
 
 // Handle clicks on the configuration header
 function handleHeaderClick(event) {
@@ -5373,6 +5420,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
