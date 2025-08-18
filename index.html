@@ -2862,6 +2862,38 @@ function onIceConnectionStateChange() {
     }
 }
 
+function onConnectionStateChange() {
+    console.log('Connection state:', peerConnection.connectionState);
+}
+
+function onSignalingStateChange() {
+    console.log('Signaling state:', peerConnection.signalingState);
+}
+
+function onTrack(event) {
+    console.log('Received remote stream');
+    const remoteStream = event.streams[0];
+    setVideoElement(remoteStream);
+}
+
+function setVideoElement(stream) {
+    if (!stream || !avatarVideo) return;
+    
+    avatarVideo.srcObject = stream;
+    avatarVideo.muted = false;
+    avatarVideo.volume = 0.8;
+    
+    // Safari hotfix
+    if (avatarVideo.paused) {
+        avatarVideo.play().then(() => {
+            console.log('Video playback started');
+        }).catch(error => {
+            console.error('Video play failed:', error);
+        });
+    }
+}
+        
+
 function onSignalingStateChange() {
     console.log('Signaling state:', peerConnection.signalingState);
 }
@@ -5099,6 +5131,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
