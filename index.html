@@ -1448,15 +1448,6 @@ body {
     Initialize & Connect Avatar
 </button>
 
-<button 
-    type="button"
-    class="btn-danger" 
-    onclick="connectStream()" 
-    style="margin-bottom: 10px; width: 100%; display: none;"
-    id="connectAvatarBtn"
->
-    🔗 Connect Avatar Stream
-</button>
 </div>
 
                 <!-- Conversation History -->
@@ -1818,10 +1809,7 @@ function newSession() {
     
     // Force update service fields display
     updateServiceFields();
-    
-    // Hide connect avatar button initially
-    hideConnectAvatarButton();
-    
+       
     // Update avatar status
     if (currentApiKey) {
         updateAvatarStatus('D-ID ready - Click "Initialize Avatar" to setup', 'info');
@@ -2639,7 +2627,7 @@ return true;
         console.error('D-ID initialization error:', error);
         updateAvatarStatus(`Error: ${error.message}`, 'error');
 isAvatarInitialized = false;
-hideConnectAvatarButton();
+
 // Reset button to pending status on error
 setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
 return false;
@@ -2672,23 +2660,7 @@ function hideConnectButton() {
     if (connectBtn) {
         connectBtn.style.display = 'none';
     }
-}
-        
- // Show the dedicated connect avatar button
-function showConnectAvatarButton() {
-    const connectBtn = document.getElementById('connectAvatarBtn');
-    if (connectBtn) {
-        connectBtn.style.display = 'block';
-    }
-}
-
-// Hide the dedicated connect avatar button
-function hideConnectAvatarButton() {
-    const connectBtn = document.getElementById('connectAvatarBtn');
-    if (connectBtn) {
-        connectBtn.style.display = 'none';
-    }
-}       
+}   
         
 // FIXED: Enhanced Stream Connection with Proper Service Detection and Cleanup
 async function connectStream() {
@@ -2820,9 +2792,6 @@ async function connectStream() {
         
         console.log('SDP answer sent successfully');
         updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
-
-        // Hide connect avatar button
-        hideConnectAvatarButton();
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -3069,11 +3038,12 @@ async function closeStreamConnection() {
     
     console.log('Stream cleanup completed');
 
-    // Show connect avatar button again if avatar is initialized
-    if (isAvatarInitialized) {
-        showConnectAvatarButton();
-        updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
-    }
+// Reset initialize button if avatar was initialized
+if (isAvatarInitialized) {
+    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+    isAvatarInitialized = false;
+    updateAvatarStatus('Connection closed - Re-initialize avatar to reconnect', 'info');
+}
 } 
         
         // Test D-ID API connection
@@ -3927,10 +3897,18 @@ option.textContent = `${i}. ${row[0]}${indicators}`;
     updatePatientImageButton();
     
     // Update avatar source URL if provided in sheet
-    updateAvatarFromScenario();
-    
-    // Clear previous conversation
-    clearChat();
+updateAvatarFromScenario();
+
+// Reset avatar initialization when scenario changes
+if (isAvatarInitialized) {
+    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+    isAvatarInitialized = false;
+    isStreamConnected = false;
+    updateAvatarStatus('Scenario changed - Re-initialize avatar with new settings', 'info');
+}
+
+// Clear previous conversation
+clearChat();
     
     // Add initial message
     addMessage('Scenario loaded. Press the start recoding button to start the consultation.', 'ai');
@@ -5423,6 +5401,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
