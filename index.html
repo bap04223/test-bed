@@ -110,6 +110,7 @@ body {
     min-height: calc(100vh - 200px); /* LOCKED: Minimum height */
     max-height: calc(100vh - 200px); /* LOCKED: Maximum height */
     overflow: hidden; /* LOCKED: Prevent overflow expansion */
+    transition: all 0.3s ease; /* ADDED: Smooth grid transitions */
 }
         
         /* LOCKED CARD COMPONENT - Fixed sizes */
@@ -841,6 +842,59 @@ body {
     display: block;
     object-fit: contain;
 }
+
+/* COLLAPSIBLE CONFIGURATION PANEL */
+.collapse-btn {
+    float: right;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.collapse-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Collapsed state for configuration card */
+.card.collapsed {
+    width: 40px !important;
+    min-width: 40px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card.collapsed .card-content {
+    display: none;
+}
+
+.card.collapsed h2 {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    margin: 0;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* Adjust grid when configuration is collapsed */
+.grid.config-collapsed {
+    grid-template-columns: 40px 1fr 2fr; /* Collapsed config, expanded middle and right */
+    transition: all 0.3s ease;
+}
+
+/* Ensure smooth transitions */
+.card {
+    transition: all 0.3s ease;
+}
         
     </style>
 </head>
@@ -885,9 +939,13 @@ body {
         <!-- Main content grid -->
         <div class="grid">
             <!-- Configuration section -->
-            <div class="card">
-                <h2>Configuration</h2>
-                <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
+           <div class="card" id="configCard">
+    <h2>Configuration
+        <button class="collapse-btn" onclick="toggleConfigCollapse()" id="configCollapseBtn">
+            ◀
+        </button>
+    </h2>
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
                     <div class="scrollable-section">
 
 <!-- Hidden webhook fields - populated by chatbot configuration -->
@@ -1505,6 +1563,9 @@ updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info')
 
 // Initialize D-ID streaming setup
 initializeDIDElements();
+
+// Load collapsed state for configuration panel
+    loadCollapsedState();
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -4788,9 +4849,52 @@ function updateAvatarFromScenario() {
         console.log('No avatar URL or voice selection found in scenario');
     }
 }        
+        // ===== COLLAPSIBLE CONFIGURATION PANEL =====
+let isConfigCollapsed = false;
+
+function toggleConfigCollapse() {
+    const configCard = document.getElementById('configCard');
+    const grid = document.querySelector('.grid');
+    const collapseBtn = document.getElementById('configCollapseBtn');
+    
+    isConfigCollapsed = !isConfigCollapsed;
+    
+    if (isConfigCollapsed) {
+        // Collapse the configuration panel
+        configCard.classList.add('collapsed');
+        grid.classList.add('config-collapsed');
+        collapseBtn.innerHTML = '▶';
+        collapseBtn.title = 'Expand Configuration';
+        
+        // Save collapsed state
+        localStorage.setItem('configCollapsed', 'true');
+        
+    } else {
+        // Expand the configuration panel
+        configCard.classList.remove('collapsed');
+        grid.classList.remove('config-collapsed');
+        collapseBtn.innerHTML = '◀';
+        collapseBtn.title = 'Collapse Configuration';
+        
+        // Save expanded state
+        localStorage.setItem('configCollapsed', 'false');
+    }
+}
+
+// Load collapsed state on page load
+function loadCollapsedState() {
+    const savedState = localStorage.getItem('configCollapsed');
+    if (savedState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleConfigCollapse();
+        }, 100);
+    }
+}
     </script>
 </body>
 </html>
+
 
 
 
