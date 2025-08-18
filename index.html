@@ -1427,7 +1427,7 @@ body {
     onclick="initializeDID()" 
     style="margin-bottom: 10px; width: 100%;"
 >
-    Initialise and Connect Avatar
+    Initialize & Connect Avatar
 </button>
 
 <button 
@@ -2557,7 +2557,7 @@ document.getElementById('reviewTranscript').value = '';
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
 
-        // FIXED: Enhanced Avatar Initialization with Better State Management
+        // FIXED: Enhanced Avatar Initialization with Automatic Connection
 async function initializeDID() {
     try {
         console.log('=== initializeDID() called ===');
@@ -2577,7 +2577,7 @@ async function initializeDID() {
             throw new Error('Avatar video element not found');
         }
         
-        // FIXED: Clean up any existing connections before initializing
+        // Clean up any existing connections before initializing
         if (peerConnection || streamId) {
             console.log('Cleaning up existing connections before initialization...');
             await closeStreamConnection();
@@ -2605,10 +2605,9 @@ async function initializeDID() {
             // Continue anyway - don't fail initialization
         }
         
-        updateAvatarStatus('Avatar ready - Click "Connect Avatar Stream" to connect', 'info');
-
-        // Show the connect avatar button
-        showConnectAvatarButton();
+        // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
+        updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
+        await connectStream();
         
         return true;
         
@@ -5382,6 +5381,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
