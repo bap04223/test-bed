@@ -161,6 +161,27 @@ body {
         .form-group.no-margin {
     margin-bottom: 0;
 }
+
+        /* Consistent dropdown section spacing */
+.dropdown-section {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.dropdown-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Ensure consistent form-group spacing within dropdowns */
+.dropdown-section .form-group {
+    margin-bottom: 15px;
+}
+
+.dropdown-section .form-group:last-child {
+    margin-bottom: 0;
+}
         
         label {
             display: block;
@@ -1168,8 +1189,7 @@ body {
         <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
             Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
         </small>
-        
-        <div class="form-group" style="margin-top: 15px;">
+      <div class="form-group">
             <label for="serviceType">Avatar Service:</label>
             <select id="serviceType">
                 <option value="talks">Talks (Custom Image)</option>
@@ -1198,7 +1218,7 @@ body {
         </div>
 
         <!-- Enhanced Voice Selection Dropdown -->
-<div class="form-group" style="margin-top: 15px;">
+<div class="form-group">
     <label for="voiceSelection">Voice Selection:</label>
     <select id="voiceSelection">
         <option value="">Auto (Gender-Based Matching)</option>
@@ -1346,7 +1366,7 @@ body {
     </select>
     </div>
         
-        <div class="form-group" style="margin-top: 15px;">
+        <div class="form-group">
             <label for="chunkSize">Text Chunk Size:</label>
             <input type="number" id="chunkSize" value="200" min="50" max="500">
             <small style="color: var(--text-secondary); font-size: 11px;">
@@ -1371,7 +1391,7 @@ body {
     <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
-        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+        <div class="form-group dropdown-section">
                                    
             <div class="form-group">
                 <label for="chatbotSelect">Select Chatbot:</label>
@@ -1393,8 +1413,8 @@ body {
 
 
         <!-- Scenario Sets Management Section -->
-<div class="form-group">  
-    <div class="form-group" style="margin-top: 15px;">
+<div class="form-group dropdown-section">
+    <div class="form-group">
         <label for="scenarioSetSelect">Select Scenario Set:</label>
         <select id="scenarioSetSelect" disabled style="font-size: 14px;">
             <option value="">Load scenario sets first...</option>
@@ -1403,7 +1423,7 @@ body {
 </div>
 
         <!-- Scenario Management Section -->
-        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+        <div class="form-group dropdown-section">
             <div class="form-group">
                 <label for="sheetName">Sheet Name:</label>
                 <select id="sheetName" disabled>
@@ -5401,6 +5421,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
