@@ -3255,13 +3255,13 @@ let scriptPayload = {
     session_id: didSessionId
 };
 
-// FIXED: Only add idle for clips, not talks
+// Don't add idle to the config - it's not a valid parameter
+// Disable keep-alive - it's causing 400 errors
 if (config.idleAnimationEnabled && config.serviceType === 'clips') {
-    console.log('🎭 APPLYING IDLE ANIMATIONS to clips speech payload');
-    console.log('Idle intensity:', config.idleAnimationIntensity);
-    
-    // Only add idle config for clips, NOT driver_url
-    scriptPayload.config.idle = true;
+    console.log('⚠️ Keep-alive disabled - clips presenters have natural movements');
+    // Don't start keep-alive - it's not working
+    // startIdleKeepAlive(); // COMMENTED OUT
+}
     
     console.log('✅ Added idle animations to clips payload');
 } else if (config.idleAnimationEnabled && config.serviceType === 'talks') {
@@ -5565,6 +5565,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
