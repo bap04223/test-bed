@@ -1293,6 +1293,35 @@ body {
             <input type="checkbox" id="streamingMode" checked style="width: auto; margin-right: 8px;">
             <label for="streamingMode" style="display: inline;">Enable Streaming Mode</label>
         </div>
+
+<div class="form-group">
+    <input type="checkbox" id="enableIdleAnimation" checked style="width: auto; margin-right: 8px;">
+    <label for="enableIdleAnimation" style="display: inline;">Enable Idle Animations</label>
+    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+        Keeps avatar animated between responses (uses more credits)
+    </small>
+</div>
+
+<div class="form-group" style="margin-top: 15px;">
+    <label for="idleAnimationIntensity">Animation Intensity:</label>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <input type="range" id="idleAnimationIntensity" min="0.1" max="1" step="0.1" value="0.4" style="flex: 1;">
+        <span id="intensityValue" style="min-width: 30px; font-weight: 500;">0.4</span>
+    </div>
+    <small style="color: var(--text-secondary); font-size: 11px;">
+        0.1 = Subtle movements, 1.0 = Very expressive
+    </small>
+</div>
+
+<div class="form-group">
+    <label for="costMode">Cost Mode:</label>
+    <select id="costMode">
+        <option value="minimal">Minimal (No animations - Lowest cost)</option>
+        <option value="low">Low (Subtle - Low cost)</option>
+        <option value="balanced" selected>Balanced (Natural - Moderate cost)</option>
+        <option value="high">High (Expressive - Higher cost)</option>
+    </select>
+</div>
         
                           </form>
                         </div>
@@ -1816,6 +1845,15 @@ function updateSessionInfo() {
     document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
     document.getElementById('voiceSelection').addEventListener('change', saveConfig);  // Add this line
 
+    // Idle animation event listeners
+    document.getElementById('enableIdleAnimation').addEventListener('change', saveConfig);
+    document.getElementById('costMode').addEventListener('change', saveConfig);
+    
+    // Intensity slider with live update
+    document.getElementById('idleAnimationIntensity').addEventListener('input', function() {
+        document.getElementById('intensityValue').textContent = this.value;
+        saveConfig();
+    });
     
 }
 
@@ -1897,7 +1935,7 @@ function updateServiceFields() {
     console.log('=== updateServiceFields() completed ===');
 }
 
-// FIXED: Correct Avatar Configuration Reading
+// FIXED: Correct Avatar Configuration Reading with Idle Animation Support
 function getAvatarConfiguration() {
     const config = {
         didApiKey: document.getElementById('didApiKey').value.trim(),
@@ -1905,7 +1943,11 @@ function getAvatarConfiguration() {
         sourceUrl: document.getElementById('sourceUrl').value.trim(),
         presenterId: document.getElementById('presenterId').value,
         chunkSize: parseInt(document.getElementById('chunkSize').value),
-        streamingMode: document.getElementById('streamingMode').checked
+        streamingMode: document.getElementById('streamingMode').checked,
+        // NEW: Idle animation settings
+        idleAnimationEnabled: document.getElementById('enableIdleAnimation').checked,
+        idleAnimationIntensity: parseFloat(document.getElementById('idleAnimationIntensity').value),
+        costMode: document.getElementById('costMode').value
     };
     
     console.log('Current avatar configuration:', config);
@@ -2655,7 +2697,28 @@ async function connectStream() {
             if (!config.sourceUrl) {
                 throw new Error('Source image URL is required for talks service');
             }
-            payload.source_url = config.sourceUrl;
+            
+            payload = {
+                source_url: config.sourceUrl,
+                stream_warmup: true
+            };
+            
+            // Add idle animation configuration if enabled
+            if (config.idleAnimationEnabled) {
+                payload.config = {
+                    idle: {
+                        enabled: true,
+                        intensity: config.idleAnimationIntensity
+                    },
+                    stitch: true
+                };
+                payload.driver_url = 'bank://lively/';
+                console.log('Talks with idle animations enabled, intensity:', config.idleAnimationIntensity);
+            } else {
+                payload.config = { stitch: true };
+                console.log('Talks with idle animations disabled');
+            }
+            
             streamUrl = 'https://api.d-id.com/talks/streams';
             console.log('Talks payload:', payload);
             
@@ -2664,8 +2727,25 @@ async function connectStream() {
                 throw new Error('Presenter selection is required for clips service');
             }
             
-            // FIXED: Correct payload structure for Clips API
-            payload.presenter_id = config.presenterId;
+            payload = {
+                presenter_id: config.presenterId,
+                stream_warmup: true
+            };
+            
+            // Add idle animation configuration if enabled
+            if (config.idleAnimationEnabled) {
+                payload.config = {
+                    idle: {
+                        enabled: true,
+                        intensity: config.idleAnimationIntensity
+                    },
+                    stitch: true
+                };
+                console.log('Clips with idle animations enabled, intensity:', config.idleAnimationIntensity);
+            } else {
+                payload.config = { stitch: true };
+                console.log('Clips with idle animations disabled');
+            }
             
             // Try to get a driver for this presenter
             try {
@@ -4884,6 +4964,11 @@ function applyChatbotConfiguration() {
         voiceSelection: document.getElementById('voiceSelection').value, 
         configSheetId: document.getElementById('configSheetId').value,
         selectedChatbot: document.getElementById('chatbotSelect').value,
+        selectedChatbot: document.getElementById('chatbotSelect').value,
+        // NEW: Add idle animation settings
+        enableIdleAnimation: document.getElementById('enableIdleAnimation').checked,
+        idleAnimationIntensity: document.getElementById('idleAnimationIntensity').value,
+        costMode: document.getElementById('costMode').value,
     };
     localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
 }
@@ -4947,9 +5032,21 @@ setTimeout(() => {
                     document.getElementById('deepgramLanguage').value = config.deepgramLanguage;
                 }
                 // Load voice selection
-if (config.voiceSelection) {
-    document.getElementById('voiceSelection').value = config.voiceSelection;
-}
+                if (config.voiceSelection) {
+                    document.getElementById('voiceSelection').value = config.voiceSelection;
+                }
+                
+                // NEW: Load idle animation settings
+                if (config.enableIdleAnimation !== undefined) {
+                    document.getElementById('enableIdleAnimation').checked = config.enableIdleAnimation;
+                }
+                if (config.idleAnimationIntensity) {
+                    document.getElementById('idleAnimationIntensity').value = config.idleAnimationIntensity;
+                    document.getElementById('intensityValue').textContent = config.idleAnimationIntensity;
+                }
+                if (config.costMode) {
+                    document.getElementById('costMode').value = config.costMode;
+                }
             }
         }
         // Select a random scenario
@@ -5131,6 +5228,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
