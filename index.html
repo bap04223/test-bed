@@ -264,20 +264,20 @@ body {
 .chat-container {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden; /* Add this to prevent horizontal scroll */
+    overflow-x: hidden;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 15px;
+    padding-bottom: 80px; /* ADD THIS: Extra space for button group */
     background-color: #fafafa;
     margin: 0;
     min-height: 200px;
-    /* CRITICAL FIXES: */
-    max-height: none; /* Remove any max-height constraints */
-    height: auto; /* Let it grow with content */
-    word-wrap: break-word; /* Break long words */
-    word-break: break-word; /* Break long words */
-    scroll-behavior: smooth; /* Smooth scrolling */
-    box-sizing: border-box; /* Include padding in height calculation */
+    max-height: none;
+    height: auto;
+    word-wrap: break-word;
+    word-break: break-word;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
 }
         
         /* Individual message styling */
@@ -390,17 +390,14 @@ body {
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
-    /* CHANGE FROM ABSOLUTE TO RELATIVE POSITIONING: */
-    position: relative;
-    bottom: auto;
-    left: auto;
-    right: auto;
+    position: static; /* CHANGE: from relative to static */
     background: var(--card-background);
-    padding: 15px 0 0 0;
+    padding: 15px 20px; /* ADD: proper padding */
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
-    margin-top: auto; /* Push to bottom of flex container */
-}   
+    margin-top: 15px; /* REDUCE: from auto to 15px */
+    border-radius: 0 0 12px 12px; /* ADD: round bottom corners */
+}
         .button-group button {
             flex: 1;
             min-width: 140px;
@@ -1319,7 +1316,7 @@ body {
             <!-- Voice control section -->
 <div class="card">
     <h2>Scenario Management</h2>
-    <div class="card-content">
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 90px;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
         <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
@@ -5157,6 +5154,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
