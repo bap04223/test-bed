@@ -879,12 +879,13 @@ body {
     writing-mode: vertical-lr;
     text-orientation: mixed;
     margin: 0;
-    padding: 40px 0 10px 0; /* CHANGED: More top padding to avoid arrow */
+    padding: 40px 0 10px 0;
     text-align: center;
-    font-size: 16px; /* CHANGED: Larger font size */
+    font-size: 16px;
     white-space: nowrap;
     position: relative;
     cursor: pointer;
+    margin-left: -3px; /* ADDED: Shift text slightly left to center it */
 }
 
 /* Keep the collapse button simple when collapsed */
@@ -4969,6 +4970,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
