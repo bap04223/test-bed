@@ -3984,8 +3984,7 @@ function updateServiceAvailability(results) {
                 const row = sheetData[i];
                 const option = document.createElement('option');
                 option.value = i;
-                // Use column A (index 0) for the scenario name
-                // Use column A (index 0) for the scenario name, add avatar, voice, and image indicators
+// Use column A (index 0) for the scenario name, add avatar, voice, and image indicators
 const hasAvatar = row.some((cell, index) => {
     const header = sheetData[0][index];
     return header && (header.includes('Avatar') || header.includes('Source URL')) && cell && cell.trim() !== '';
@@ -5609,6 +5608,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
