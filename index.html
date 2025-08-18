@@ -5170,13 +5170,6 @@ document.getElementById('streamingMode').checked = config.streamingMode !== fals
 document.getElementById('configSheetId').value = config.configSheetId || '';
 document.getElementById('scenarioSetsId').value = config.scenarioSetsId || '';
 
-// If we have a saved scenario sets ID, auto-load scenario sets
-if (config.scenarioSetsId && config.scenarioSetsId.trim() !== '') {
-    setTimeout(() => {
-        loadScenarioSets();
-    }, 500);
-}
-
 // Restore saved chatbot selection if configurations are already loaded
 if (config.selectedChatbot && chatbotConfigurations.length > 0) {
     document.getElementById('chatbotSelect').value = config.selectedChatbot;
@@ -5396,6 +5389,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
