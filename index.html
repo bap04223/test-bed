@@ -4385,7 +4385,7 @@ function applyChatbotConfiguration() {
 
         // ===== SCENARIO SETS MANAGEMENT =====
 
-// Load scenario sets from Google Sheet
+// Load scenario sets from Google Sheet with better CORS handling
 async function loadScenarioSets() {
     const scenarioSetsId = document.getElementById('scenarioSetsId').value;
     
@@ -4403,14 +4403,24 @@ async function loadScenarioSets() {
     showStatus('Loading scenario sets...', 'info');
     
     try {
-        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
         
-        // Load from the first sheet (you could also make this configurable)
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${scenarioSetsId}/values/Sheet1?key=${apiKey}`;
+        // Try the direct API approach first
+        let url = `https://sheets.googleapis.com/v4/spreadsheets/${scenarioSetsId}/values/Sheet1?key=${apiKey}`;
         
-        const response = await fetch(url);
+        console.log('Attempting to load from:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+            mode: 'cors'
+        });
         
         if (!response.ok) {
+            // If direct API fails, try alternative approach
+            console.log('Direct API failed, trying alternative approach...');
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
@@ -4427,7 +4437,7 @@ async function loadScenarioSets() {
                     scenarioSets.push({
                         name: row[0].trim(),
                         sheetId: row[1].trim(),
-                        description: row[2] ? row[2].trim() : '' // Optional description column
+                        description: row[2] ? row[2].trim() : ''
                     });
                 }
             }
@@ -4436,7 +4446,6 @@ async function loadScenarioSets() {
             showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
             
             // Re-enable the load button
-            const loadBtn = document.getElementById('loadSetsBtn');
             loadBtn.disabled = false;
             loadBtn.innerHTML = '✅ Sets Loaded';
             
@@ -4453,14 +4462,21 @@ async function loadScenarioSets() {
             
         } else {
             showStatus('No scenario sets data found in the sheet', 'error');
+            loadBtn.disabled = false;
+            loadBtn.innerHTML = '❌ No Data Found';
         }
         
     } catch (error) {
         console.error('Error loading scenario sets:', error);
-        showStatus('Error loading scenario sets. Check console for details.', 'error');
+        
+        // More specific error handling
+        if (error.message.includes('Failed to fetch')) {
+            showStatus('CORS error: Please ensure your Google Sheet is publicly accessible (Anyone with link can view)', 'error');
+        } else {
+            showStatus('Error loading scenario sets. Check console for details.', 'error');
+        }
         
         // Re-enable the load button on error
-        const loadBtn = document.getElementById('loadSetsBtn');
         loadBtn.disabled = false;
         loadBtn.innerHTML = '❌ Load Failed - Retry';
     }
@@ -5374,6 +5390,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
