@@ -116,7 +116,7 @@ body {
         /* LOCKED CARD COMPONENT - Fixed sizes */
 .card {
     background: var(--card-background);
-    padding: 20px;
+    padding: 20px 20px 0 20px; /* CHANGED: Remove bottom padding */
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -390,13 +390,16 @@ body {
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
-    position: static; /* CHANGE: from relative to static */
+    position: absolute; /* CHANGED: Back to absolute positioning */
+    bottom: 0; /* CHANGED: Stick to bottom */
+    left: 0; /* ADDED: Full width positioning */
+    right: 0; /* ADDED: Full width positioning */
     background: var(--card-background);
-    padding: 15px 20px; /* ADD: proper padding */
+    padding: 15px 20px; /* Proper padding */
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
-    margin-top: 15px; /* REDUCE: from auto to 15px */
-    border-radius: 0 0 12px 12px; /* ADD: round bottom corners */
+    border-radius: 0 0 12px 12px; /* Round bottom corners */
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* ADDED: Subtle shadow for separation */
 }
         .button-group button {
             flex: 1;
@@ -1313,10 +1316,10 @@ body {
                 </div>
             </div>
             
-            <!-- Voice control section -->
+            <!-- Scenario managment section -->
 <div class="card">
     <h2>Scenario Management</h2>
-    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 90px;">
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
         <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
@@ -1428,8 +1431,7 @@ body {
     <button class="btn-warning" onclick="newSession()">
         New Session
     </button>
-    </div>
-
+</div>
                 </div>   <!-- This closes .card-content -->
             </div>      <!-- This closes .card -->
             
@@ -5154,6 +5156,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
