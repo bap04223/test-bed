@@ -5381,10 +5381,396 @@ async function debugIdleAnimations() {
 
 // Auto-run debug message
 console.log('💡 Run debugIdleAnimations() in console to test idle animation setup');
+
+// SOLUTION 1: Add a test function to trigger idle animations
+// Add this function to test idle animations specifically
+
+async function testIdleAnimations() {
+    if (!isStreamConnected || !streamId || !didSessionId) {
+        console.log('❌ Stream not connected');
+        return;
+    }
+    
+    console.log('🧪 Testing idle animations with short messages...');
+    
+    // Send a very short message first
+    await speakWithAvatar("Hello.");
+    
+    // Wait for speech to finish, then send another short message
+    setTimeout(async () => {
+        console.log('🧪 Sending second message to trigger idle state...');
+        await speakWithAvatar("How are you?");
+    }, 3000);
+    
+    // Send a third message after a longer pause
+    setTimeout(async () => {
+        console.log('🧪 Sending third message after longer pause...');
+        await speakWithAvatar("I hope you can see the idle animations between these messages.");
+    }, 8000);
+}
+
+// SOLUTION 2: Enhanced speakWithAvatar function with better idle animation handling
+async function speakWithAvatarEnhanced(text) {
+    if (!isAvatarInitialized || !didApiKey) {
+        console.log('Avatar not initialized, skipping speech');
+        return;
+    }
+    
+    if (!isStreamConnected || !streamId || !didSessionId) {
+        console.log('Stream not connected, attempting to connect...');
+        await connectStream();
+        
+        // Wait a moment for connection to establish
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (!isStreamConnected) {
+            console.error('Failed to establish stream connection');
+            updateAvatarStatus('Connection failed - check API key and network', 'error');
+            return;
+        }
+    }
+
+    try {
+        console.log('Sending text to D-ID stream:', text);
+        
+        // Get FRESH configuration for each speech request
+        const config = getAvatarConfiguration();
+        console.log('Using service type for speech:', config.serviceType);
+        updateAvatarStatus('Generating speech...', 'loading');
+
+        // Enhanced Voice Selection Logic (same as before)
+        let voiceConfig = {
+            type: 'microsoft',
+            voice_id: 'en-US-AriaNeural'
+        };
+
+        const manualVoiceSelection = document.getElementById('voiceSelection').value;
+
+        if (manualVoiceSelection) {
+            voiceConfig.voice_id = manualVoiceSelection;
+            console.log('Using manually selected voice:', manualVoiceSelection);
+        } else {
+            if (config.serviceType === 'clips' && config.presenterId) {
+                const optimalVoice = getPresenterVoice(config.presenterId);
+                voiceConfig.voice_id = optimalVoice;
+                console.log('Auto-selected voice for presenter:', config.presenterId, '->', optimalVoice);
+            } else if (config.serviceType === 'talks') {
+                voiceConfig.voice_id = 'en-US-AriaNeural';
+                console.log('Using default voice for talks service');
+            }
+        }
+
+        console.log('Final voice configuration:', voiceConfig);
+
+        // ENHANCED: Script payload with optimized idle animation settings
+        let scriptPayload = {
+            script: {
+                type: 'text',
+                input: text,
+                provider: voiceConfig
+            },
+            config: {
+                stitch: true,
+            },
+            session_id: didSessionId
+        };
+
+        // CRITICAL: Apply idle animation configuration for EVERY service type
+        if (config.idleAnimationEnabled) {
+            console.log('🎭 APPLYING ENHANCED IDLE ANIMATIONS to script payload');
+            console.log('Idle intensity:', config.idleAnimationIntensity);
+            
+            // ENHANCED: More robust idle configuration
+            scriptPayload.config.idle = {
+                enabled: true,
+                intensity: config.idleAnimationIntensity || 0.4,
+                // Add these parameters for better idle animation control
+                apply_after_seconds: 0.5,  // Start idle animations after 0.5 seconds
+                loop: true  // Keep looping idle animations
+            };
+            
+            // CRITICAL: Always add driver URL when idle animations are enabled
+            scriptPayload.driver_url = 'bank://lively/';
+            console.log('✅ Added driver_url and enhanced idle config');
+            
+        } else {
+            console.log('❌ Idle animations DISABLED in script payload');
+            // Still add driver URL for talks service even when idle is disabled
+            if (config.serviceType === 'talks') {
+                scriptPayload.driver_url = 'bank://lively/';
+            }
+        }
+
+        console.log('ENHANCED Script payload with idle config:', JSON.stringify(scriptPayload, null, 2));
+
+        // Send to D-ID
+        const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
+        const talkResponse = await fetch(talkUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scriptPayload),
+        });
+
+        if (!talkResponse.ok) {
+            const errorText = await talkResponse.text();
+            console.error('Talk stream error:', errorText);
+            
+            // Check for idle animation specific errors
+            if (errorText.includes('idle') || errorText.includes('driver')) {
+                console.error('🚨 IDLE ANIMATION ERROR - likely plan limitation or incorrect driver');
+                console.log('Raw error response:', errorText);
+                
+                // Try without idle animations as fallback
+                console.log('🔄 Retrying without idle animations...');
+                scriptPayload.config = { stitch: true };
+                delete scriptPayload.config.idle;
+                
+                const retryResponse = await fetch(talkUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scriptPayload),
+                });
+                
+                if (!retryResponse.ok) {
+                    throw new Error(`Talk stream failed even without idle: ${retryResponse.status}`);
+                }
+                
+                console.log('✅ Fallback without idle animations succeeded');
+            } else {
+                throw new Error(`Talk stream failed: ${talkResponse.status} - ${errorText}`);
+            }
+        }
+
+        const responseData = await talkResponse.json();
+        console.log('Talk stream response:', responseData);
+        console.log('Talk stream sent successfully');
+        updateAvatarStatus('Speaking...', 'playing');
+
+        // Monitor for video events to update status
+        if (avatarVideo) {
+            const handleVideoPlay = () => {
+                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
+                avatarVideo.removeEventListener('play', handleVideoPlay);
+            };
+            
+            const handleVideoEnd = () => {
+                updateAvatarStatus('Avatar ready (idle animations should be visible)', 'info');
+                avatarVideo.removeEventListener('ended', handleVideoEnd);
+            };
+            
+            avatarVideo.addEventListener('play', handleVideoPlay);
+            avatarVideo.addEventListener('ended', handleVideoEnd);
+        }
+
+    } catch (error) {
+        console.error('Avatar speech error:', error);
+        updateAvatarStatus(`Speech error: ${error.message}`, 'error');
+        
+        // Reset status after a delay
+        setTimeout(() => {
+            updateAvatarStatus('Avatar ready', 'info');
+        }, 3000);
+    }
+}
+
+// SOLUTION 3: Function to send multiple short messages to test idle animations
+async function sendMultipleShortMessages() {
+    const messages = [
+        "Hi there.",
+        "How are you feeling today?",
+        "Can you tell me more about your symptoms?",
+        "I see."
+    ];
+    
+    console.log('🧪 Sending multiple short messages to test idle animations...');
+    
+    for (let i = 0; i < messages.length; i++) {
+        console.log(`📤 Sending message ${i + 1}: "${messages[i]}"`);
+        await speakWithAvatar(messages[i]);
+        
+        // Wait between messages to allow idle animations to show
+        if (i < messages.length - 1) {
+            console.log(`⏳ Waiting 4 seconds for idle animations...`);
+            await new Promise(resolve => setTimeout(resolve, 4000));
+        }
+    }
+    
+    console.log('✅ Test completed. You should have seen idle animations between messages.');
+}
+
+// SOLUTION 4: Enhanced connectStream with more aggressive idle animation settings
+async function connectStreamWithForceIdle() {
+    console.log('=== connectStreamWithForceIdle() called ===');
+    
+    // Always close existing connection first
+    if (peerConnection) {
+        console.log('Closing existing peer connection before creating new one...');
+        await closeStreamConnection();
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    try {
+        updateAvatarStatus('Connecting to D-ID stream with FORCED idle animations...', 'loading');
+        
+        const config = getAvatarConfiguration();
+        didApiKey = config.didApiKey;
+        
+        if (!didApiKey) {
+            throw new Error('D-ID API key not provided');
+        }
+        
+        console.log('🔥 FORCING idle animations in stream creation...');
+        
+        // Clear any existing stream data
+        streamId = null;
+        didSessionId = null;
+        
+        let payload = {
+            stream_warmup: true
+        };
+        
+        let streamUrl = '';
+        
+        if (config.serviceType === 'talks') {
+            if (!config.sourceUrl) {
+                throw new Error('Source image URL is required for talks service');
+            }
+            
+            payload = {
+                source_url: config.sourceUrl,
+                stream_warmup: true,
+                // FORCE idle animations at stream level
+                config: {
+                    stitch: true,
+                    idle: {
+                        enabled: true,
+                        intensity: 1.0,  // Maximum intensity
+                        apply_after_seconds: 0.1,  // Very quick activation
+                        loop: true
+                    }
+                },
+                driver_url: 'bank://lively/'
+            };
+            
+            streamUrl = 'https://api.d-id.com/talks/streams';
+            console.log('🔥 FORCED Talks payload with maximum idle:', JSON.stringify(payload, null, 2));
+            
+        } else if (config.serviceType === 'clips') {
+            if (!config.presenterId) {
+                throw new Error('Presenter selection is required for clips service');
+            }
+            
+            payload = {
+                presenter_id: config.presenterId,
+                stream_warmup: true,
+                // FORCE idle animations at stream level
+                config: {
+                    stitch: true,
+                    idle: {
+                        enabled: true,
+                        intensity: 1.0,  // Maximum intensity
+                        apply_after_seconds: 0.1,  // Very quick activation
+                        loop: true
+                    }
+                }
+            };
+            
+            // Try to get a driver for this presenter
+            try {
+                const driverId = await getPresenterDrivers(config.presenterId);
+                if (driverId) {
+                    payload.driver_id = driverId;
+                    console.log('Using driver ID:', driverId);
+                }
+            } catch (driverError) {
+                console.warn('Could not get driver for presenter:', driverError);
+            }
+            
+            streamUrl = 'https://api.d-id.com/clips/streams';
+            console.log('🔥 FORCED Clips payload with maximum idle:', JSON.stringify(payload, null, 2));
+        }
+        
+        // Create the stream
+        console.log('Creating FORCED idle stream at URL:', streamUrl);
+        
+        const sessionResponse = await fetch(streamUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        
+        if (!sessionResponse.ok) {
+            const errorText = await sessionResponse.text();
+            console.error('🚨 FORCED idle stream creation failed:', errorText);
+            throw new Error(`Failed to create forced idle stream: ${sessionResponse.status} - ${errorText}`);
+        }
+        
+        const streamResponse = await sessionResponse.json();
+        const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = streamResponse;
+        
+        streamId = newStreamId;
+        didSessionId = newSessionId;
+        
+        console.log('🔥 FORCED idle stream created successfully:', { 
+            streamId, 
+            didSessionId, 
+            serviceType: config.serviceType
+        });
+        
+        // Set up WebRTC connection
+        const sessionClientAnswer = await createPeerConnection(offer, iceServers);
+        
+        // Send SDP answer
+        const sdpUrl = `${streamUrl}/${streamId}/sdp`;
+        const sdpResponse = await fetch(sdpUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                answer: sessionClientAnswer,
+                session_id: didSessionId,
+            }),
+        });
+        
+        if (!sdpResponse.ok) {
+            const errorText = await sdpResponse.text();
+            console.error('SDP error:', errorText);
+            throw new Error(`Failed to send SDP answer: ${sdpResponse.status} - ${errorText}`);
+        }
+        
+        console.log('🔥 FORCED idle stream fully connected');
+        updateAvatarStatus('FORCED IDLE stream connected - Test with short messages', 'success');
+        hideConnectAvatarButton();
+        
+    } catch (error) {
+        console.error('FORCED idle stream connection error:', error);
+        updateAvatarStatus(`FORCED connection error: ${error.message}`, 'error');
+        await closeStreamConnection();
+    }
+}
+
+// Add these console commands for testing
+console.log('🧪 IDLE ANIMATION TEST FUNCTIONS LOADED:');
+console.log('1. testIdleAnimations() - Test with short messages');
+console.log('2. sendMultipleShortMessages() - Send multiple short messages');
+console.log('3. connectStreamWithForceIdle() - Force maximum idle settings');
+console.log('4. Replace speakWithAvatar with speakWithAvatarEnhanced for better handling');
         
     </script>
 </body>
 </html>
+
 
 
 
