@@ -1775,6 +1775,9 @@ function newSession() {
     console.log('=== newSession() completed ===');
     console.log('New session created:', sessionId);
 }
+
+// Helper function to update session info display
+function updateSessionInfo() {
     // Find and update the existing session info paragraph
     const header = document.querySelector('.header');
     const existingSessionInfo = header.querySelector('p:last-child');
@@ -5096,6 +5099,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
