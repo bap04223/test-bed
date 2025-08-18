@@ -1359,10 +1359,29 @@ body {
             >
                 Apply Selected Chatbot
             </button>
-        </div>
+        </div>       
 
 
-   
+        <!-- Scenario Sets Management Section -->
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+    <label for="scenarioSetsId">Scenario Sets List:</label>
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+        class="btn-secondary" 
+        onclick="loadScenarioSets()" 
+        style="width: 100%; margin-top: 10px; font-size: 14px;"
+        id="loadSetsBtn"
+    >
+        Load Scenario Sets
+    </button>
+    
     <div class="form-group" style="margin-top: 15px;">
         <label for="scenarioSetSelect">Select Scenario Set:</label>
         <select id="scenarioSetSelect" disabled style="font-size: 14px;">
@@ -1384,7 +1403,7 @@ body {
         This field is automatically populated when you select a scenario set above
     </small>
 </div>
-        
+
         
         <!-- Scenario Management Section - MOVED FROM CONFIGURATION -->
 <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
@@ -5396,6 +5415,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
