@@ -3255,21 +3255,17 @@ let scriptPayload = {
     session_id: didSessionId
 };
 
-// FIXED: Apply idle animation configuration CORRECTLY during speech
-if (config.idleAnimationEnabled) {
-    console.log('🎭 APPLYING IDLE ANIMATIONS to speech payload');
+// FIXED: Only add idle for clips, not talks
+if (config.idleAnimationEnabled && config.serviceType === 'clips') {
+    console.log('🎭 APPLYING IDLE ANIMATIONS to clips speech payload');
     console.log('Idle intensity:', config.idleAnimationIntensity);
     
-    // Add driver_url for idle animations - this is the KEY part
-    scriptPayload.driver_url = 'bank://lively/';
+    // Only add idle config for clips, NOT driver_url
+    scriptPayload.config.idle = true;
     
-    // Add idle configuration to config object
-    scriptPayload.config.idle = {
-        enabled: true,
-        intensity: config.idleAnimationIntensity || 0.4
-    };
-    
-    console.log('✅ Added idle animations to speech payload');
+    console.log('✅ Added idle animations to clips payload');
+} else if (config.idleAnimationEnabled && config.serviceType === 'talks') {
+    console.log('⚠️ Idle animations not fully supported for talks service');
 } else {
     console.log('❌ Idle animations DISABLED in speech payload');
 }
@@ -3311,12 +3307,14 @@ console.log('Final speech payload with idle config:', JSON.stringify(scriptPaylo
         updateAvatarStatus('Speaking...', 'playing');
         
         // NEW: Track speech time and start keep-alive for idle animations
-        lastSpeechTime = Date.now();
-        
-        if (config.idleAnimationEnabled) {
-            console.log('🎭 Starting idle animation keep-alive system...');
-            startIdleKeepAlive();
-        }
+lastSpeechTime = Date.now();
+
+if (config.idleAnimationEnabled && config.serviceType === 'clips') {
+    console.log('🎭 Starting idle animation keep-alive system for clips...');
+    startIdleKeepAlive();
+} else if (config.idleAnimationEnabled && config.serviceType === 'talks') {
+    console.log('⚠️ Idle keep-alive not supported for talks service');
+}
 
         // The video will automatically appear via the WebRTC stream
         // Monitor for video events to update status
@@ -5356,27 +5354,34 @@ function startIdleKeepAlive() {
         const timeSinceLastSpeech = Date.now() - (lastSpeechTime || 0);
         
         // Only send keep-alive if it's been more than 5 seconds since last speech
-        if (timeSinceLastSpeech > 5000) {
-            try {
-                console.log('🎭 Sending idle keep-alive...');
-                
-                const config = getAvatarConfiguration();
-                const keepAlivePayload = {
-                    script: {
-                        type: 'text',
-                        input: '', // Empty text for pure idle animation
-                        provider: { type: 'microsoft', voice_id: 'en-US-AriaNeural' }
-                    },
-                    driver_url: 'bank://lively/',
-                    config: {
-                        stitch: true,
-                        idle: {
-                            enabled: true,
-                            intensity: config.idleAnimationIntensity || 0.4
-                        }
-                    },
-                    session_id: didSessionId
-                };
+if (timeSinceLastSpeech > 5000) {
+    try {
+        console.log('🎭 Sending idle keep-alive...');
+        
+        const config = getAvatarConfiguration();
+        
+        // Check service type first
+        if (config.serviceType === 'talks') {
+            console.log('⚠️ Skipping keep-alive for talks service');
+            stopIdleKeepAlive();
+            return;
+        }
+        
+        // For clips only - send minimal speech to maintain connection
+        const keepAlivePayload = {
+            script: {
+                type: 'text',
+                input: ' ', // Single space instead of empty
+                provider: { 
+                    type: 'microsoft', 
+                    voice_id: 'en-US-AriaNeural' 
+                }
+            },
+            config: {
+                stitch: true
+            },
+            session_id: didSessionId
+        };
                 
                 const response = await fetch(`https://api.d-id.com/${config.serviceType}/streams/${streamId}`, {
                     method: 'POST',
@@ -5560,6 +5565,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
