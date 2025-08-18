@@ -2693,6 +2693,12 @@ async function connectStream() {
         
         let streamUrl = '';
         
+        // DEBUGGING: Log the idle animation settings
+        console.log('=== IDLE ANIMATION DEBUG ===');
+        console.log('Idle animations enabled:', config.idleAnimationEnabled);
+        console.log('Animation intensity:', config.idleAnimationIntensity);
+        console.log('Cost mode:', config.costMode);
+        
         if (config.serviceType === 'talks') {
             if (!config.sourceUrl) {
                 throw new Error('Source image URL is required for talks service');
@@ -2706,21 +2712,21 @@ async function connectStream() {
             // Add idle animation configuration if enabled
             if (config.idleAnimationEnabled) {
                 payload.config = {
+                    stitch: true,
                     idle: {
                         enabled: true,
-                        intensity: config.idleAnimationIntensity
-                    },
-                    stitch: true
+                        intensity: config.idleAnimationIntensity || 0.4
+                    }
                 };
                 payload.driver_url = 'bank://lively/';
-                console.log('Talks with idle animations enabled, intensity:', config.idleAnimationIntensity);
+                console.log('✅ Talks with idle animations ENABLED, intensity:', config.idleAnimationIntensity);
             } else {
                 payload.config = { stitch: true };
-                console.log('Talks with idle animations disabled');
+                console.log('❌ Talks with idle animations DISABLED');
             }
             
             streamUrl = 'https://api.d-id.com/talks/streams';
-            console.log('Talks payload:', payload);
+            console.log('Final Talks payload:', JSON.stringify(payload, null, 2));
             
         } else if (config.serviceType === 'clips') {
             if (!config.presenterId) {
@@ -2735,16 +2741,16 @@ async function connectStream() {
             // Add idle animation configuration if enabled
             if (config.idleAnimationEnabled) {
                 payload.config = {
+                    stitch: true,
                     idle: {
                         enabled: true,
-                        intensity: config.idleAnimationIntensity
-                    },
-                    stitch: true
+                        intensity: config.idleAnimationIntensity || 0.4
+                    }
                 };
-                console.log('Clips with idle animations enabled, intensity:', config.idleAnimationIntensity);
+                console.log('✅ Clips with idle animations ENABLED, intensity:', config.idleAnimationIntensity);
             } else {
                 payload.config = { stitch: true };
-                console.log('Clips with idle animations disabled');
+                console.log('❌ Clips with idle animations DISABLED');
             }
             
             // Try to get a driver for this presenter
@@ -2760,7 +2766,7 @@ async function connectStream() {
             }
             
             streamUrl = 'https://api.d-id.com/clips/streams';
-            console.log('Clips payload:', payload);
+            console.log('Final Clips payload:', JSON.stringify(payload, null, 2));
         } else {
             throw new Error('Invalid service type selected');
         }
@@ -5228,6 +5234,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
