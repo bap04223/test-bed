@@ -1065,19 +1065,11 @@ body {
         Load Scenario Sets
     </button>
     
-    <label for="sheetId" style="margin-top: 15px; display: block;">Current Scenario Sheet ID:</label>
-    <input 
-        type="password" 
-        id="sheetId" 
-        placeholder="1ABC...xyz"
-        title="The ID from your Google Sheets URL"
-        autocomplete="new-password"
-        readonly
-        style="background-color: #f3f4f6;"
-    >
-    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
-        This field is automatically populated when you select a scenario set above
-    </small>
+    <!-- Hidden field - automatically populated from scenario set selection -->
+<input 
+    type="hidden" 
+    id="sheetId"
+>
 </div>
        
                         
@@ -5381,6 +5373,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
