@@ -5426,6 +5426,41 @@ function stopIdleKeepAlive() {
     }
 }
 
+// TEST FUNCTION: Add this after stopIdleKeepAlive function (around line 5440)
+async function testIdleAnimations() {
+    console.log('Testing idle animations - watch the avatar closely for 30 seconds');
+    
+    // Make sure we're using clips mode
+    document.getElementById('serviceType').value = 'clips';
+    document.getElementById('presenterId').value = 'amy-Aq6OmGZnMt';
+    updateServiceFields();
+    
+    // Initialize and connect if not already done
+    if (!isAvatarInitialized) {
+        await initializeDID();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    if (!isStreamConnected) {
+        await connectStream();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Send initial speech
+    await speakWithAvatar("Hello, I'm going to be quiet now. Watch me closely for subtle movements like blinking and breathing.");
+    
+    // Wait 30 seconds without sending anything
+    console.log('Waiting 30 seconds - watch for subtle movements...');
+    console.log('Look for: blinking, slight breathing, micro-expressions');
+    
+    setTimeout(() => {
+        console.log('Test complete - did you see the subtle movements?');
+        console.log('Remember: idle animations are VERY subtle in D-ID');
+    }, 30000);
+}
+        
+        
+
 // Enhanced debug function to test idle animations with keep-alive
 async function debugIdleAnimations() {
     const apiKey = document.getElementById('didApiKey').value;
@@ -5574,6 +5609,7 @@ async function debugIdleAnimations() {
     </script>
 </body>
 </html>
+
 
 
 
