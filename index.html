@@ -1033,6 +1033,14 @@ body {
         autocomplete="new-password"
         style="font-size: 14px;"
     >
+    <button 
+        class="btn-secondary" 
+        onclick="loadChatbotConfigurations()" 
+        style="width: 100%; margin-top: 10px; font-size: 14px;"
+        id="loadChatbotBtn"
+    >
+        Load Chatbot Configurations
+    </button>
     <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
     </small>
 </div>
@@ -4196,6 +4204,12 @@ async function loadChatbotConfigurations() {
         return;
     }
     
+    // Disable the load button and show loading state
+    const loadBtn = document.getElementById('loadChatbotBtn');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.disabled = true;
+    loadBtn.innerHTML = '⏳ Loading...';
+    
     showStatus('Loading chatbot configurations...', 'info');
     
     try {
@@ -4230,16 +4244,34 @@ async function loadChatbotConfigurations() {
             }
             
             populateChatbotDropdown();
-            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+
+// Re-enable the load button
+const loadBtn = document.getElementById('loadChatbotBtn');
+loadBtn.disabled = false;
+loadBtn.innerHTML = '✅ Configurations Loaded';
+
+// Try to restore saved selection
+const savedConfig = localStorage.getItem('pharmacyChatConfig');
+if (savedConfig) {
+    const config = JSON.parse(savedConfig);
+    if (config.selectedChatbot) {
+        document.getElementById('chatbotSelect').value = config.selectedChatbot;
+    }
+}
             
         } else {
             showStatus('No configuration data found in the sheet', 'error');
         }
         
     } catch (error) {
-        console.error('Error loading chatbot configurations:', error);
-        showStatus('Error loading configurations. Check console for details.', 'error');
-    }
+    console.error('Error loading chatbot configurations:', error);
+    showStatus('Error loading configurations. Check console for details.', 'error');
+    
+    // Re-enable the load button on error
+    const loadBtn = document.getElementById('loadChatbotBtn');
+    loadBtn.disabled = false;
+    loadBtn.innerHTML = '❌ Load Failed - Retry';
 }
 
 // Populate the chatbot selection dropdown
@@ -4930,16 +4962,9 @@ document.getElementById('streamingMode').checked = config.streamingMode !== fals
                 // Add these lines to your existing loadSavedConfig function
 document.getElementById('configSheetId').value = config.configSheetId || '';
 
-// If we have a saved config sheet ID, auto-load configurations
-if (config.configSheetId) {
-    setTimeout(() => {
-        loadChatbotConfigurations().then(() => {
-            // Try to restore the selected chatbot
-            if (config.selectedChatbot) {
-                document.getElementById('chatbotSelect').value = config.selectedChatbot;
-            }
-        });
-    }, 1000);
+// Restore saved chatbot selection if configurations are already loaded
+if (config.selectedChatbot && chatbotConfigurations.length > 0) {
+    document.getElementById('chatbotSelect').value = config.selectedChatbot;
 }
 
 // Force update service fields based on saved service type
@@ -5156,6 +5181,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
