@@ -2693,11 +2693,16 @@ async function connectStream() {
         
         let streamUrl = '';
         
-        // DEBUGGING: Log the idle animation settings
-        console.log('=== IDLE ANIMATION DEBUG ===');
+   
+        // ENHANCED: Better idle animation debugging
+        console.log('=== IDLE ANIMATION CONFIGURATION DEBUG ===');
         console.log('Idle animations enabled:', config.idleAnimationEnabled);
         console.log('Animation intensity:', config.idleAnimationIntensity);
         console.log('Cost mode:', config.costMode);
+        console.log('Service type:', config.serviceType);
+        console.log('Source URL:', config.sourceUrl);
+        console.log('Presenter ID:', config.presenterId);
+
         
         if (config.serviceType === 'talks') {
             if (!config.sourceUrl) {
@@ -2783,11 +2788,31 @@ async function connectStream() {
             body: JSON.stringify(payload),
         });
         
+        // ⭐ START NEW CODE ⭐
         if (!sessionResponse.ok) {
             const errorText = await sessionResponse.text();
             console.error('Stream creation error:', errorText);
+            
+            // ADDED: Check for idle animation specific errors
+            if (errorText.includes('idle') || errorText.includes('driver') || errorText.includes('plan')) {
+                console.error('🚨 IDLE ANIMATION SETUP FAILED');
+                console.log('This might be due to:');
+                console.log('1. Account plan limitations');
+                console.log('2. Incorrect driver URL');
+                console.log('3. Invalid idle configuration');
+                console.log('Raw error:', errorText);
+                
+                // Try to extract specific error information
+                if (errorText.includes('plan') || errorText.includes('subscription')) {
+                    console.log('💡 SUGGESTION: Your D-ID plan may not support idle animations');
+                } else if (errorText.includes('driver')) {
+                    console.log('💡 SUGGESTION: The driver URL "bank://lively/" may not be available');
+                }
+            }
+            
             throw new Error(`Failed to create stream: ${sessionResponse.status} - ${errorText}`);
         }
+// ⭐ END NEW CODE ⭐
         
         const streamResponse = await sessionResponse.json();
         const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = streamResponse;
@@ -2827,11 +2852,21 @@ async function connectStream() {
             throw new Error(`Failed to send SDP answer: ${sdpResponse.status} - ${errorText}`);
         }
         
+     
         console.log('SDP answer sent successfully');
-        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+        
+        // ENHANCED: Better status message with idle animation info
+        let statusMessage = `${config.serviceType.toUpperCase()} stream connected`;
+        if (config.idleAnimationEnabled) {
+            statusMessage += ` (with idle animations)`;
+        }
+        statusMessage += ` - Ready for speech`;
+        
+        updateAvatarStatus(statusMessage, 'success');
 
         // Hide connect avatar button
         hideConnectAvatarButton();
+
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -3178,7 +3213,8 @@ if (manualVoiceSelection) {
 
 console.log('Final voice configuration:', voiceConfig);
 
-        // Prepare the script payload
+       
+        // FIXED: Prepare the script payload with consistent idle animation support
         let scriptPayload = {
             script: {
                 type: 'text',
@@ -3191,12 +3227,35 @@ console.log('Final voice configuration:', voiceConfig);
             session_id: didSessionId
         };
 
-        // Add driver URL only for talks service
-        if (config.serviceType === 'talks') {
-            scriptPayload.driver_url = 'bank://lively/';
+        // FIXED: Apply idle animation configuration consistently for both service types
+        if (config.idleAnimationEnabled) {
+            console.log('🎭 APPLYING IDLE ANIMATIONS to script payload');
+            console.log('Idle intensity:', config.idleAnimationIntensity);
+            
+            scriptPayload.config.idle = {
+                enabled: true,
+                intensity: config.idleAnimationIntensity || 0.4
+            };
+            
+            // Add driver URL for both service types when idle animations are enabled
+            if (config.serviceType === 'talks') {
+                scriptPayload.driver_url = 'bank://lively/';
+                console.log('✅ Added driver_url for talks service with idle animations');
+            } else if (config.serviceType === 'clips') {
+                // For clips, we might need to use a different driver or the one from stream creation
+                // The driver should already be set during stream creation for clips
+                console.log('✅ Clips service - driver already set during stream creation');
+            }
+        } else {
+            console.log('❌ Idle animations DISABLED in script payload');
+            // Add driver URL only for talks service when idle animations are disabled
+            if (config.serviceType === 'talks') {
+                scriptPayload.driver_url = 'bank://lively/';
+            }
         }
 
-        console.log('Script payload:', scriptPayload);
+        console.log('Script payload with idle config:', JSON.stringify(scriptPayload, null, 2));
+
 
         // FIXED: Use correct endpoint based on service type
         const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
@@ -3209,11 +3268,24 @@ console.log('Final voice configuration:', voiceConfig);
             body: JSON.stringify(scriptPayload),
         });
 
+
         if (!talkResponse.ok) {
             const errorText = await talkResponse.text();
             console.error('Talk stream error:', errorText);
+            
+            // ADDED: Check if error is related to idle animations
+            if (errorText.includes('idle') || errorText.includes('driver')) {
+                console.error('🚨 IDLE ANIMATION ERROR - likely plan limitation or incorrect driver');
+                console.log('Try disabling idle animations or check your D-ID plan');
+                console.log('Raw error response:', errorText);
+            }
+            
             throw new Error(`Talk stream failed: ${talkResponse.status} - ${errorText}`);
         }
+
+        const responseData = await talkResponse.json();
+        console.log('Talk stream response:', responseData);
+
 
         console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
@@ -5230,10 +5302,90 @@ function handleHeaderClick(event) {
         toggleConfigCollapse();
     }
 }
+
+// Debug function to test idle animations specifically
+async function debugIdleAnimations() {
+    const apiKey = document.getElementById('didApiKey').value;
+    const sourceUrl = document.getElementById('sourceUrl').value || 'https://clips-presenters.d-id.com/amy/image.png';
+    
+    if (!apiKey) {
+        console.log('❌ No API key provided');
+        return;
+    }
+    
+    console.log('🔍 Testing idle animations with your current settings...');
+    console.log('Source URL:', sourceUrl);
+    
+    try {
+        // Test 1: Create stream with idle animations
+        const payload = {
+            source_url: sourceUrl,
+            stream_warmup: true,
+            config: {
+                stitch: true,
+                idle: {
+                    enabled: true,
+                    intensity: 0.5
+                }
+            },
+            driver_url: 'bank://lively/'
+        };
+        
+        console.log('Creating test stream with payload:', JSON.stringify(payload, null, 2));
+        
+        const streamResponse = await fetch('https://api.d-id.com/talks/streams', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!streamResponse.ok) {
+            const errorText = await streamResponse.text();
+            console.log('❌ Stream creation failed:', errorText);
+            
+            if (errorText.includes('idle') || errorText.includes('driver')) {
+                console.log('🚨 IDLE ANIMATION ERROR detected');
+                console.log('Possible causes:');
+                console.log('1. Your D-ID plan may not support idle animations');
+                console.log('2. The driver URL "bank://lively/" may not be available');
+                console.log('3. The source image may not be compatible with idle animations');
+            }
+            return;
+        }
+        
+        const streamData = await streamResponse.json();
+        console.log('✅ Stream with idle animations created successfully');
+        console.log('Stream ID:', streamData.id);
+        
+        // Clean up the test stream
+        setTimeout(() => {
+            fetch(`https://api.d-id.com/talks/streams/${streamData.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ session_id: streamData.session_id })
+            }).catch(err => console.log('Cleanup error:', err));
+        }, 2000);
+        
+        console.log('🎭 Test completed. Check your main avatar for idle animations.');
+        
+    } catch (error) {
+        console.error('Debug test error:', error);
+    }
+}
+
+// Auto-run debug message
+console.log('💡 Run debugIdleAnimations() in console to test idle animation setup');
         
     </script>
 </body>
 </html>
+
 
 
 
