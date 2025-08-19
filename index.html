@@ -874,6 +874,8 @@ body {
     justify-content: center;
     min-height: 450px;
     height: calc(100vh - 300px);
+    /* Force centering regardless of grid changes */
+    box-sizing: border-box;
 }
 
 .video-wrapper video {
@@ -881,6 +883,11 @@ body {
     height: 100%;
     display: block;
     object-fit: contain;
+    margin: 0 auto;
+    /* Ensure video stays centered */
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* COLLAPSIBLE CONFIGURATION PANEL */
@@ -5466,6 +5473,7 @@ function handleScenarioHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
