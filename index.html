@@ -965,11 +965,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Ensure smooth transitions */
-.card {
-    transition: all 0.3s ease;
-}
-
 /* Make entire collapsed header clickable */
 .card.collapsed h2:hover {
     background-color: rgba(37, 99, 235, 0.1);
@@ -988,6 +983,88 @@ body {
 .card.collapsed:hover .collapse-btn {
     opacity: 1;
     transform: translateX(-50%) scale(1.05);
+}
+
+        /* Scenario Management Collapsible Styles */
+.card.scenario-collapsed {
+    width: 40px !important;
+    min-width: 40px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card.scenario-collapsed .card-content {
+    display: none;
+}
+
+.card.scenario-collapsed h2 {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    margin: 0;
+    padding: 60px 0 10px 0;
+    text-align: center;
+    font-size: 16px;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    margin-left: -13px; /* Center the text */
+}
+
+.card.scenario-collapsed .collapse-btn {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: none;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card.scenario-collapsed .collapse-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-50%) scale(1);
+}
+
+/* Make entire collapsed header clickable */
+.card.scenario-collapsed h2:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Hover expansion for collapsed scenario management */
+.card.scenario-collapsed:hover {
+    width: 80px !important;
+    transition: width 0.2s ease;
+}
+
+.card.scenario-collapsed:hover h2 {
+    font-size: 12px;
+}
+
+.card.scenario-collapsed:hover .collapse-btn {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* Adjust grid when scenario management is collapsed */
+.grid.scenario-collapsed {
+    grid-template-columns: 0.5fr 40px 2.2fr; /* Config, collapsed scenario, expanded avatar */
+    transition: all 0.3s ease;
+}
+
+/* Adjust grid when both are collapsed */
+.grid.config-collapsed.scenario-collapsed {
+    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    transition: all 0.3s ease;
 }
  
     </style>
@@ -1365,8 +1442,12 @@ body {
             </div>
             
             <!-- Scenario managment section -->
-<div class="card">
-    <h2>Scenario Management</h2>
+<div class="card" id="scenarioCard">
+    <h2 onclick="handleScenarioHeaderClick(event)">Scenario Management
+    <button class="collapse-btn" onclick="toggleScenarioCollapse()" id="scenarioCollapseBtn">
+        ◀
+    </button>
+</h2>
     <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
@@ -5347,12 +5428,64 @@ function toggleConfigCollapse() {
 
 // Load collapsed state on page load
 function loadCollapsedState() {
-    const savedState = localStorage.getItem('configCollapsed');
-    if (savedState === 'true') {
+    // Load configuration collapsed state
+    const savedConfigState = localStorage.getItem('configCollapsed');
+    if (savedConfigState === 'true') {
         // Delay to ensure DOM is ready
         setTimeout(() => {
             toggleConfigCollapse();
         }, 100);
+    }
+    
+    // Load scenario management collapsed state
+    const savedScenarioState = localStorage.getItem('scenarioCollapsed');
+    if (savedScenarioState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleScenarioCollapse();
+        }, 150);
+    }
+}
+
+        // ===== SCENARIO MANAGEMENT COLLAPSIBLE PANEL =====
+let isScenarioCollapsed = false;
+
+function toggleScenarioCollapse() {
+    const scenarioCard = document.getElementById('scenarioCard');
+    const grid = document.querySelector('.grid');
+    const collapseBtn = document.getElementById('scenarioCollapseBtn');
+    
+    isScenarioCollapsed = !isScenarioCollapsed;
+    
+    if (isScenarioCollapsed) {
+        // Collapse the scenario management panel
+        scenarioCard.classList.add('scenario-collapsed');
+        grid.classList.add('scenario-collapsed');
+        collapseBtn.innerHTML = '▶';
+        collapseBtn.title = 'Expand Scenario Management';
+        
+        // Save collapsed state
+        localStorage.setItem('scenarioCollapsed', 'true');
+        
+    } else {
+        // Expand the scenario management panel
+        scenarioCard.classList.remove('scenario-collapsed');
+        grid.classList.remove('scenario-collapsed');
+        collapseBtn.innerHTML = '◀';
+        collapseBtn.title = 'Collapse Scenario Management';
+        
+        // Save expanded state
+        localStorage.setItem('scenarioCollapsed', 'false');
+    }
+}
+
+// Handle clicks on the scenario management header
+function handleScenarioHeaderClick(event) {
+    const scenarioCard = document.getElementById('scenarioCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (scenarioCard.classList.contains('scenario-collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleScenarioCollapse();
     }
 }
 
@@ -5400,6 +5533,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
