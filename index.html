@@ -5490,26 +5490,65 @@ function handleScenarioHeaderClick(event) {
 function recenterVideo() {
     const avatarVideo = document.getElementById('avatarVideo');
     const videoWrapper = document.querySelector('.video-wrapper');
+    const avatarContainer = document.querySelector('.avatar-container');
     
     if (avatarVideo && videoWrapper) {
-        // Force a reflow to recalculate positioning
-        avatarVideo.style.transform = 'translateX(-50%)';
-        avatarVideo.style.left = '50%';
+        // Force multiple reflows at different intervals
+        setTimeout(() => {
+            // First attempt - immediate
+            forceVideoCenter();
+        }, 50);
         
-        // Trigger reflow
-        void avatarVideo.offsetHeight;
+        setTimeout(() => {
+            // Second attempt - mid transition
+            forceVideoCenter();
+        }, 150);
         
-        // Ensure wrapper is also centered
+        setTimeout(() => {
+            // Third attempt - after transition
+            forceVideoCenter();
+        }, 400);
+        
+        setTimeout(() => {
+            // Final attempt - ensure it sticks
+            forceVideoCenter();
+        }, 600);
+    }
+}
+
+function forceVideoCenter() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (avatarVideo && videoWrapper) {
+        // Reset all positioning
+        avatarVideo.style.transform = '';
+        avatarVideo.style.left = '';
+        avatarVideo.style.position = '';
+        
+        // Force reflow
+        void avatarVideo.offsetWidth;
+        
+        // Re-apply centering
+        avatarVideo.style.margin = '0 auto';
+        avatarVideo.style.display = 'block';
+        
+        // Force wrapper to re-center
+        videoWrapper.style.display = 'flex';
         videoWrapper.style.justifyContent = 'center';
         videoWrapper.style.alignItems = 'center';
         
-        console.log('Video re-centered after transition');
+        // Trigger another reflow
+        void videoWrapper.offsetWidth;
+        
+        console.log('Video centering forced');
     }
 }
         
     </script>
 </body>
 </html>
+
 
 
 
