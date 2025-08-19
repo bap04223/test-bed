@@ -5366,6 +5366,9 @@ function toggleConfigCollapse() {
         // Save expanded state
         localStorage.setItem('configCollapsed', 'false');
     }
+    
+    // Force video re-centering after transition completes
+    setTimeout(recenterVideo, 350);
 }
 
 // Load collapsed state on page load
@@ -5458,6 +5461,9 @@ function toggleScenarioCollapse() {
         // Save expanded state
         localStorage.setItem('scenarioCollapsed', 'false');
     }
+    
+    // Force video re-centering after transition completes
+    setTimeout(recenterVideo, 350);
 }
 
 // Handle clicks on the scenario management header
@@ -5469,10 +5475,42 @@ function handleScenarioHeaderClick(event) {
         toggleScenarioCollapse();
     }
 }
+
+        // Handle clicks on the scenario management header
+function handleScenarioHeaderClick(event) {
+    const scenarioCard = document.getElementById('scenarioCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (scenarioCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleScenarioCollapse();
+    }
+}
+
+// Force video re-centering after grid transitions
+function recenterVideo() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (avatarVideo && videoWrapper) {
+        // Force a reflow to recalculate positioning
+        avatarVideo.style.transform = 'translateX(-50%)';
+        avatarVideo.style.left = '50%';
+        
+        // Trigger reflow
+        void avatarVideo.offsetHeight;
+        
+        // Ensure wrapper is also centered
+        videoWrapper.style.justifyContent = 'center';
+        videoWrapper.style.alignItems = 'center';
+        
+        console.log('Video re-centered after transition');
+    }
+}
         
     </script>
 </body>
 </html>
+
 
 
 
