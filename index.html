@@ -429,9 +429,6 @@ body {
         .button-group button {
     flex: 1;
     min-width: 140px;
-    height: 80px; /* Double the default button height */
-    font-size: 16px; /* Slightly larger font for better proportion */
-    line-height: 1.2; /* Better line spacing for multi-line text */
 }
         
         /* Avatar video container styling - Enhanced for larger display */
@@ -797,8 +794,8 @@ body {
 
 .review-buttons button {
     flex: 1;
-    padding: 10px 8px;
-    font-size: 13px;
+    padding: 20px 8px; /* Double the vertical padding */
+    font-size: 14px; /* Slightly larger font */
     font-weight: 500;
     min-width: 0;
     white-space: nowrap;
@@ -809,10 +806,9 @@ body {
     transition: all 0.3s;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Add these properties to ensure consistent sizing */
     max-width: none;
     box-sizing: border-box;
-    height: auto;
+    height: 60px; /* Set explicit height for double size */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5404,6 +5400,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
