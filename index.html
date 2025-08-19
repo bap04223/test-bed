@@ -883,11 +883,8 @@ body {
     height: 100%;
     display: block;
     object-fit: contain;
+    /* Remove transform-based centering, rely on flexbox parent */
     margin: 0 auto;
-    /* Ensure video stays centered */
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
 }
 
 /* COLLAPSIBLE CONFIGURATION PANEL */
@@ -5510,6 +5507,7 @@ function recenterVideo() {
     </script>
 </body>
 </html>
+
 
 
 
