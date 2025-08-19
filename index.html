@@ -967,15 +967,15 @@ body {
     transition: all 0.3s ease;
 }
 
-        /* Adjust grid when scenario management is collapsed */
+       /* Adjust grid when scenario management is collapsed */
 .grid.scenario-collapsed {
-    grid-template-columns: 0.5fr 40px 2.7fr; /* Expanded config, collapsed scenario, expanded avatar */
+    grid-template-columns: 0.5fr 40px 3fr; /* Match the config collapse ratio */
     transition: all 0.3s ease;
 }
 
 /* Adjust grid when both cards are collapsed */
 .grid.config-collapsed.scenario-collapsed {
-    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    grid-template-columns: 40px 40px 5fr; /* Increase avatar space for consistency */
     transition: all 0.3s ease;
 }
 
@@ -5568,6 +5568,7 @@ function forceVideoCenter() {
     </script>
 </body>
 </html>
+
 
 
 
