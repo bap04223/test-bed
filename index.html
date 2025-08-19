@@ -960,6 +960,18 @@ body {
     transition: all 0.3s ease;
 }
 
+        /* Adjust grid when scenario management is collapsed */
+.grid.scenario-collapsed {
+    grid-template-columns: 0.5fr 40px 2.7fr; /* Expanded config, collapsed scenario, expanded avatar */
+    transition: all 0.3s ease;
+}
+
+/* Adjust grid when both cards are collapsed */
+.grid.config-collapsed.scenario-collapsed {
+    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    transition: all 0.3s ease;
+}
+
 /* Ensure smooth transitions */
 .card {
     transition: all 0.3s ease;
@@ -1365,8 +1377,12 @@ body {
             </div>
             
             <!-- Scenario managment section -->
-<div class="card">
-    <h2>Scenario Management</h2>
+<div class="card" id="scenarioCard">
+    <h2 onclick="handleScenarioHeaderClick(event)">Scenario Management
+    <button class="collapse-btn" onclick="toggleScenarioCollapse()" id="scenarioCollapseBtn">
+        ◀
+    </button>
+</h2>
     <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
@@ -5347,12 +5363,21 @@ function toggleConfigCollapse() {
 
 // Load collapsed state on page load
 function loadCollapsedState() {
-    const savedState = localStorage.getItem('configCollapsed');
-    if (savedState === 'true') {
+    const configSavedState = localStorage.getItem('configCollapsed');
+    const scenarioSavedState = localStorage.getItem('scenarioCollapsed');
+    
+    if (configSavedState === 'true') {
         // Delay to ensure DOM is ready
         setTimeout(() => {
             toggleConfigCollapse();
         }, 100);
+    }
+    
+    if (scenarioSavedState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleScenarioCollapse();
+        }, 150);
     }
 }
 
@@ -5396,10 +5421,52 @@ function handleHeaderClick(event) {
         toggleConfigCollapse();
     }
 }
+        // ===== SCENARIO MANAGEMENT COLLAPSIBLE PANEL =====
+let isScenarioCollapsed = false;
+
+function toggleScenarioCollapse() {
+    const scenarioCard = document.getElementById('scenarioCard');
+    const grid = document.querySelector('.grid');
+    const collapseBtn = document.getElementById('scenarioCollapseBtn');
+    
+    isScenarioCollapsed = !isScenarioCollapsed;
+    
+    if (isScenarioCollapsed) {
+        // Collapse the scenario management panel
+        scenarioCard.classList.add('collapsed');
+        grid.classList.add('scenario-collapsed');
+        collapseBtn.innerHTML = '▶';
+        collapseBtn.title = 'Expand Scenario Management';
+        
+        // Save collapsed state
+        localStorage.setItem('scenarioCollapsed', 'true');
+        
+    } else {
+        // Expand the scenario management panel
+        scenarioCard.classList.remove('collapsed');
+        grid.classList.remove('scenario-collapsed');
+        collapseBtn.innerHTML = '◀';
+        collapseBtn.title = 'Collapse Scenario Management';
+        
+        // Save expanded state
+        localStorage.setItem('scenarioCollapsed', 'false');
+    }
+}
+
+// Handle clicks on the scenario management header
+function handleScenarioHeaderClick(event) {
+    const scenarioCard = document.getElementById('scenarioCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (scenarioCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleScenarioCollapse();
+    }
+}
         
     </script>
 </body>
 </html>
+
 
 
 
