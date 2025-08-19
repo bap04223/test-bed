@@ -456,6 +456,7 @@ body {
     max-height: calc(100vh - 300px);
     min-height: 450px;
     object-fit: contain;
+    object-position: center center; /* Force center positioning */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     margin: 0 auto;
     display: block;
@@ -1066,6 +1067,36 @@ body {
 .grid.config-collapsed.scenario-collapsed {
     grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
     transition: all 0.3s ease;
+}
+
+        /* Adjust grid when both are collapsed */
+.grid.config-collapsed.scenario-collapsed {
+    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    transition: all 0.3s ease;
+}
+
+/* ADD THE NEW CSS HERE - RIGHT AFTER THE CLOSING BRACE ABOVE */
+/* Fix video centering when scenario panel is collapsed */
+.grid.scenario-collapsed .video-wrapper {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.grid.scenario-collapsed #avatarVideo {
+    margin: 0 auto;
+    object-position: center center;
+    transform: translateX(0); /* Reset any transforms */
+}
+
+/* Ensure avatar container centers content when collapsed */
+.grid.scenario-collapsed .avatar-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    width: 100%;
 }
  
     </style>
@@ -5534,6 +5565,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
