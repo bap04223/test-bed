@@ -5344,6 +5344,10 @@ function toggleConfigCollapse() {
     const grid = document.querySelector('.grid');
     const collapseBtn = document.getElementById('configCollapseBtn');
     
+    // Temporarily disable transitions
+    configCard.style.transition = 'none';
+    grid.style.transition = 'none';
+    
     isConfigCollapsed = !isConfigCollapsed;
     
     if (isConfigCollapsed) {
@@ -5367,8 +5371,14 @@ function toggleConfigCollapse() {
         localStorage.setItem('configCollapsed', 'false');
     }
     
-    // Force video re-centering after transition completes
-    setTimeout(recenterVideo, 350);
+    // Force immediate re-center
+    setTimeout(() => {
+        forceVideoCenter();
+        
+        // Re-enable transitions after layout is settled
+        configCard.style.transition = '';
+        grid.style.transition = '';
+    }, 50);
 }
 
 // Load collapsed state on page load
@@ -5439,6 +5449,10 @@ function toggleScenarioCollapse() {
     const grid = document.querySelector('.grid');
     const collapseBtn = document.getElementById('scenarioCollapseBtn');
     
+    // Temporarily disable transitions
+    scenarioCard.style.transition = 'none';
+    grid.style.transition = 'none';
+    
     isScenarioCollapsed = !isScenarioCollapsed;
     
     if (isScenarioCollapsed) {
@@ -5462,8 +5476,14 @@ function toggleScenarioCollapse() {
         localStorage.setItem('scenarioCollapsed', 'false');
     }
     
-    // Force video re-centering after transition completes
-    setTimeout(recenterVideo, 350);
+    // Force immediate re-center
+    setTimeout(() => {
+        forceVideoCenter();
+        
+        // Re-enable transitions after layout is settled
+        scenarioCard.style.transition = '';
+        grid.style.transition = '';
+    }, 50);
 }
 
 // Handle clicks on the scenario management header
@@ -5548,6 +5568,7 @@ function forceVideoCenter() {
     </script>
 </body>
 </html>
+
 
 
 
