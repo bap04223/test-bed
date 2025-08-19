@@ -5509,6 +5509,40 @@ function toggleScenarioCollapse() {
         // Save expanded state
         localStorage.setItem('scenarioCollapsed', 'false');
     }
+    
+    // ADD THIS: Force video repositioning after transition
+    setTimeout(() => {
+        forceVideoReposition();
+    }, 300); // Wait for CSS transition to complete
+}
+
+        // Force video element to reposition and recalculate
+function forceVideoReposition() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (avatarVideo && videoWrapper) {
+        // Force a reflow by temporarily changing display
+        const originalDisplay = avatarVideo.style.display;
+        avatarVideo.style.display = 'none';
+        
+        // Trigger reflow
+        avatarVideo.offsetHeight;
+        
+        // Restore display
+        avatarVideo.style.display = originalDisplay || 'block';
+        
+        // Force video to recalculate its object-fit positioning
+        if (avatarVideo.srcObject || avatarVideo.src) {
+            const currentTime = avatarVideo.currentTime;
+            avatarVideo.load();
+            if (currentTime > 0) {
+                avatarVideo.currentTime = currentTime;
+            }
+        }
+        
+        console.log('Video repositioning forced');
+    }
 }
 
 // Handle clicks on the scenario management header
@@ -5565,6 +5599,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
