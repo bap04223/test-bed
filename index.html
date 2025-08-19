@@ -967,15 +967,15 @@ body {
     transition: all 0.3s ease;
 }
 
-       /* Adjust grid when scenario management is collapsed */
+      /* Adjust grid when scenario management is collapsed - MIRROR CONFIG BEHAVIOR */
 .grid.scenario-collapsed {
-    grid-template-columns: 0.5fr 40px 3fr; /* Match the config collapse ratio */
+    grid-template-columns: 0.5fr 40px 3fr; /* Same proportional change as config */
     transition: all 0.3s ease;
 }
 
-/* Adjust grid when both cards are collapsed */
+/* Adjust grid when both cards are collapsed - SYMMETRIC */
 .grid.config-collapsed.scenario-collapsed {
-    grid-template-columns: 40px 40px 5fr; /* Increase avatar space for consistency */
+    grid-template-columns: 40px 40px 4fr; /* Both 40px, avatar takes remaining */
     transition: all 0.3s ease;
 }
 
@@ -5449,14 +5449,10 @@ function toggleScenarioCollapse() {
     const grid = document.querySelector('.grid');
     const collapseBtn = document.getElementById('scenarioCollapseBtn');
     
-    // Temporarily disable transitions
-    scenarioCard.style.transition = 'none';
-    grid.style.transition = 'none';
-    
     isScenarioCollapsed = !isScenarioCollapsed;
     
     if (isScenarioCollapsed) {
-        // Collapse the scenario management panel
+        // Collapse the scenario management panel (identical to config)
         scenarioCard.classList.add('collapsed');
         grid.classList.add('scenario-collapsed');
         collapseBtn.innerHTML = '▶';
@@ -5466,7 +5462,7 @@ function toggleScenarioCollapse() {
         localStorage.setItem('scenarioCollapsed', 'true');
         
     } else {
-        // Expand the scenario management panel
+        // Expand the scenario management panel (identical to config)
         scenarioCard.classList.remove('collapsed');
         grid.classList.remove('scenario-collapsed');
         collapseBtn.innerHTML = '◀';
@@ -5475,15 +5471,6 @@ function toggleScenarioCollapse() {
         // Save expanded state
         localStorage.setItem('scenarioCollapsed', 'false');
     }
-    
-    // Force immediate re-center
-    setTimeout(() => {
-        forceVideoCenter();
-        
-        // Re-enable transitions after layout is settled
-        scenarioCard.style.transition = '';
-        grid.style.transition = '';
-    }, 50);
 }
 
 // Handle clicks on the scenario management header
@@ -5496,15 +5483,7 @@ function handleScenarioHeaderClick(event) {
     }
 }
 
-        // Handle clicks on the scenario management header
-function handleScenarioHeaderClick(event) {
-    const scenarioCard = document.getElementById('scenarioCard');
-    
-    // Only handle clicks when collapsed and not directly on the button
-    if (scenarioCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
-        toggleScenarioCollapse();
-    }
-}
+       
 
 // Force video re-centering after grid transitions
 function recenterVideo() {
@@ -5568,6 +5547,7 @@ function forceVideoCenter() {
     </script>
 </body>
 </html>
+
 
 
 
