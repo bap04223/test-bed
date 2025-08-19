@@ -5456,6 +5456,11 @@ function toggleConfigCollapse() {
         // Save expanded state
         localStorage.setItem('configCollapsed', 'false');
     }
+    
+    // ADD THIS: Force video repositioning after transition
+    setTimeout(() => {
+        forceVideoReposition();
+    }, 300); // Wait for CSS transition to complete
 }
 
 // Load collapsed state on page load
@@ -5517,31 +5522,53 @@ function toggleScenarioCollapse() {
 }
 
         // Force video element to reposition and recalculate
+// Force video element to reposition and recalculate
 function forceVideoReposition() {
     const avatarVideo = document.getElementById('avatarVideo');
     const videoWrapper = document.querySelector('.video-wrapper');
+    const avatarContainer = document.querySelector('.avatar-container');
     
     if (avatarVideo && videoWrapper) {
+        console.log('Forcing video reposition...');
+        
         // Force a reflow by temporarily changing display
         const originalDisplay = avatarVideo.style.display;
         avatarVideo.style.display = 'none';
         
-        // Trigger reflow
+        // Trigger reflow on multiple elements
         avatarVideo.offsetHeight;
+        if (videoWrapper) videoWrapper.offsetHeight;
+        if (avatarContainer) avatarContainer.offsetHeight;
         
         // Restore display
         avatarVideo.style.display = originalDisplay || 'block';
         
+        // Force video container to recalculate dimensions
+        if (videoWrapper) {
+            const wrapperDisplay = videoWrapper.style.display;
+            videoWrapper.style.display = 'none';
+            videoWrapper.offsetHeight;
+            videoWrapper.style.display = wrapperDisplay || 'flex';
+        }
+        
         // Force video to recalculate its object-fit positioning
         if (avatarVideo.srcObject || avatarVideo.src) {
             const currentTime = avatarVideo.currentTime;
-            avatarVideo.load();
-            if (currentTime > 0) {
-                avatarVideo.currentTime = currentTime;
+            const wasPaused = avatarVideo.paused;
+            
+            // Only reload if there's actual content
+            if (avatarVideo.readyState > 0) {
+                avatarVideo.load();
+                if (currentTime > 0) {
+                    avatarVideo.currentTime = currentTime;
+                }
+                if (!wasPaused) {
+                    avatarVideo.play().catch(err => console.log('Video play error:', err));
+                }
             }
         }
         
-        console.log('Video repositioning forced');
+        console.log('Video repositioning completed');
     }
 }
 
@@ -5599,6 +5626,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
