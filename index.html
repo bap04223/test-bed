@@ -874,8 +874,6 @@ body {
     justify-content: center;
     min-height: 450px;
     height: calc(100vh - 300px);
-    /* Force centering regardless of grid changes */
-    box-sizing: border-box;
 }
 
 .video-wrapper video {
@@ -883,11 +881,6 @@ body {
     height: 100%;
     display: block;
     object-fit: contain;
-    margin: 0 auto;
-    /* Ensure video stays centered */
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
 }
 
 /* COLLAPSIBLE CONFIGURATION PANEL */
@@ -964,18 +957,6 @@ body {
 /* Adjust grid when configuration is collapsed */
 .grid.config-collapsed {
     grid-template-columns: 40px 1fr 3fr; /* Collapsed config, expanded middle and right */
-    transition: all 0.3s ease;
-}
-
-      /* Adjust grid when scenario management is collapsed - MIRROR CONFIG BEHAVIOR */
-.grid.scenario-collapsed {
-    grid-template-columns: 0.5fr 40px 3fr; /* Same proportional change as config */
-    transition: all 0.3s ease;
-}
-
-/* Adjust grid when both cards are collapsed - SYMMETRIC */
-.grid.config-collapsed.scenario-collapsed {
-    grid-template-columns: 40px 40px 4fr; /* Both 40px, avatar takes remaining */
     transition: all 0.3s ease;
 }
 
@@ -1384,12 +1365,8 @@ body {
             </div>
             
             <!-- Scenario managment section -->
-<div class="card" id="scenarioCard">
-    <h2 onclick="handleScenarioHeaderClick(event)">Scenario Management
-    <button class="collapse-btn" onclick="toggleScenarioCollapse()" id="scenarioCollapseBtn">
-        ◀
-    </button>
-</h2>
+<div class="card">
+    <h2>Scenario Management</h2>
     <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
         <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
@@ -5344,10 +5321,6 @@ function toggleConfigCollapse() {
     const grid = document.querySelector('.grid');
     const collapseBtn = document.getElementById('configCollapseBtn');
     
-    // Temporarily disable transitions
-    configCard.style.transition = 'none';
-    grid.style.transition = 'none';
-    
     isConfigCollapsed = !isConfigCollapsed;
     
     if (isConfigCollapsed) {
@@ -5370,34 +5343,16 @@ function toggleConfigCollapse() {
         // Save expanded state
         localStorage.setItem('configCollapsed', 'false');
     }
-    
-    // Force immediate re-center
-    setTimeout(() => {
-        forceVideoCenter();
-        
-        // Re-enable transitions after layout is settled
-        configCard.style.transition = '';
-        grid.style.transition = '';
-    }, 50);
 }
 
 // Load collapsed state on page load
 function loadCollapsedState() {
-    const configSavedState = localStorage.getItem('configCollapsed');
-    const scenarioSavedState = localStorage.getItem('scenarioCollapsed');
-    
-    if (configSavedState === 'true') {
+    const savedState = localStorage.getItem('configCollapsed');
+    if (savedState === 'true') {
         // Delay to ensure DOM is ready
         setTimeout(() => {
             toggleConfigCollapse();
         }, 100);
-    }
-    
-    if (scenarioSavedState === 'true') {
-        // Delay to ensure DOM is ready
-        setTimeout(() => {
-            toggleScenarioCollapse();
-        }, 150);
     }
 }
 
@@ -5441,112 +5396,79 @@ function handleHeaderClick(event) {
         toggleConfigCollapse();
     }
 }
-        // ===== SCENARIO MANAGEMENT COLLAPSIBLE PANEL =====
-let isScenarioCollapsed = false;
-
-function toggleScenarioCollapse() {
-    const scenarioCard = document.getElementById('scenarioCard');
-    const grid = document.querySelector('.grid');
-    const collapseBtn = document.getElementById('scenarioCollapseBtn');
-    
-    isScenarioCollapsed = !isScenarioCollapsed;
-    
-    if (isScenarioCollapsed) {
-        // Collapse the scenario management panel (identical to config)
-        scenarioCard.classList.add('collapsed');
-        grid.classList.add('scenario-collapsed');
-        collapseBtn.innerHTML = '▶';
-        collapseBtn.title = 'Expand Scenario Management';
-        
-        // Save collapsed state
-        localStorage.setItem('scenarioCollapsed', 'true');
-        
-    } else {
-        // Expand the scenario management panel (identical to config)
-        scenarioCard.classList.remove('collapsed');
-        grid.classList.remove('scenario-collapsed');
-        collapseBtn.innerHTML = '◀';
-        collapseBtn.title = 'Collapse Scenario Management';
-        
-        // Save expanded state
-        localStorage.setItem('scenarioCollapsed', 'false');
-    }
-}
-
-// Handle clicks on the scenario management header
-function handleScenarioHeaderClick(event) {
-    const scenarioCard = document.getElementById('scenarioCard');
-    
-    // Only handle clicks when collapsed and not directly on the button
-    if (scenarioCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
-        toggleScenarioCollapse();
-    }
-}
-
-       
-
-// Force video re-centering after grid transitions
-function recenterVideo() {
-    const avatarVideo = document.getElementById('avatarVideo');
-    const videoWrapper = document.querySelector('.video-wrapper');
-    const avatarContainer = document.querySelector('.avatar-container');
-    
-    if (avatarVideo && videoWrapper) {
-        // Force multiple reflows at different intervals
-        setTimeout(() => {
-            // First attempt - immediate
-            forceVideoCenter();
-        }, 50);
-        
-        setTimeout(() => {
-            // Second attempt - mid transition
-            forceVideoCenter();
-        }, 150);
-        
-        setTimeout(() => {
-            // Third attempt - after transition
-            forceVideoCenter();
-        }, 400);
-        
-        setTimeout(() => {
-            // Final attempt - ensure it sticks
-            forceVideoCenter();
-        }, 600);
-    }
-}
-
-function forceVideoCenter() {
-    const avatarVideo = document.getElementById('avatarVideo');
-    const videoWrapper = document.querySelector('.video-wrapper');
-    
-    if (avatarVideo && videoWrapper) {
-        // Reset all positioning
-        avatarVideo.style.transform = '';
-        avatarVideo.style.left = '';
-        avatarVideo.style.position = '';
-        
-        // Force reflow
-        void avatarVideo.offsetWidth;
-        
-        // Re-apply centering
-        avatarVideo.style.margin = '0 auto';
-        avatarVideo.style.display = 'block';
-        
-        // Force wrapper to re-center
-        videoWrapper.style.display = 'flex';
-        videoWrapper.style.justifyContent = 'center';
-        videoWrapper.style.alignItems = 'center';
-        
-        // Trigger another reflow
-        void videoWrapper.offsetWidth;
-        
-        console.log('Video centering forced');
-    }
-}
         
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
