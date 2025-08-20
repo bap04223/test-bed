@@ -3265,7 +3265,7 @@ async function sendIdleAnimation() {
             scriptPayload.driver_url = 'bank://lively/';
         }
 
-        const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
+        const talkUrl = `https://cors-anywhere.herokuapp.com/https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
         const response = await fetch(talkUrl, {
             method: 'POST',
             headers: {
@@ -5757,4 +5757,5 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
