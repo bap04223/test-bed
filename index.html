@@ -3350,31 +3350,29 @@ console.log('Final voice configuration:', voiceConfig);
         updateAvatarStatus('Speaking...', 'playing');
 
         // The video will automatically appear via the WebRTC stream
-        // Monitor for video events to update status
-        if (avatarVideo) {
-            const handleVideoPlay = () => {
-                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
-                avatarVideo.removeEventListener('play', handleVideoPlay);
-            };
-            
-            const handleVideoEnd = () => {
-                updateAvatarStatus('Avatar ready', 'info');
-                avatarVideo.removeEventListener('ended', handleVideoEnd);
-            };
-            
-            avatarVideo.addEventListener('play', handleVideoPlay);
-            avatarVideo.addEventListener('ended', handleVideoEnd);
-        }
-
-    } catch (error) {
-        console.error('Avatar speech error:', error);
-        updateAvatarStatus(`Speech error: ${error.message}`, 'error');
+// Monitor for video events to update status
+if (avatarVideo) {
+    const handleVideoPlay = () => {
+        updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
+        avatarVideo.removeEventListener('play', handleVideoPlay);
+    };
+    
+    const handleVideoEnd = () => {
+        updateAvatarStatus('Avatar ready', 'info');
+        avatarVideo.removeEventListener('ended', handleVideoEnd);
         
-        // Reset status after a delay
+        // ADD THIS: Return to idle after speech ends
         setTimeout(() => {
-            updateAvatarStatus('Avatar ready', 'info');
-        }, 3000);
-    }
+            if (idleVideoElement && idleVideoUrl) {
+                console.log('Speech ended, returning to idle mode');
+                startIdleMode();
+            }
+        }, 1000);
+    };
+    
+    avatarVideo.addEventListener('play', handleVideoPlay);
+    avatarVideo.addEventListener('ended', handleVideoEnd);
+}
     
     // Set up return to idle after speaking
     if (avatarVideo) {
@@ -3482,6 +3480,20 @@ async function generateIdleVideo() {
             updateAvatarStatus('Idle animation ready', 'success');
             console.log('Idle video generated successfully:', videoUrl);
         }
+
+        if (videoUrl) {
+    idleVideoUrl = videoUrl;
+    setupIdleVideo();
+    updateAvatarStatus('Idle animation ready', 'success');
+    console.log('Idle video generated successfully:', videoUrl);
+    
+    // ADD THIS: Update the idle button state
+    const idleButton = document.getElementById('idleToggleBtn');
+    if (idleButton) {
+        idleButton.innerHTML = '🎭 Idle Animation Ready';
+        idleButton.disabled = false;
+    }
+}
         
     } catch (error) {
         console.error('Idle video generation error:', error);
@@ -3579,9 +3591,14 @@ function setupIdleVideo() {
     
     // Setup event listeners
     idleVideoElement.onloadeddata = () => {
-        console.log('Idle video loaded and ready');
-        startIdleMode();
-    };
+    console.log('Idle video loaded and ready');
+    // Force start idle mode after loading
+    setTimeout(() => {
+        if (!isPlayingIdle && currentVideoMode !== 'speaking') {
+            startIdleMode();
+        }
+    }, 500);
+};
     
     idleVideoElement.onerror = (error) => {
         console.error('Idle video error:', error);
@@ -3646,13 +3663,17 @@ function startSpeakingMode() {
     currentVideoMode = 'speaking';
     
     // Stop idle if playing
-    if (isPlayingIdle) {
-        stopIdleMode();
+    if (isPlayingIdle && idleVideoElement) {
+        console.log('Stopping idle video for speech');
+        idleVideoElement.style.opacity = '0';
+        idleVideoElement.pause();
+        isPlayingIdle = false;
     }
     
     // Ensure main video is visible
     if (mainVideoElement) {
         mainVideoElement.style.opacity = '1';
+        console.log('Main video made visible for speech');
     }
 }
 
@@ -6004,6 +6025,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
