@@ -3374,28 +3374,21 @@ console.log('Final voice configuration:', voiceConfig);
         setTimeout(() => {
             updateAvatarStatus('Avatar ready', 'info');
         }, 3000);
-        
-        // Set up return to idle after speaking
-        if (avatarVideo) {
-            const handleVideoEnd = () => {
-                console.log('Avatar finished speaking, returning to idle');
-                returnToIdleAfterSpeaking();
-                avatarVideo.removeEventListener('ended', handleVideoEnd);
-            };
-            
-            // Remove any existing listeners first
+    }
+    
+    // Set up return to idle after speaking
+    if (avatarVideo) {
+        const handleVideoEnd = () => {
+            console.log('Avatar finished speaking, returning to idle');
+            returnToIdleAfterSpeaking();
             avatarVideo.removeEventListener('ended', handleVideoEnd);
-            avatarVideo.addEventListener('ended', handleVideoEnd);
-        }
+        };
+        
+        // Remove any existing listeners first
+        avatarVideo.removeEventListener('ended', handleVideoEnd);
+        avatarVideo.addEventListener('ended', handleVideoEnd);
     }
 }
-
-
-       setTimeout(() => {
-            updateAvatarStatus('Avatar ready', 'info');
-        }, 3000);
-    }
-} // <-- speakWithAvatar function ends here
 
 // ===== IDLE VIDEO GENERATION =====
 // Generate idle animation video using D-ID REST API
@@ -3727,11 +3720,7 @@ function getSelectedVoice() {
     
     return 'en-US-AriaNeural'; // Default
 }
-
-        // Create a new talk using D-ID REST API  <-- createTalk function starts here
-        async function createTalk(text) { 
-
-        
+      
         // Create a new talk using D-ID REST API
         async function createTalk(text) {
             try {
@@ -6015,6 +6004,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
