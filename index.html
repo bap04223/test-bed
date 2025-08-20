@@ -462,6 +462,26 @@ body {
     display: block;
 }
 
+        /* Enhanced video transitions for idle/speaking switching */
+#avatarVideo {
+    transition: opacity 0.3s ease-in-out;
+}
+
+#avatarVideo.switching {
+    opacity: 0.7;
+}
+
+/* Idle state indicator */
+.avatar-status.idle {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.avatar-status.idle::before {
+    content: "💤 ";
+    opacity: 0.7;
+}
+
         .avatar-status {
             font-size: 16px;
             color: var(--text-secondary);
@@ -1708,6 +1728,12 @@ let presenterId = '';             // Presenter ID for clips
 let chunkSize = 200;              // Text chunk size for streaming
 let streamingMode = true;         // Enable streaming mode
 
+   // ===== IDLE ANIMATION VARIABLES =====
+let idleVideoUrl = null;          // Store the pregenerated idle video URL
+let isIdleVideoReady = false;     // Track if idle video is generated
+let isCurrentlyIdle = true;       // Track current state (idle vs speaking)
+let idleGenerationInProgress = false; // Prevent multiple idle generations     
+
         // ===== SPEECH RECOGNITION VARIABLES =====
 let recognition = null;           // Speech recognition object
 let isRecording = false;          // Track if we're currently recording
@@ -2711,6 +2737,10 @@ async function initializeDID() {
         console.log('D-ID Streaming API initialized successfully');
         isAvatarInitialized = true;
         
+        // REPLACE the existing success section with this enhanced version:
+        console.log('D-ID Streaming API initialized successfully');
+        isAvatarInitialized = true;
+        
         // Test permissions and fetch presenters
         try {
             updateAvatarStatus('Testing API permissions...', 'loading');
@@ -2723,19 +2753,17 @@ async function initializeDID() {
             }
         } catch (testError) {
             console.warn('Permission/presenter testing failed:', testError);
-            // Continue anyway - don't fail initialization
         }
         
-        // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
-updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
-await connectStream();
+        // AUTOMATICALLY CONNECT STREAM AND PREPARE IDLE
+        updateAvatarStatus('Connecting stream and preparing idle animation...', 'loading');
+        await connectStream();
 
-// Set button to completed status
-setButtonCompleted('initializeAvatarBtn', 'Avatar Connected');
+        // Set button to completed status
+        setButtonCompleted('initializeAvatarBtn', 'Avatar Connected & Idle Ready');
 
-return true;
-        
-    } catch (error) {
+        return true;
+        } catch (error) {
         console.error('D-ID initialization error:', error);
         updateAvatarStatus(`Error: ${error.message}`, 'error');
 isAvatarInitialized = false;
@@ -2903,7 +2931,16 @@ async function connectStream() {
         }
         
         console.log('SDP answer sent successfully');
-        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+        // ADDED: Generate idle video after successful stream connection
+        console.log('Stream connected successfully, generating idle video...');
+        
+        // Generate idle video in the background
+        setTimeout(() => {
+            generateIdleVideo();
+        }, 2000); // Wait 2 seconds for stream to fully establish
+        
+        console.log('SDP answer sent successfully');
+        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Preparing idle animation...`, 'loading');
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -3082,6 +3119,15 @@ function setVideoElement(stream) {
 // FIXED: Enhanced Close Stream Connection with Proper Service Detection and Cleanup
 async function closeStreamConnection() {
     console.log('=== closeStreamConnection() called ===');
+
+     // ADDED: Clean up idle video resources
+    if (idleVideoUrl) {
+        console.log('Cleaning up idle video resources...');
+        idleVideoUrl = null;
+        isIdleVideoReady = false;
+        idleGenerationInProgress = false;
+        isCurrentlyIdle = true;
+    }
     
     // Get current service type BEFORE clearing variables
     const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
@@ -3183,7 +3229,179 @@ if (isAvatarInitialized) {
         // ===== D-ID AVATAR SPEECH FUNCTIONS =====
         // Generate and play avatar speech
 
-        // FIXED: Speech Function with Proper Voice Handling
+// ===== IDLE ANIMATION GENERATION =====
+// Generate pregenerated idle video for seamless transitions
+async function generateIdleVideo() {
+    if (!isAvatarInitialized || !didApiKey || idleGenerationInProgress) {
+        console.log('Cannot generate idle video - avatar not ready or generation in progress');
+        return null;
+    }
+    
+    idleGenerationInProgress = true;
+    console.log('Generating idle animation video...');
+    
+    try {
+        // Get current configuration
+        const config = getAvatarConfiguration();
+        
+        // Prepare idle animation payload
+        let payload = {
+            script: {
+                type: 'text',
+                ssml: true,
+                input: '<break time="5000ms"/><break time="5000ms"/><break time="5000ms"/>', // 15 seconds of idle
+                provider: {
+                    type: 'microsoft',
+                    voice_id: 'en-US-AriaNeural' // Use a neutral voice for idle
+                }
+            },
+            config: {
+                fluent: true,
+                stitch: false
+            }
+        };
+        
+        // Set source based on service type
+        if (config.serviceType === 'talks') {
+            if (!config.sourceUrl) {
+                throw new Error('Source URL required for talks service');
+            }
+            payload.source_url = config.sourceUrl;
+            payload.driver_url = 'bank://lively/';
+        } else if (config.serviceType === 'clips') {
+            if (!config.presenterId) {
+                throw new Error('Presenter ID required for clips service');
+            }
+            payload.presenter_id = config.presenterId;
+            
+            // Try to get driver for consistency
+            try {
+                const driverId = await getPresenterDrivers(config.presenterId);
+                if (driverId) {
+                    payload.driver_id = driverId;
+                }
+            } catch (error) {
+                console.warn('Could not get driver for idle video:', error);
+            }
+        }
+        
+        console.log('Creating idle video with payload:', payload);
+        
+        // Create the idle video using REST API
+        const endpoint = `https://api.d-id.com/${config.serviceType}`;
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Idle video creation failed: ${response.status} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        const talkId = result.id;
+        
+        console.log('Idle video creation started, ID:', talkId);
+        updateAvatarStatus('Generating idle animation...', 'loading');
+        
+        // Wait for completion
+        const videoUrl = await waitForTalkCompletion(talkId);
+        
+        if (videoUrl) {
+            idleVideoUrl = videoUrl;
+            isIdleVideoReady = true;
+            console.log('Idle video ready:', videoUrl);
+            updateAvatarStatus('Idle animation ready', 'success');
+            
+            // Start playing idle video immediately
+            playIdleVideo();
+            
+            return videoUrl;
+        } else {
+            throw new Error('Failed to get idle video URL');
+        }
+        
+    } catch (error) {
+        console.error('Error generating idle video:', error);
+        updateAvatarStatus(`Idle generation error: ${error.message}`, 'error');
+        return null;
+    } finally {
+        idleGenerationInProgress = false;
+    }
+}
+
+// Play the pregenerated idle video
+function playIdleVideo() {
+    if (!idleVideoUrl || !avatarVideo) {
+        console.log('Cannot play idle video - not ready');
+        return;
+    }
+    
+    console.log('Switching to idle video');
+    isCurrentlyIdle = true;
+    
+    // Set the idle video as source
+    avatarVideo.src = idleVideoUrl;
+    avatarVideo.loop = true; // Loop the idle video
+    avatarVideo.muted = false;
+    avatarVideo.volume = 0.1; // Very low volume for idle
+    avatarVideo.load();
+    
+    avatarVideo.play().then(() => {
+        console.log('Idle video playing');
+        updateAvatarStatus('Avatar in idle state', 'info');
+    }).catch(error => {
+        console.error('Error playing idle video:', error);
+    });
+}
+
+// Switch from idle to speaking (stream)
+function switchToSpeaking() {
+    if (!isStreamConnected || !peerConnection) {
+        console.log('Stream not connected for speaking');
+        return;
+    }
+    
+    console.log('Switching from idle to speaking');
+    isCurrentlyIdle = false;
+    
+    // Get the stream from peer connection
+    const remoteStream = peerConnection.getRemoteStreams()[0];
+    if (remoteStream) {
+        avatarVideo.src = '';
+        avatarVideo.srcObject = remoteStream;
+        avatarVideo.loop = false;
+        avatarVideo.muted = false;
+        avatarVideo.volume = 0.8;
+        
+        if (avatarVideo.paused) {
+            avatarVideo.play().catch(error => {
+                console.error('Error switching to speaking:', error);
+            });
+        }
+    }
+}
+
+// Switch back to idle after speaking
+function switchToIdle() {
+    if (isCurrentlyIdle || !isIdleVideoReady) {
+        return;
+    }
+    
+    console.log('Switching back to idle');
+    
+    // Small delay to ensure speaking is finished
+    setTimeout(() => {
+        playIdleVideo();
+    }, 1000);
+}
+        
+        // ENHANCED: Speech Function with Idle Integration
 async function speakWithAvatar(text) {
     if (!isAvatarInitialized || !didApiKey) {
         console.log('Avatar not initialized, skipping speech');
@@ -3194,7 +3412,6 @@ async function speakWithAvatar(text) {
         console.log('Stream not connected, attempting to connect...');
         await connectStream();
         
-        // Wait a moment for connection to establish
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         if (!isStreamConnected) {
@@ -3207,51 +3424,39 @@ async function speakWithAvatar(text) {
     try {
         console.log('Sending text to D-ID stream:', text);
         
-        // FIXED: Get FRESH configuration for each speech request
+        // Switch from idle to speaking mode
+        if (isCurrentlyIdle) {
+            switchToSpeaking();
+        }
+        
         const config = getAvatarConfiguration();
         console.log('Using service type for speech:', config.serviceType);
         updateAvatarStatus('Generating speech...', 'loading');
 
-       
-        // Enhanced Voice Selection Logic
-let voiceConfig = {
-    type: 'microsoft',
-    voice_id: 'en-US-AriaNeural' // Default voice
-};
+        // Enhanced Voice Selection Logic (keep your existing logic here)
+        let voiceConfig = {
+            type: 'microsoft',
+            voice_id: 'en-US-AriaNeural'
+        };
 
-// Check if user has manually selected a specific voice
-const manualVoiceSelection = document.getElementById('voiceSelection').value;
+        const manualVoiceSelection = document.getElementById('voiceSelection').value;
 
-if (manualVoiceSelection) {
-    // User has manually selected a voice - use it
-    voiceConfig.voice_id = manualVoiceSelection;
-    console.log('Using manually selected voice:', manualVoiceSelection);
-    
-} else {
-    // Auto voice selection based on service type and presenter
-    if (config.serviceType === 'clips' && config.presenterId) {
-        // Use the presenter database for voice matching
-        const optimalVoice = getPresenterVoice(config.presenterId);
-        voiceConfig.voice_id = optimalVoice;
-        
-        console.log('Auto-selected voice for presenter:', config.presenterId, '->', optimalVoice);
-        
-        // Log presenter info if available
-        if (presenterDatabase[config.presenterId]) {
-            const presenterInfo = presenterDatabase[config.presenterId];
-            console.log('Presenter details:', presenterInfo);
+        if (manualVoiceSelection) {
+            voiceConfig.voice_id = manualVoiceSelection;
+            console.log('Using manually selected voice:', manualVoiceSelection);
+        } else {
+            if (config.serviceType === 'clips' && config.presenterId) {
+                const optimalVoice = getPresenterVoice(config.presenterId);
+                voiceConfig.voice_id = optimalVoice;
+                console.log('Auto-selected voice for presenter:', config.presenterId, '->', optimalVoice);
+            } else if (config.serviceType === 'talks') {
+                voiceConfig.voice_id = 'en-US-AriaNeural';
+                console.log('Using default voice for talks service');
+            }
         }
-        
-    } else if (config.serviceType === 'talks') {
-        // For talks with custom image, try to determine gender from image or use default
-        voiceConfig.voice_id = 'en-US-AriaNeural'; // Default professional female voice
-        console.log('Using default voice for talks service');
-    }
-}
 
-console.log('Final voice configuration:', voiceConfig);
+        console.log('Final voice configuration:', voiceConfig);
 
-        // Prepare the script payload
         let scriptPayload = {
             script: {
                 type: 'text',
@@ -3260,18 +3465,17 @@ console.log('Final voice configuration:', voiceConfig);
             },
             config: {
                 stitch: true,
+                fluent: true // IMPORTANT: Match idle video settings
             },
             session_id: didSessionId
         };
 
-        // Add driver URL only for talks service
         if (config.serviceType === 'talks') {
-            scriptPayload.driver_url = 'bank://lively/';
+            scriptPayload.driver_url = 'bank://lively/'; // IMPORTANT: Match idle video driver
         }
 
         console.log('Script payload:', scriptPayload);
 
-        // FIXED: Use correct endpoint based on service type
         const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
         const talkResponse = await fetch(talkUrl, {
             method: 'POST',
@@ -3291,31 +3495,52 @@ console.log('Final voice configuration:', voiceConfig);
         console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
 
-        // The video will automatically appear via the WebRTC stream
-        // Monitor for video events to update status
+        // Set up listeners for when speaking ends
         if (avatarVideo) {
-            const handleVideoPlay = () => {
-                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
-                avatarVideo.removeEventListener('play', handleVideoPlay);
+            const handleSpeechEnd = () => {
+                updateAvatarStatus('Speech complete', 'info');
+                
+                // Switch back to idle after a short delay
+                setTimeout(() => {
+                    switchToIdle();
+                }, 2000);
+                
+                // Remove this specific listener
+                avatarVideo.removeEventListener('ended', handleSpeechEnd);
             };
             
-            const handleVideoEnd = () => {
-                updateAvatarStatus('Avatar ready', 'info');
-                avatarVideo.removeEventListener('ended', handleVideoEnd);
-            };
+            // Monitor for speech completion
+            avatarVideo.addEventListener('ended', handleSpeechEnd);
             
-            avatarVideo.addEventListener('play', handleVideoPlay);
-            avatarVideo.addEventListener('ended', handleVideoEnd);
+            // Also monitor for stream end via WebRTC
+            if (peerConnection) {
+                const checkForSilence = setInterval(() => {
+                    const remoteStream = peerConnection.getRemoteStreams()[0];
+                    if (remoteStream) {
+                        const audioTracks = remoteStream.getAudioTracks();
+                        if (audioTracks.length > 0) {
+                            // This is a simplified check - you might want more sophisticated audio detection
+                            setTimeout(() => {
+                                clearInterval(checkForSilence);
+                                handleSpeechEnd();
+                            }, 5000); // Assume speech ends after 5 seconds if no other indication
+                        }
+                    }
+                }, 1000);
+                
+                // Clear interval after reasonable time
+                setTimeout(() => clearInterval(checkForSilence), 30000);
+            }
         }
 
     } catch (error) {
         console.error('Avatar speech error:', error);
         updateAvatarStatus(`Speech error: ${error.message}`, 'error');
         
-        // Reset status after a delay
+        // Return to idle on error
         setTimeout(() => {
-            updateAvatarStatus('Avatar ready', 'info');
-        }, 3000);
+            switchToIdle();
+        }, 2000);
     }
 }
 
@@ -5626,6 +5851,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
