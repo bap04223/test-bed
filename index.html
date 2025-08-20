@@ -1580,6 +1580,16 @@ body {
     Initialize & Connect Avatar
 </button>
 
+<!-- Add this debug button for testing -->
+<button 
+    type="button"
+    class="btn-warning" 
+    onclick="debugIdleSystem(); checkIdleState();" 
+    style="margin-bottom: 10px; width: 100%;"
+>
+    Debug Idle System
+</button>
+
 </div>
 
                 <!-- Conversation History -->
@@ -3318,10 +3328,19 @@ async function generateIdleVideo() {
             console.log('Idle video ready:', videoUrl);
             updateAvatarStatus('Idle animation ready', 'success');
             
-            // Start playing idle video immediately
-            playIdleVideo();
+            // Only start playing idle video if we're not currently speaking
+            if (isCurrentlyIdle && isStreamConnected) {
+                console.log('Starting idle video immediately');
+                setTimeout(() => {
+                    playIdleVideo();
+                }, 1000); // Small delay to ensure stream is stable
+                
+            } else {
+                console.log('Idle video ready but not playing - currently speaking or stream not ready');
+            }
             
             return videoUrl;
+        }
         } else {
             throw new Error('Failed to get idle video URL');
         }
@@ -3364,42 +3383,73 @@ function playIdleVideo() {
 function switchToSpeaking() {
     if (!isStreamConnected || !peerConnection) {
         console.log('Stream not connected for speaking');
-        return;
+        return false;
     }
     
     console.log('Switching from idle to speaking');
     isCurrentlyIdle = false;
     
     // Get the stream from peer connection
-    const remoteStream = peerConnection.getRemoteStreams()[0];
-    if (remoteStream) {
+    const remoteStreams = peerConnection.getRemoteStreams();
+    if (remoteStreams.length > 0) {
+        const remoteStream = remoteStreams[0];
+        
+        // Clear any existing source
         avatarVideo.src = '';
         avatarVideo.srcObject = remoteStream;
         avatarVideo.loop = false;
         avatarVideo.muted = false;
         avatarVideo.volume = 0.8;
         
+        // Force play if paused
         if (avatarVideo.paused) {
-            avatarVideo.play().catch(error => {
+            avatarVideo.play().then(() => {
+                console.log('Successfully switched to speaking stream');
+            }).catch(error => {
                 console.error('Error switching to speaking:', error);
             });
         }
+        
+        return true;
+    } else {
+        console.error('No remote streams available for speaking');
+        return false;
     }
 }
 
 // Switch back to idle after speaking
 function switchToIdle() {
     if (isCurrentlyIdle || !isIdleVideoReady) {
+        console.log('Cannot switch to idle:', { isCurrentlyIdle, isIdleVideoReady });
         return;
     }
     
-    console.log('Switching back to idle');
+    console.log('Switching back to idle after delay');
     
-    // Small delay to ensure speaking is finished
+    // Longer delay to ensure speaking is completely finished
     setTimeout(() => {
-        playIdleVideo();
-    }, 1000);
+        if (!isCurrentlyIdle && isIdleVideoReady) { // Double-check state
+            playIdleVideo();
+        }
+    }, 3000); // Increased from 1000ms to 3000ms
 }
+
+   // Enhanced state checking and debugging
+function checkIdleState() {
+    console.log('=== Idle State Check ===');
+    console.log('isCurrentlyIdle:', isCurrentlyIdle);
+    console.log('isIdleVideoReady:', isIdleVideoReady);
+    console.log('isStreamConnected:', isStreamConnected);
+    console.log('idleVideoUrl:', idleVideoUrl);
+    console.log('avatarVideo src:', avatarVideo?.src);
+    console.log('avatarVideo srcObject:', avatarVideo?.srcObject);
+    console.log('========================');
+}
+
+// Call this function for debugging - you can remove it later
+function debugIdleSystem() {
+    setInterval(checkIdleState, 5000); // Check every 5 seconds
+}     
         
         // ENHANCED: Speech Function with Idle Integration
 async function speakWithAvatar(text) {
@@ -3495,41 +3545,67 @@ async function speakWithAvatar(text) {
         console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
 
-        // Set up listeners for when speaking ends
+        // Enhanced speech end detection
         if (avatarVideo) {
+            let speechEndTimeout;
+            let audioMonitorInterval;
+            
             const handleSpeechEnd = () => {
+                console.log('Speech ended, preparing to switch to idle');
                 updateAvatarStatus('Speech complete', 'info');
                 
-                // Switch back to idle after a short delay
-                setTimeout(() => {
-                    switchToIdle();
-                }, 2000);
+                // Clear any existing timeouts
+                if (speechEndTimeout) clearTimeout(speechEndTimeout);
+                if (audioMonitorInterval) clearInterval(audioMonitorInterval);
                 
-                // Remove this specific listener
+                // Switch back to idle after delay
+                switchToIdle();
+                
+                // Clean up listeners
                 avatarVideo.removeEventListener('ended', handleSpeechEnd);
+                avatarVideo.removeEventListener('pause', handleSpeechEnd);
             };
             
-            // Monitor for speech completion
+            // Monitor for video events that indicate speech is done
             avatarVideo.addEventListener('ended', handleSpeechEnd);
+            avatarVideo.addEventListener('pause', handleSpeechEnd);
             
-            // Also monitor for stream end via WebRTC
+            // Enhanced WebRTC audio monitoring
             if (peerConnection) {
-                const checkForSilence = setInterval(() => {
+                let silenceDetected = false;
+                
+                audioMonitorInterval = setInterval(() => {
                     const remoteStream = peerConnection.getRemoteStreams()[0];
                     if (remoteStream) {
                         const audioTracks = remoteStream.getAudioTracks();
-                        if (audioTracks.length > 0) {
-                            // This is a simplified check - you might want more sophisticated audio detection
-                            setTimeout(() => {
-                                clearInterval(checkForSilence);
-                                handleSpeechEnd();
-                            }, 5000); // Assume speech ends after 5 seconds if no other indication
+                        
+                        // Check if audio tracks are active
+                        const hasActiveAudio = audioTracks.some(track => 
+                            track.readyState === 'live' && track.enabled
+                        );
+                        
+                        if (!hasActiveAudio && !silenceDetected) {
+                            silenceDetected = true;
+                            console.log('Audio silence detected, speech likely ended');
+                            
+                            // Wait a bit more to confirm silence, then end speech
+                            speechEndTimeout = setTimeout(() => {
+                                if (!isCurrentlyIdle) { // Only if we're still in speaking mode
+                                    handleSpeechEnd();
+                                }
+                            }, 2000);
                         }
                     }
-                }, 1000);
+                }, 500); // Check every 500ms
                 
-                // Clear interval after reasonable time
-                setTimeout(() => clearInterval(checkForSilence), 30000);
+                // Fallback timeout - assume speech ends after reasonable time
+                const fallbackTimeout = setTimeout(() => {
+                    console.log('Fallback timeout - forcing speech end');
+                    handleSpeechEnd();
+                }, 30000); // 30 seconds max
+                
+                // Store timeout for cleanup
+                speechEndTimeout = fallbackTimeout;
             }
         }
 
@@ -5851,6 +5927,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
