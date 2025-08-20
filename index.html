@@ -4788,33 +4788,33 @@ async function loadChatbotConfigurations() {
             }
             
             populateChatbotDropdown();
-showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
 
-// Set button to completed status
-setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+            // Set button to completed status
+            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
 
-// Try to restore saved selection
-const savedConfig = localStorage.getItem('pharmacyChatConfig');
-if (savedConfig) {
-    const config = JSON.parse(savedConfig);
-    if (config.selectedChatbot) {
-        document.getElementById('chatbotSelect').value = config.selectedChatbot;
-    }
-}
+            // Try to restore saved selection
+            const savedConfig = localStorage.getItem('pharmacyChatConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.selectedChatbot) {
+                    document.getElementById('chatbotSelect').value = config.selectedChatbot;
+                }
+            }
             
         } else {
             showStatus('No configuration data found in the sheet', 'error');
         }
         
     } catch (error) {
-    console.error('Error loading chatbot configurations:', error);
-    showStatus('Error loading configurations. Check console for details.', 'error');
-    
-    // Set button back to pending status on error
-setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
-}
-} // ADD THIS MISSING CLOSING BRACE
-
+        console.error('Error loading chatbot configurations:', error);
+        showStatus('Error loading configurations. Check console for details.', 'error');
+        
+        // Set button back to pending status on error
+        setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+    }
+} // THIS CLOSING BRACE WAS MISSING
+        
 // Populate the chatbot selection dropdown
 function populateChatbotDropdown() {
     const select = document.getElementById('chatbotSelect');
@@ -6026,6 +6026,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
