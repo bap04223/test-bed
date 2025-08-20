@@ -1854,10 +1854,15 @@ initializeDIDElements();
             header.appendChild(sessionInfo);
         }
 
-        // FIXED: Enhanced New Session Function with Complete Avatar Reset
+// FIXED: Enhanced New Session Function with Complete Avatar Reset
 function newSession() {
     console.log('=== newSession() called ===');
     
+    // Clear any speech timers
+    if (window.currentSpeechTimer) {
+        clearTimeout(window.currentSpeechTimer);
+        window.currentSpeechTimer = null;
+    }
     // Generate new session ID
     generateSessionId();
     
@@ -3379,7 +3384,7 @@ function playIdleVideo() {
     });
 }
 
-// Switch from idle to speaking (stream)
+// Switch from idle to speaking (stream) - ENHANCED
 function switchToSpeaking() {
     if (!isStreamConnected || !peerConnection) {
         console.log('Stream not connected for speaking');
@@ -3387,51 +3392,70 @@ function switchToSpeaking() {
     }
     
     console.log('Switching from idle to speaking');
+    
+    // CRITICAL: Set state IMMEDIATELY to prevent race conditions
     isCurrentlyIdle = false;
+    
+    // Clear any pending idle switches
+    if (window.currentSpeechTimer) {
+        clearTimeout(window.currentSpeechTimer);
+        window.currentSpeechTimer = null;
+    }
     
     // Get the stream from peer connection
     const remoteStreams = peerConnection.getRemoteStreams();
     if (remoteStreams.length > 0) {
         const remoteStream = remoteStreams[0];
         
-        // Clear any existing source
+        // Stop idle video completely
+        avatarVideo.pause();
         avatarVideo.src = '';
         avatarVideo.srcObject = remoteStream;
         avatarVideo.loop = false;
         avatarVideo.muted = false;
         avatarVideo.volume = 0.8;
         
-        // Force play if paused
-        if (avatarVideo.paused) {
-            avatarVideo.play().then(() => {
-                console.log('Successfully switched to speaking stream');
-            }).catch(error => {
-                console.error('Error switching to speaking:', error);
-            });
-        }
+        // Force play
+        avatarVideo.play().then(() => {
+            console.log('Successfully switched to speaking stream');
+        }).catch(error => {
+            console.error('Error switching to speaking:', error);
+        });
         
         return true;
     } else {
         console.error('No remote streams available for speaking');
+        isCurrentlyIdle = true; // Reset state on failure
         return false;
     }
 }
 
 // Switch back to idle after speaking
+// Switch back to idle after speaking - PREVENT MULTIPLE CALLS
 function switchToIdle() {
     if (isCurrentlyIdle || !isIdleVideoReady) {
         console.log('Cannot switch to idle:', { isCurrentlyIdle, isIdleVideoReady });
         return;
     }
     
+    // Clear any existing speech timer
+    if (window.currentSpeechTimer) {
+        clearTimeout(window.currentSpeechTimer);
+        window.currentSpeechTimer = null;
+    }
+    
     console.log('Switching back to idle after delay');
     
-    // Longer delay to ensure speaking is completely finished
+    // Delay to ensure speaking is completely finished
     setTimeout(() => {
-        if (!isCurrentlyIdle && isIdleVideoReady) { // Double-check state
+        // Double-check state before actually switching
+        if (!isCurrentlyIdle && isIdleVideoReady) {
+            console.log('Actually switching to idle now');
             playIdleVideo();
+        } else {
+            console.log('Idle switch cancelled - state changed');
         }
-    }, 3000); // Increased from 1000ms to 3000ms
+    }, 2000);
 }
 
    // Enhanced state checking and debugging
@@ -3545,69 +3569,30 @@ async function speakWithAvatar(text) {
         console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
 
-        // Enhanced speech end detection
-        if (avatarVideo) {
-            let speechEndTimeout;
-            let audioMonitorInterval;
-            
-            const handleSpeechEnd = () => {
-                console.log('Speech ended, preparing to switch to idle');
-                updateAvatarStatus('Speech complete', 'info');
-                
-                // Clear any existing timeouts
-                if (speechEndTimeout) clearTimeout(speechEndTimeout);
-                if (audioMonitorInterval) clearInterval(audioMonitorInterval);
-                
-                // Switch back to idle after delay
-                switchToIdle();
-                
-                // Clean up listeners
-                avatarVideo.removeEventListener('ended', handleSpeechEnd);
-                avatarVideo.removeEventListener('pause', handleSpeechEnd);
-            };
-            
-            // Monitor for video events that indicate speech is done
-            avatarVideo.addEventListener('ended', handleSpeechEnd);
-            avatarVideo.addEventListener('pause', handleSpeechEnd);
-            
-            // Enhanced WebRTC audio monitoring
-            if (peerConnection) {
-                let silenceDetected = false;
-                
-                audioMonitorInterval = setInterval(() => {
-                    const remoteStream = peerConnection.getRemoteStreams()[0];
-                    if (remoteStream) {
-                        const audioTracks = remoteStream.getAudioTracks();
-                        
-                        // Check if audio tracks are active
-                        const hasActiveAudio = audioTracks.some(track => 
-                            track.readyState === 'live' && track.enabled
-                        );
-                        
-                        if (!hasActiveAudio && !silenceDetected) {
-                            silenceDetected = true;
-                            console.log('Audio silence detected, speech likely ended');
-                            
-                            // Wait a bit more to confirm silence, then end speech
-                            speechEndTimeout = setTimeout(() => {
-                                if (!isCurrentlyIdle) { // Only if we're still in speaking mode
-                                    handleSpeechEnd();
-                                }
-                            }, 2000);
-                        }
-                    }
-                }, 500); // Check every 500ms
-                
-                // Fallback timeout - assume speech ends after reasonable time
-                const fallbackTimeout = setTimeout(() => {
-                    console.log('Fallback timeout - forcing speech end');
-                    handleSpeechEnd();
-                }, 30000); // 30 seconds max
-                
-                // Store timeout for cleanup
-                speechEndTimeout = fallbackTimeout;
-            }
-        }
+       // SIMPLIFIED: Just use a reasonable timeout for speech completion
+        console.log('Setting up speech completion timer...');
+        
+        // Estimate speech duration based on text length (rough calculation)
+        const wordsPerMinute = 150; // Average speaking rate
+        const wordCount = text.split(' ').length;
+        const estimatedDurationMs = (wordCount / wordsPerMinute) * 60 * 1000;
+        const minDuration = 3000; // Minimum 3 seconds
+        const maxDuration = 30000; // Maximum 30 seconds
+        
+        // Use estimated duration with reasonable bounds
+        const speechDuration = Math.max(minDuration, Math.min(estimatedDurationMs + 2000, maxDuration));
+        
+        console.log(`Estimated speech duration: ${speechDuration}ms for ${wordCount} words`);
+        
+        // Set timer to switch back to idle after speech should be complete
+        const speechTimer = setTimeout(() => {
+            console.log('Speech timer expired, switching to idle');
+            updateAvatarStatus('Speech complete', 'info');
+            switchToIdle();
+        }, speechDuration);
+        
+        // Store timer for potential cleanup
+        window.currentSpeechTimer = speechTimer;
 
     } catch (error) {
         console.error('Avatar speech error:', error);
@@ -5927,6 +5912,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
