@@ -1326,17 +1326,17 @@ body {
 </div>
 
 <!-- Deepgram STT Settings - MOVED FROM VOICE CONTROL -->
-<div class="form-group">
-    <label for="deepgramApiKey">Deepgram API Key:</label>
-    <form onsubmit="return false;" style="margin: 0;">
-        <input 
-            type="password" 
-            id="deepgramApiKey" 
-            placeholder="Enter your Deepgram API key"
-            autocomplete="new-password"
-        >
-    </form>
-    
+<div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
+    <div class="form-group">
+        <label for="deepgramApiKey">Deepgram API Key:</label>
+        <form onsubmit="return false;" style="margin: 0;">
+            <input 
+                type="password" 
+                id="deepgramApiKey" 
+                placeholder="Enter your Deepgram API key"
+                autocomplete="new-password"
+            >
+        </form>
         <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
             Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
         </small>
@@ -5881,6 +5881,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
