@@ -2426,8 +2426,9 @@ if (isAvatarInitialized && !isStreamConnected) {
 
 proceedWithRecording();
     }
-    
-    function proceedWithRecording() {
+}
+
+        function proceedWithRecording() {
         // Clear previous data
         fullTranscript = '';
         pendingTranscript = '';
@@ -2449,8 +2450,7 @@ proceedWithRecording();
             updateTalkButton();
         }
     }
-}
-
+        
         function stopRecording() {
             if (recordingState !== 'recording') {
                 return;
@@ -5917,6 +5917,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
