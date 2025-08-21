@@ -1429,7 +1429,35 @@ video::-moz-media-controls {
     cursor: pointer;
     transition: all 0.3s;
 }
-        
+
+        /* FORCE OVERRIDE - Debug CSS */
+#reviewOverlay.active {
+    display: block !important;
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 800px !important;
+    z-index: 999999 !important;
+    background: red !important; /* Make it red so we can see it */
+    padding: 20px !important;
+    border: 5px solid yellow !important; /* Yellow border for visibility */
+}
+
+/* Force fullscreen visibility */
+.video-wrapper #reviewOverlay.active,
+.video-fullscreen-active #reviewOverlay.active,
+:fullscreen #reviewOverlay.active,
+:-webkit-full-screen #reviewOverlay.active,
+:-moz-full-screen #reviewOverlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
         
     </style>
 </head>
@@ -6482,10 +6510,22 @@ function deleteOverlayTranscript() {
     
     showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
 }
-        
+
+// Add this function at the end of your JavaScript
+function debugReviewOverlay() {
+    const overlay = document.getElementById('reviewOverlay');
+    console.log('Review overlay element:', overlay);
+    console.log('Has active class:', overlay ? overlay.classList.contains('active') : 'N/A');
+    console.log('Display style:', overlay ? window.getComputedStyle(overlay).display : 'N/A');
+    console.log('Position style:', overlay ? window.getComputedStyle(overlay).position : 'N/A');
+    console.log('Z-index style:', overlay ? window.getComputedStyle(overlay).zIndex : 'N/A');
+    console.log('Is video fullscreen:', isVideoFullscreen);
+}
+      
     </script>
 </body>
 </html>
+
 
 
 
