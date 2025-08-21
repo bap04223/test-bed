@@ -2118,9 +2118,14 @@ function initializeDIDElements() {
     // DON'T replace the element - just ensure event listeners are properly set
     const serviceSelect = document.getElementById('serviceType');
     
-    // Force update service fields based on current selection
-console.log('Current service type on init:', serviceSelect.value);
-updateServiceFields();
+    // Only update if this is the first initialization
+    if (!serviceSelect.hasAttribute('data-initialized')) {
+        console.log('Current service type on init:', serviceSelect.value);
+        updateServiceFields();
+        
+        // Mark as initialized to prevent duplicate calls
+        serviceSelect.setAttribute('data-initialized', 'true');
+    }
     
     // Add refresh button if clips is already selected
     if (serviceSelect.value === 'clips') {
@@ -5882,6 +5887,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
