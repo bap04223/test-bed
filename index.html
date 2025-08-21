@@ -1097,7 +1097,67 @@ body {
     text-align: center;
     width: 100%;
 }
- 
+
+/* Timer Display Styles */
+.timer-display {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: timerPulse 2s infinite ease-in-out;
+    flex-shrink: 0;
+}
+
+.timer-text {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.timer-bar {
+    background: rgba(255, 255, 255, 0.3);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.timer-progress {
+    background: white;
+    height: 100%;
+    width: 100%;
+    border-radius: 3px;
+    transition: width 0.1s linear;
+}
+
+.timer-display.warning {
+    background: linear-gradient(135deg, #ff9500, #ff6348);
+    animation: timerWarning 1s infinite ease-in-out;
+}
+
+.timer-display.critical {
+    background: linear-gradient(135deg, #ff3838, #ff1744);
+    animation: timerCritical 0.5s infinite ease-in-out;
+}
+
+@keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes timerWarning {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+    50% { transform: scale(1.03); box-shadow: 0 4px 12px rgba(255, 149, 0, 0.4); }
+}
+
+@keyframes timerCritical {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+    50% { transform: scale(1.05); box-shadow: 0 6px 16px rgba(255, 23, 68, 0.6); }
+}
+        
     </style>
 </head>
 
@@ -1604,6 +1664,14 @@ margin: 0 auto;
     </div>
 </div></div>
 
+                <!-- Timer Display -->
+<div id="timerDisplay" class="timer-display" style="display: none;">
+    <div class="timer-text">Response Timer: <span id="timerValue">2:00</span></div>
+    <div class="timer-bar">
+        <div id="timerProgress" class="timer-progress"></div>
+    </div>
+</div>
+
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
     <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
@@ -1674,6 +1742,12 @@ let keepAliveInterval = null;
 let lastActivityTime = Date.now();
 const KEEP_ALIVE_INTERVAL = 30000; // 30 seconds
 const MAX_IDLE_TIME = 300000; // 5 minutes before giving up
+
+        // TIMER CONFIGURATION VARIABLES
+let responseTimer = null;           // Timer reference
+let timerStartTime = null;         // When timer started
+let timerDisplay = null;           // Timer display element
+const RESPONSE_TIMEOUT = 120000;   // 2 minutes in milliseconds
         
         // ===== CHATBOT CONFIGURATION VARIABLES =====
 let chatbotConfigurations = [];     // Store loaded chatbot configurations
@@ -1713,6 +1787,8 @@ let forceStopRecognition = false; // Flag to force stop recognition
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
+
+        
 
         // ===== PRESENTER GENDER DATABASE =====
 // Database of presenter genders and characteristics for voice matching
@@ -2607,7 +2683,11 @@ function selectVoiceMethod(method) {
             showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
         }
 
-        function sendReviewedMessage() {
+     function sendReviewedMessage() {
+    // Stop any existing timer and start a new 2-minute response timer
+    stopResponseTimer();
+    startResponseTimer();
+    
     const reviewedText = document.getElementById('reviewTranscript').value.trim();
             
             if (!reviewedText) {
@@ -5719,7 +5799,92 @@ function handleHeaderClick(event) {
         toggleConfigCollapse();
     }
 }
+
+        // ===== TIMER MANAGEMENT FUNCTIONS =====
+function startResponseTimer() {
+    console.log('Starting 2-minute response timer');
+    
+    // Clear any existing timer
+    if (responseTimer) {
+        clearInterval(responseTimer);
+    }
+    
+    // Store start time
+    timerStartTime = Date.now();
+    
+    // Get timer elements
+    timerDisplay = document.getElementById('timerDisplay');
+    const timerValue = document.getElementById('timerValue');
+    const timerProgress = document.getElementById('timerProgress');
+    
+    // Show timer
+    if (timerDisplay) {
+        timerDisplay.style.display = 'block';
+        timerDisplay.className = 'timer-display'; // Reset classes
+    }
+    
+    // Update timer every 100ms for smooth progress bar
+    responseTimer = setInterval(() => {
+        const elapsed = Date.now() - timerStartTime;
+        const remaining = Math.max(0, RESPONSE_TIMEOUT - elapsed);
+        const percentage = (remaining / RESPONSE_TIMEOUT) * 100;
+        
+        // Update display
+        if (timerValue) {
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            timerValue.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Update progress bar
+        if (timerProgress) {
+            timerProgress.style.width = `${percentage}%`;
+        }
+        
+        // Change appearance based on time remaining
+        if (timerDisplay) {
+            if (remaining <= 30000) { // Last 30 seconds
+                timerDisplay.className = 'timer-display critical';
+            } else if (remaining <= 60000) { // Last minute
+                timerDisplay.className = 'timer-display warning';
+            }
+        }
+        
+        // Timer expired
+        if (remaining <= 0) {
+            clearInterval(responseTimer);
+            responseTimer = null;
+            
+            // Show timeout message
+            showStatus('⏰ 2-minute response window expired!', 'error');
+            
+            // Add timeout message to chat
+            addMessage('⏰ Response timer expired (2 minutes). Consider if you need more information or should take action.', 'system');
+            
+            // Hide timer
+            hideResponseTimer();
+        }
+    }, 100);
+}
+
+function stopResponseTimer() {
+    console.log('Stopping response timer');
+    
+    if (responseTimer) {
+        clearInterval(responseTimer);
+        responseTimer = null;
+    }
+    
+    hideResponseTimer();
+}
+
+function hideResponseTimer() {
+    if (timerDisplay) {
+        timerDisplay.style.display = 'none';
+    }
+}
         
     </script>
 </body>
 </html>
+
