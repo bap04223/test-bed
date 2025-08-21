@@ -2718,19 +2718,6 @@ function selectVoiceMethod(method) {
     updateTalkButton();
     pendingTranscript = '';
 }
-            
-            // Hide review section
-            hideReviewSection();
-            
-            // Add message to chat and send to webhook
-            addMessage(reviewedText, 'user');
-            sendToWebhook(reviewedText);
-            
-            // Reset state
-            recordingState = 'stopped';
-            updateTalkButton();
-            pendingTranscript = '';
-        }
 
         function editTranscript() {
     // Focus on the editable transcript
@@ -5145,7 +5132,7 @@ function applyScenarioSet() {
                     addMessage(`Error: ${error.message}`, 'ai');
                 }
             }
-        }
+        
         
         
         // ===== SUBMIT CONVERSATION FUNCTION =====
@@ -5934,6 +5921,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
