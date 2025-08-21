@@ -5386,13 +5386,7 @@ function forceScrollToBottom() {
     }
 }
         
-        function clearChat() {
-            // Reset recording state and hide review
-            recordingState = 'stopped';
-            pendingTranscript = '';
-            hideReviewSection();
-
-            function clearChat() {
+       function clearChat() {
     // Reset recording state and hide review
     recordingState = 'stopped';
     pendingTranscript = '';
@@ -5401,17 +5395,17 @@ function forceScrollToBottom() {
     // STOP COUNTDOWN TIMER
     stopCountdownTimer();
     
-            document.getElementById('chatContainer').innerHTML = '';
-            conversationHistory = [];
-            
-            // Reset patient image button if no scenario is selected
-            if (!currentScenario) {
-                const button = document.getElementById('patientImageBtn');
-                button.className = 'patient-image-btn disabled';
-                button.textContent = '📷 No Scenario Selected';
-                button.disabled = true;
-            }
-        }
+    document.getElementById('chatContainer').innerHTML = '';
+    conversationHistory = [];
+    
+    // Reset patient image button if no scenario is selected
+    if (!currentScenario) {
+        const button = document.getElementById('patientImageBtn');
+        button.className = 'patient-image-btn disabled';
+        button.textContent = '📷 No Scenario Selected';
+        button.disabled = true;
+    }
+}
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
@@ -5940,6 +5934,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
