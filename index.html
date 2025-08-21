@@ -1780,11 +1780,12 @@ margin: 0 auto;
         let currentVoiceMethod = 'text'; // Add this line
 
 
-        // TIMER CONFIGURATION VARIABLES
-let responseTimer = null;           // Timer reference
-let timerStartTime = null;         // When timer started
-let timerDisplay = null;           // Timer display element
-const RESPONSE_TIMEOUT = 120000;   // 2 minutes in milliseconds
+        // ===== TIMER VARIABLES =====
+        let responseTimer = null;           // Timer reference
+        let timerStartTime = null;         // When timer started
+        let timerDisplay = null;           // Timer display element
+        const RESPONSE_TIMEOUT = 120000;   // 2 minutes in milliseconds
+        let lastBeepSecond = -1;           // Track last beep to prevent duplicates
         
         // ===== CHATBOT CONFIGURATION VARIABLES =====
 let chatbotConfigurations = [];     // Store loaded chatbot configurations
@@ -5740,6 +5741,9 @@ function startResponseTimer() {
     timerDisplay = document.getElementById('timerDisplay');
     const timerValue = document.getElementById('timerValue');
     const timerProgress = document.getElementById('timerProgress');
+
+    // Reset beep tracking
+    lastBeepSecond = -1;
     
     // Show timer and remove ready state
     if (timerDisplay) {
@@ -5773,7 +5777,7 @@ function startResponseTimer() {
             timerProgress.style.width = `${percentage}%`;
         }
         
-        // Change appearance based on time remaining
+// Change appearance based on time remaining
         if (timerDisplay) {
             if (remaining <= 30000) { // Last 30 seconds - RED with pulsing
                 timerDisplay.className = 'timer-display timer-overlay critical';
@@ -5781,6 +5785,21 @@ function startResponseTimer() {
                 timerDisplay.className = 'timer-display timer-overlay warning';
             } else { // First 60 seconds - GREEN
                 timerDisplay.className = 'timer-display timer-overlay';
+            }
+        }
+        
+        // Beep in the last 10 seconds (once per second)
+        if (remaining <= 10000 && remaining > 0) {
+            const currentSecond = Math.floor(remaining / 1000);
+            
+            // Only beep once per second
+            if (currentSecond !== lastBeepSecond) {
+                lastBeepSecond = currentSecond;
+                try {
+                    playBeep();
+                } catch (error) {
+                    console.log('Audio beep failed:', error);
+                }
             }
         }
         // Timer expired
@@ -5826,10 +5845,35 @@ function hideResponseTimer() {
         }
     }
 }
+
+        // Audio beep function
+function playBeep() {
+    // Create audio context for beep sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    // Connect oscillator to gain to destination
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Configure beep sound
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800 Hz tone
+    oscillator.type = 'sine';
+    
+    // Set volume (0.1 = 10% volume)
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    // Play beep for 0.1 seconds
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+}
         
     </script>
 </body>
 </html>
+
 
 
 
