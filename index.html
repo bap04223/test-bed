@@ -1223,16 +1223,22 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }   
 
-  /* FULLSCREEN OVERLAY STYLES */
-/* Hide overlays by default in fullscreen */
-video:fullscreen ~ .timer-overlay,
-video:fullscreen ~ .patient-image-btn-overlay {
-    display: none !important;
-}
-
-/* Show overlays when video is in fullscreen */
+/* FULLSCREEN OVERLAY STYLES */
+/* Show overlays when video wrapper has fullscreen class */
 .video-fullscreen-active .timer-overlay,
 .video-fullscreen-active .patient-image-btn-overlay {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+/* Ensure overlays are visible in all fullscreen states */
+:fullscreen .video-fullscreen-active .timer-overlay,
+:fullscreen .video-fullscreen-active .patient-image-btn-overlay,
+:-webkit-full-screen .video-fullscreen-active .timer-overlay,
+:-webkit-full-screen .video-fullscreen-active .patient-image-btn-overlay,
+:-moz-full-screen .video-fullscreen-active .timer-overlay,
+:-moz-full-screen .video-fullscreen-active .patient-image-btn-overlay {
     display: block !important;
     position: fixed !important;
     z-index: 999999 !important;
@@ -5501,7 +5507,7 @@ function initializeFullscreenSupport() {
     document.addEventListener('msfullscreenchange', handleFullscreenChange);
     
     // Add double-click to enter fullscreen
-    avatarVideo.addEventListener('dblclick', () => {
+    videoWrapper.addEventListener('dblclick', () => {
         if (!isVideoFullscreen) {
             enterVideoFullscreen();
         }
@@ -5568,14 +5574,31 @@ function handleFullscreenChange() {
     const avatarVideo = document.getElementById('avatarVideo');
     const videoWrapper = document.querySelector('.video-wrapper');
     
-    isVideoFullscreen = fullscreenElement === avatarVideo;
+    // Check if ANY element is in fullscreen mode
+    isVideoFullscreen = !!fullscreenElement;
     
     if (isVideoFullscreen) {
-        console.log('Video entered fullscreen mode');
+        console.log('Entered fullscreen mode');
         
         // Add class to video wrapper for CSS targeting
         if (videoWrapper) {
             videoWrapper.classList.add('video-fullscreen-active');
+        }
+        
+        // Force overlays to be visible
+        const timerDisplay = document.getElementById('timerDisplay');
+        const patientBtn = document.getElementById('patientImageBtn');
+        
+        if (timerDisplay) {
+            timerDisplay.style.display = 'block';
+            timerDisplay.style.position = 'fixed';
+            timerDisplay.style.zIndex = '999999';
+        }
+        
+        if (patientBtn) {
+            patientBtn.style.display = 'flex';
+            patientBtn.style.position = 'fixed';
+            patientBtn.style.zIndex = '999999';
         }
         
         // Sync review sections
@@ -5588,11 +5611,25 @@ function handleFullscreenChange() {
         }
         
     } else {
-        console.log('Video exited fullscreen mode');
+        console.log('Exited fullscreen mode');
         
         // Remove fullscreen class
         if (videoWrapper) {
             videoWrapper.classList.remove('video-fullscreen-active');
+        }
+        
+        // Reset overlay styles
+        const timerDisplay = document.getElementById('timerDisplay');
+        const patientBtn = document.getElementById('patientImageBtn');
+        
+        if (timerDisplay) {
+            timerDisplay.style.position = '';
+            timerDisplay.style.zIndex = '';
+        }
+        
+        if (patientBtn) {
+            patientBtn.style.position = '';
+            patientBtn.style.zIndex = '';
         }
         
         // Hide fullscreen review
@@ -5604,17 +5641,17 @@ function handleFullscreenChange() {
 }
 
 function enterVideoFullscreen() {
-    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
     
-    if (avatarVideo) {
-        if (avatarVideo.requestFullscreen) {
-            avatarVideo.requestFullscreen();
-        } else if (avatarVideo.webkitRequestFullscreen) {
-            avatarVideo.webkitRequestFullscreen();
-        } else if (avatarVideo.mozRequestFullScreen) {
-            avatarVideo.mozRequestFullScreen();
-        } else if (avatarVideo.msRequestFullscreen) {
-            avatarVideo.msRequestFullscreen();
+    if (videoWrapper) {
+        if (videoWrapper.requestFullscreen) {
+            videoWrapper.requestFullscreen();
+        } else if (videoWrapper.webkitRequestFullscreen) {
+            videoWrapper.webkitRequestFullscreen();
+        } else if (videoWrapper.mozRequestFullScreen) {
+            videoWrapper.mozRequestFullScreen();
+        } else if (videoWrapper.msRequestFullscreen) {
+            videoWrapper.msRequestFullscreen();
         }
     }
 }
@@ -6223,6 +6260,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
