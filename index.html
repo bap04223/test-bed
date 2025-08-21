@@ -259,71 +259,6 @@ body {
             background-color: #d97706;
         }
 
-        /* Countdown Timer Styling */
-.countdown-timer {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-    font-family: 'Courier New', monospace;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    z-index: 999;
-    min-width: 120px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    display: none;
-    transition: all 0.3s ease;
-}
-
-.countdown-timer.show {
-    display: block;
-    animation: timerPulse 1s ease-in-out infinite alternate;
-}
-
-.countdown-timer.warning {
-    background: linear-gradient(135deg, #ff9f43, #f39c12);
-    animation: timerWarning 0.5s ease-in-out infinite alternate;
-}
-
-.countdown-timer.critical {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    animation: timerCritical 0.3s ease-in-out infinite alternate;
-}
-
-@keyframes timerPulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); }
-}
-
-@keyframes timerWarning {
-    from { transform: scale(1) rotate(-1deg); }
-    to { transform: scale(1.05) rotate(1deg); }
-}
-
-@keyframes timerCritical {
-    from { 
-        transform: scale(1) rotate(-2deg);
-        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
-    }
-    to { 
-        transform: scale(1.1) rotate(2deg);
-        box-shadow: 0 6px 25px rgba(231, 76, 60, 0.8);
-    }
-}
-
-.timer-label {
-    font-size: 12px;
-    font-weight: normal;
-    display: block;
-    margin-bottom: 5px;
-    opacity: 0.9;
-}
-
         /* Status Button States - Add this after existing button styles */
 .btn-status-pending {
     background-color: var(--danger-color) !important;
@@ -1320,14 +1255,7 @@ body {
 </div>
                         
                         
-<!-- Timer Configuration -->
-<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-    <label for="timerDuration">Response Timer (seconds):</label>
-    <input type="number" id="timerDuration" value="30" min="5" max="300" step="5">
-    <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
-        Time limit for responding to patient messages (5-300 seconds)
-    </small>
-</div>
+
                        
                         <!-- D-ID Configuration -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
@@ -1730,12 +1658,6 @@ margin: 0 auto;
         </div>
     </div>
 
-    <!-- Countdown Timer -->
-<div id="countdownTimer" class="countdown-timer">
-    <span class="timer-label">Response Timer</span>
-    <div id="timerDisplay">30</div>
-</div>
-
 <!-- JavaScript code for functionality -->
     <script>
         // ===== GLOBAL VARIABLES =====
@@ -1781,12 +1703,6 @@ let streamingMode = true;         // Enable streaming mode
         // ===== SPEECH RECOGNITION VARIABLES =====
 let recognition = null;           // Speech recognition object
 let isRecording = false;          // Track if we're currently recording
-        // ===== COUNTDOWN TIMER VARIABLES =====
-let countdownTimer = null;           // Timer interval reference
-let timerDuration = 30;              // Default timer duration in seconds
-let timeRemaining = 0;               // Current time remaining
-let isTimerActive = false;           // Track if timer is running
-let timerStartTime = null;           // When timer was started
 let fullTranscript = '';         // Store the complete transcript during recording
 let forceStopRecognition = false; // Flag to force stop recognition
         
@@ -1926,10 +1842,6 @@ function newSession() {
     forceStopRecognition = false;
     recordingState = 'stopped';
     pendingTranscript = '';
-
-    // Reset countdown timer
-stopCountdownTimer();
-resetCountdownTimer();
     
     // Update talk button
     updateTalkButton();
@@ -2698,26 +2610,23 @@ function selectVoiceMethod(method) {
         function sendReviewedMessage() {
     const reviewedText = document.getElementById('reviewTranscript').value.trim();
             
-    if (!reviewedText) {
-        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
-        return;
-    }
-    
-    // START COUNTDOWN TIMER
-    startCountdownTimer(30); // 30 second timer, you can adjust this
-    
-    // Hide review section
-    hideReviewSection();
-    
-    // Add message to chat and send to webhook
-    addMessage(reviewedText, 'user');
-    sendToWebhook(reviewedText);
-    
-    // Reset state
-    recordingState = 'stopped';
-    updateTalkButton();
-    pendingTranscript = '';
-}
+            if (!reviewedText) {
+                showStatus('Message is empty. Please add some text or delete to try again.', 'error');
+                return;
+            }
+            
+            // Hide review section
+            hideReviewSection();
+            
+            // Add message to chat and send to webhook
+            addMessage(reviewedText, 'user');
+            sendToWebhook(reviewedText);
+            
+            // Reset state
+            recordingState = 'stopped';
+            updateTalkButton();
+            pendingTranscript = '';
+        }
 
         function editTranscript() {
     // Focus on the editable transcript
@@ -5094,13 +5003,10 @@ function applyScenarioSet() {
                 }
                 
                 if (aiResponse) {
-    addMessage(aiResponse, 'ai');
-    
-    // STOP COUNTDOWN TIMER
-    stopCountdownTimer();
-    
-    // Generate avatar speech if initialized with automatic reconnection
-    if (isAvatarInitialized) {
+                    addMessage(aiResponse, 'ai');
+                    
+                 // Generate avatar speech if initialized with automatic reconnection
+                    if (isAvatarInitialized) {
                         console.log('Triggering avatar speech for response');
                         
                         // Ensure connection before speaking
@@ -5132,7 +5038,7 @@ function applyScenarioSet() {
                     addMessage(`Error: ${error.message}`, 'ai');
                 }
             }
-        
+        }
         
         
         // ===== SUBMIT CONVERSATION FUNCTION =====
@@ -5373,26 +5279,23 @@ function forceScrollToBottom() {
     }
 }
         
-       function clearChat() {
-    // Reset recording state and hide review
-    recordingState = 'stopped';
-    pendingTranscript = '';
-    hideReviewSection();
+        function clearChat() {
+            // Reset recording state and hide review
+            recordingState = 'stopped';
+            pendingTranscript = '';
+            hideReviewSection();
     
-    // STOP COUNTDOWN TIMER
-    stopCountdownTimer();
-    
-    document.getElementById('chatContainer').innerHTML = '';
-    conversationHistory = [];
-    
-    // Reset patient image button if no scenario is selected
-    if (!currentScenario) {
-        const button = document.getElementById('patientImageBtn');
-        button.className = 'patient-image-btn disabled';
-        button.textContent = '📷 No Scenario Selected';
-        button.disabled = true;
-    }
-}
+            document.getElementById('chatContainer').innerHTML = '';
+            conversationHistory = [];
+            
+            // Reset patient image button if no scenario is selected
+            if (!currentScenario) {
+                const button = document.getElementById('patientImageBtn');
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+            }
+        }
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
@@ -5442,7 +5345,6 @@ function forceScrollToBottom() {
         deepgramModel: document.getElementById('deepgramModel').value,
         deepgramLanguage: document.getElementById('deepgramLanguage').value,
         voiceSelection: document.getElementById('voiceSelection').value, 
-        timerDuration: document.getElementById('timerDuration') ? document.getElementById('timerDuration').value : 30,
         configSheetId: document.getElementById('configSheetId').value,
         selectedChatbot: document.getElementById('chatbotSelect').value,
         scenarioSetsId: document.getElementById('scenarioSetsId').value,
@@ -5473,93 +5375,6 @@ document.getElementById('scenarioSetsId').value = config.scenarioSetsId || '';
 if (config.selectedChatbot && chatbotConfigurations.length > 0) {
     document.getElementById('chatbotSelect').value = config.selectedChatbot;
 }
-
-       // ===== COUNTDOWN TIMER FUNCTIONS =====
-
-function startCountdownTimer(duration = 30) {
-    // Clear any existing timer
-    if (countdownTimer) {
-        clearInterval(countdownTimer);
-    }
-    
-    timerDuration = duration;
-    timeRemaining = duration;
-    isTimerActive = true;
-    timerStartTime = Date.now();
-    
-    const timerElement = document.getElementById('countdownTimer');
-    const timerDisplay = document.getElementById('timerDisplay');
-    
-    // Show and reset timer display
-    timerElement.classList.remove('warning', 'critical');
-    timerElement.classList.add('show');
-    updateTimerDisplay();
-    
-    console.log(`Countdown timer started: ${duration} seconds`);
-    
-    // Start the countdown interval
-    countdownTimer = setInterval(() => {
-        timeRemaining--;
-        updateTimerDisplay();
-        
-        // Change appearance based on time remaining
-        if (timeRemaining <= 5 && timeRemaining > 0) {
-            timerElement.classList.add('critical');
-            timerElement.classList.remove('warning');
-        } else if (timeRemaining <= 10) {
-            timerElement.classList.add('warning');
-            timerElement.classList.remove('critical');
-        }
-        
-        // Timer expired
-        if (timeRemaining <= 0) {
-            timerExpired();
-        }
-    }, 1000);
-}
-
-function updateTimerDisplay() {
-    const timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) {
-        timerDisplay.textContent = Math.max(0, timeRemaining);
-    }
-}
-
-function timerExpired() {
-    console.log('Timer expired!');
-    stopCountdownTimer();
-    
-    // Show expiration message
-    showStatus('⏰ Response timer expired! Consider your response time in real consultations.', 'warning');
-    
-    // Add system message to chat
-    addMessage('⏰ Response timer expired. In real consultations, timely responses help maintain patient confidence.', 'system');
-}
-
-function stopCountdownTimer() {
-    if (countdownTimer) {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-    }
-    
-    isTimerActive = false;
-    
-    const timerElement = document.getElementById('countdownTimer');
-    timerElement.classList.remove('show', 'warning', 'critical');
-    
-    console.log('Countdown timer stopped');
-}
-
-function resetCountdownTimer(newDuration = null) {
-    stopCountdownTimer();
-    
-    if (newDuration) {
-        timerDuration = newDuration;
-    }
-    
-    timeRemaining = timerDuration;
-    console.log(`Timer reset to ${timerDuration} seconds`);
-}         
 
 // Force update service fields based on saved service type
 setTimeout(() => {
@@ -5593,19 +5408,6 @@ setTimeout(() => {
                 // Load voice selection
 if (config.voiceSelection) {
     document.getElementById('voiceSelection').value = config.voiceSelection;
-}
-                // Load voice selection
-if (config.voiceSelection) {
-    document.getElementById('voiceSelection').value = config.voiceSelection;
-}
-
-// Load timer duration
-if (config.timerDuration) {
-    const timerInput = document.getElementById('timerDuration');
-    if (timerInput) {
-        timerInput.value = config.timerDuration;
-        timerDuration = parseInt(config.timerDuration);
-    }
 }
             }
         }
@@ -5921,15 +5723,3 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
