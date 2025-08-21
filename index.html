@@ -2119,10 +2119,8 @@ function initializeDIDElements() {
     const serviceSelect = document.getElementById('serviceType');
     
     // Force update service fields based on current selection
-    setTimeout(() => {
-        console.log('Current service type on init:', serviceSelect.value);
-        updateServiceFields();
-    }, 50);
+console.log('Current service type on init:', serviceSelect.value);
+updateServiceFields();
     
     // Add refresh button if clips is already selected
     if (serviceSelect.value === 'clips') {
@@ -5884,6 +5882,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
