@@ -1314,7 +1314,7 @@ body {
                         
 <!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-        <label>Speech Recognition Provider:</label>
+    <label>Speech Recognition Provider:</label>
     <div class="tts-provider-group">
         <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
             Browser STT
@@ -1326,7 +1326,7 @@ body {
 </div>
 
 <!-- Deepgram STT Settings - MOVED FROM VOICE CONTROL -->
-<div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
+<div id="deepgramSettings" class="elevenlabs-config" style="display: none;">
     <div class="form-group">
         <label for="deepgramApiKey">Deepgram API Key:</label>
         <form onsubmit="return false;" style="margin: 0;">
@@ -5881,6 +5881,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
