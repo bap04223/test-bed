@@ -2092,9 +2092,12 @@ function updateSessionInfo() {
     
     // Avatar configuration event listeners
     document.getElementById('serviceType').addEventListener('change', function() {
+    // Only call updateServiceFields if this is a real user change, not initialization
+    if (this.hasAttribute('data-initialized')) {
         updateServiceFields();
-        saveConfig();
-    });
+    }
+    saveConfig();
+});
     document.getElementById('sourceUrl').addEventListener('change', saveConfig);
     document.getElementById('presenterId').addEventListener('change', saveConfig);
     document.getElementById('chunkSize').addEventListener('change', saveConfig);
@@ -5395,10 +5398,14 @@ if (config.selectedChatbot && chatbotConfigurations.length > 0) {
     document.getElementById('chatbotSelect').value = config.selectedChatbot;
 }
 
-// Force update service fields based on saved service type
-setTimeout(() => {
-    updateServiceFields();
-}, 100);
+// Force update service fields based on saved service type only if needed
+const serviceSelect = document.getElementById('serviceType');
+if (!serviceSelect.hasAttribute('data-initialized')) {
+    setTimeout(() => {
+        updateServiceFields();
+        serviceSelect.setAttribute('data-initialized', 'true');
+    }, 100);
+}
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
@@ -5887,6 +5894,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
