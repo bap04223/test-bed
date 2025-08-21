@@ -2692,8 +2692,8 @@ function selectVoiceMethod(method) {
                     }
                 };
                 
-                // Start recording with 100ms chunks
-                mediaRecorder.start(100);
+                // Start recording with 200ms chunks
+                mediaRecorder.start(200);
                 console.log('Deepgram recording started');
                 
                 return true;
@@ -2732,7 +2732,7 @@ function selectVoiceMethod(method) {
                     // The timeout in stopRecording() will call showReviewSection()
                     // Do NOT call addMessage or sendToWebhook here
                 }
-            }, 500);
+            }, 1500);
         }
         
                 // ===== REVIEW SECTION FUNCTIONS =====
@@ -5917,6 +5917,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
