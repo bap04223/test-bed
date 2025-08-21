@@ -508,25 +508,22 @@ body {
     bottom: 60px;
     left: 20px;
     z-index: 20;
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 0;
+    font-size: 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    min-width: 60px;
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    max-width: 50px;
 }
 
 .patient-image-btn-overlay.available {
@@ -559,10 +556,11 @@ body {
     .patient-image-btn-overlay {
         bottom: 25px;
         left: 15px;
-        padding: 10px 12px;
-        font-size: 12px;
-        min-width: 50px;
-        max-width: 150px;
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+        max-width: 45px;
+        font-size: 18px;
     }
 }
         
@@ -1717,13 +1715,14 @@ body {
 
    <!-- Patient Image Button Overlay -->
    <button 
-        class="patient-image-btn-overlay disabled" 
-        id="patientImageBtn"
-        onclick="showPatientImage()"
-        disabled
-    >
-        📷 No Scenario
-    </button>
+    class="patient-image-btn-overlay disabled" 
+    id="patientImageBtn"
+    onclick="showPatientImage()"
+    disabled
+    title="No Scenario Selected"
+>
+    ❌
+</button>
    
    <video 
     id="avatarVideo" 
@@ -4181,14 +4180,13 @@ function updatePatientImageButton() {
     const button = document.getElementById('patientImageBtn');
     
     if (!currentScenario) {
-        // No scenario selected
         button.className = 'patient-image-btn-overlay disabled';
-        button.textContent = '📷 No Scenario Selected';
+        button.textContent = '❌';
         button.disabled = true;
+        button.title = 'No Scenario Selected';
         return;
     }
     
-    // Check for image URL in various possible column names
     const imageData = currentScenario['Patient Image'] || 
                      currentScenario['Image URL'] || 
                      currentScenario['Photo URL'] || 
@@ -4198,34 +4196,33 @@ function updatePatientImageButton() {
                      currentScenario['Picture'];
     
     if (imageData && imageData.trim() !== '') {
-        // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
         patientImages = imageData
             .split(/[,;\n\r]+/)
             .map(url => url.trim())
             .filter(url => url !== '');
         
         if (patientImages.length > 0) {
-    // Images available
-    button.className = 'patient-image-btn-overlay available';
-    if (patientImages.length === 1) {
-        button.innerHTML = '👁️ View Patient Image';
+            button.className = 'patient-image-btn-overlay available';
+            button.textContent = '📷';
+            button.disabled = false;
+            if (patientImages.length === 1) {
+                button.title = 'View Patient Image';
+            } else {
+                button.title = `View Patient Images (${patientImages.length})`;
+            }
+        } else {
+            button.className = 'patient-image-btn-overlay unavailable';
+            button.textContent = '❌';
+            button.disabled = true;
+            button.title = 'No Patient Image';
+        }
     } else {
-        button.innerHTML = `View Patient Images (${patientImages.length})`;
+        patientImages = [];
+        button.className = 'patient-image-btn-overlay unavailable';
+        button.textContent = '❌';
+        button.disabled = true;
+        button.title = 'No Patient Image';
     }
-    button.disabled = false;
-} else {
-    // No valid images
-    button.className = 'patient-image-btn-overlay unavailable';
-    button.innerHTML = '❌ No Patient Image';
-    button.disabled = true;
-}
-} else {
-    // No image data
-    patientImages = [];
-    button.className = 'patient-image-btn-overlay unavailable';
-    button.innerHTML = '❌ No Patient Image';
-    button.disabled = true;
-}
 }
     
         
@@ -5337,11 +5334,12 @@ function forceScrollToBottom() {
     
     // Reset patient image button if no scenario is selected
     if (!currentScenario) {
-        const button = document.getElementById('patientImageBtn');
-        button.className = 'patient-image-btn-overlay disabled';
-        button.textContent = '📷 No Scenario Selected';
-        button.disabled = true;
-    }
+    const button = document.getElementById('patientImageBtn');
+    button.className = 'patient-image-btn-overlay disabled';
+    button.textContent = '❌';
+    button.disabled = true;
+    button.title = 'No Scenario Selected';
+}
 }
         
         // ===== UTILITY FUNCTIONS =====
@@ -5919,6 +5917,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
