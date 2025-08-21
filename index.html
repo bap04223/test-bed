@@ -502,43 +502,69 @@ body {
             overflow-y: auto;
         }
         
-        /* Patient Image Button Styling */
-        .patient-image-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 12px 16px;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .patient-image-btn.available {
-            background-color: var(--success-color);
-            color: white;
-        }
-        
-        .patient-image-btn.available:hover {
-            background-color: #047857;
-        }
-        
-        .patient-image-btn.unavailable {
-            background-color: var(--danger-color);
-            color: white;
-            cursor: not-allowed;
-        }
-        
-        .patient-image-btn.disabled {
-            background-color: var(--text-secondary);
-            color: white;
-            cursor: not-allowed;
-        }
+        /* UPDATED Patient Image Button Styling - OVERLAY VERSION */
+.patient-image-btn-overlay {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 20;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    min-width: 60px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.patient-image-btn-overlay.available {
+    background: linear-gradient(135deg, var(--success-color), #047857);
+    color: white;
+}
+
+.patient-image-btn-overlay.available:hover {
+    background: linear-gradient(135deg, #047857, var(--success-color));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.patient-image-btn-overlay.unavailable {
+    background: linear-gradient(135deg, var(--text-secondary), #4b5563);
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.patient-image-btn-overlay.disabled {
+    background: linear-gradient(135deg, var(--text-secondary), #6b7280);
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Responsive behavior for overlay button */
+@media (max-width: 768px) {
+    .patient-image-btn-overlay {
+        bottom: 15px;
+        right: 15px;
+        padding: 10px 12px;
+        font-size: 12px;
+        min-width: 50px;
+        max-width: 150px;
+    }
+}
         
         /* Image Modal Styling */
         .image-modal {
@@ -1630,18 +1656,6 @@ body {
     </button>
 </div>
 
-<!-- Patient Image Button -->
-<div class="form-group">
-    <button 
-        class="patient-image-btn disabled" 
-        id="patientImageBtn"
-        onclick="showPatientImage()"
-        disabled
-        style="width: 100%;"
-    >
-        No Scenario Selected
-    </button>
-</div>
 </div>
 
 <!-- Avatar Control Section - MOVED FROM CONFIGURATION -->
@@ -1700,6 +1714,16 @@ body {
         <div id="timerProgress" class="timer-progress"></div>
     </div>
 </div>
+
+   <!-- Patient Image Button Overlay -->
+   <button 
+        class="patient-image-btn-overlay disabled" 
+        id="patientImageBtn"
+        onclick="showPatientImage()"
+        disabled
+    >
+        📷 No Scenario
+    </button>
    
    <video 
     id="avatarVideo" 
@@ -1719,7 +1743,7 @@ margin: 0 auto;
 "
 >
 </video>
-    </div>
+</div>
     <div id="avatarStatus" class="avatar-status">
     </div>
 </div></div>
@@ -4158,7 +4182,7 @@ function updatePatientImageButton() {
     
     if (!currentScenario) {
         // No scenario selected
-        button.className = 'patient-image-btn disabled';
+        button.className = 'patient-image-btn-overlay disabled';
         button.textContent = '📷 No Scenario Selected';
         button.disabled = true;
         return;
@@ -4182,23 +4206,17 @@ function updatePatientImageButton() {
         
         if (patientImages.length > 0) {
             // Images available
-            button.className = 'patient-image-btn available';
+            button.className = 'patient-image-btn-overlay available';
             if (patientImages.length === 1) {
                 button.innerHTML = '👁️ View Patient Image';
             } else {
                 button.innerHTML = `View Patient Images (${patientImages.length})`;
             }
             button.disabled = false;
-        } else {
-            // No valid images
-            button.className = 'patient-image-btn unavailable';
-            button.innerHTML = '❌ No Patient Image';
-            button.disabled = true;
-        }
-    } else {
+            } else {
         // No image data
         patientImages = [];
-        button.className = 'patient-image-btn unavailable';
+        button.className = 'patient-image-btn-overlay unavailable';
         button.innerHTML = '❌ No Patient Image';
         button.disabled = true;
     }
@@ -5313,7 +5331,7 @@ function forceScrollToBottom() {
     // Reset patient image button if no scenario is selected
     if (!currentScenario) {
         const button = document.getElementById('patientImageBtn');
-        button.className = 'patient-image-btn disabled';
+        button.className = 'patient-image-btn-overlay disabled';
         button.textContent = '📷 No Scenario Selected';
         button.disabled = true;
     }
@@ -5894,6 +5912,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
