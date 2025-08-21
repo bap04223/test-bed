@@ -1258,16 +1258,17 @@ body {
 <!-- Configuration Sheet ID - MOVED UP -->
 <div class="form-group">
     <label for="configSheetId">Chatbot ID's:</label>
-    <form onsubmit="return false;" style="margin: 0;">
-        <input 
-            type="password" 
-            id="configSheetId" 
-            placeholder="Google Sheet ID containing chatbot configurations"
-            title="The Google Sheet ID containing your chatbot configurations"
-            autocomplete="new-password"
-            style="font-size: 14px;"
-        >
-    </form>
+  <form onsubmit="return false;" style="margin: 0;">
+    <input type="text" name="username" style="display: none;" autocomplete="username">
+    <input 
+        type="password" 
+        id="configSheetId" 
+        placeholder="Google Sheet ID containing chatbot configurations"
+        title="The Google Sheet ID containing your chatbot configurations"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+</form>
     
     <button 
     class="btn-secondary btn-status-pending" 
@@ -1285,15 +1286,16 @@ body {
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
     <label for="scenarioSetsId">Scenario Sets List:</label>
     <form onsubmit="return false;" style="margin: 0;">
-        <input 
-            type="password" 
-            id="scenarioSetsId" 
-            placeholder="Google Sheet ID containing list of scenario sets"
-            title="The Google Sheet ID containing your scenario sets list"
-            autocomplete="new-password"
-            style="font-size: 14px;"
-        >
-    </form>
+    <input type="text" name="username" style="display: none;" autocomplete="username">
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+</form>
     
     <button 
     class="btn-secondary btn-status-pending" 
@@ -1329,14 +1331,15 @@ body {
 <div id="deepgramSettings" class="elevenlabs-config" style="display: none;">
     <div class="form-group">
         <label for="deepgramApiKey">Deepgram API Key:</label>
-        <form onsubmit="return false;" style="margin: 0;">
-            <input 
-                type="password" 
-                id="deepgramApiKey" 
-                placeholder="Enter your Deepgram API key"
-                autocomplete="new-password"
-            >
-        </form>
+       <form onsubmit="return false;" style="margin: 0;">
+    <input type="text" name="username" style="display: none;" autocomplete="username">
+    <input 
+        type="password" 
+        id="deepgramApiKey" 
+        placeholder="Enter your Deepgram API key"
+        autocomplete="new-password"
+    >
+</form>
         <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
             Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
         </small>
@@ -5881,6 +5884,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
