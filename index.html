@@ -1254,6 +1254,11 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
+
+/* Fullscreen Review Overlay - Following Timer Pattern */
+
+        
+
 /* Fullscreen patient image button positioning */
 .video-fullscreen-active .patient-image-btn-overlay {
     bottom: 120px !important;
@@ -1345,7 +1350,86 @@ video::-webkit-media-controls-enclosure {
 /* Firefox fullscreen specific styles */
 video::-moz-media-controls {
     display: none !important;
-}      
+}    
+
+/* Fullscreen Review Overlay - Following Timer Pattern */
+.review-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 800px;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 20px;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.review-overlay.active {
+    display: block;
+}
+
+.video-fullscreen-active .review-overlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+:fullscreen .video-fullscreen-active .review-overlay.active,
+:-webkit-full-screen .video-fullscreen-active .review-overlay.active,
+:-moz-full-screen .video-fullscreen-active .review-overlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+.review-overlay h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 18px;
+}
+
+.review-overlay .review-transcript {
+    height: 120px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 10px 0;
+    resize: none;
+}
+
+.review-overlay .review-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    justify-content: space-between;
+}
+
+.review-overlay .review-buttons button {
+    flex: 1;
+    height: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+        
         
     </style>
 </head>
@@ -1847,6 +1931,25 @@ video::-moz-media-controls {
 >
     ❌
 </button>
+       <!-- Review Overlay for Fullscreen -->
+<div id="reviewOverlay" class="review-overlay">
+    <h3>Live Transcription & Review</h3>
+    <textarea class="review-transcript" id="overlayReviewTranscript" placeholder="No message to review yet"></textarea>
+    <div class="review-buttons">
+        <button class="btn-info" id="overlayTalkButton" onclick="toggleRecording()">
+            Start Recording
+        </button>
+        <button class="btn-success" onclick="sendOverlayMessage()" disabled id="overlaySendBtn">
+            Send Message
+        </button>
+        <button class="btn-warning" onclick="editOverlayTranscript()" disabled id="overlayEditBtn">
+            Edit
+        </button>
+        <button class="btn-danger" onclick="deleteOverlayTranscript()" disabled id="overlayDeleteBtn">
+            Delete & Retry
+        </button>
+    </div>
+</div>
    
    <video 
     id="avatarVideo" 
@@ -2621,7 +2724,7 @@ if (isAvatarInitialized && !isStreamConnected) {
 
         function updateTalkButton() {
     const button = document.getElementById('talkButton');
-    const fullscreenButton = document.getElementById('fullscreenTalkButton');
+    const overlayButton = document.getElementById('overlayTalkButton');
     
     let className = '';
     let innerHTML = '';
@@ -2653,33 +2756,20 @@ if (isAvatarInitialized && !isStreamConnected) {
             break;
     }
     
-    // Update main button
-    if (button) {
-        button.className = className;
-        button.innerHTML = innerHTML;
-        button.disabled = disabled;
-        
-        // Handle recording animation
-        if (recordingState === 'recording') {
-            button.classList.add('recording');
-        } else {
-            button.classList.remove('recording');
+    // Update both buttons
+    [button, overlayButton].forEach(btn => {
+        if (btn) {
+            btn.className = className;
+            btn.innerHTML = innerHTML;
+            btn.disabled = disabled;
+            
+            if (recordingState === 'recording') {
+                btn.classList.add('recording');
+            } else {
+                btn.classList.remove('recording');
+            }
         }
-    }
-    
-    // Update fullscreen button
-    if (fullscreenButton) {
-        fullscreenButton.className = className;
-        fullscreenButton.innerHTML = innerHTML;
-        fullscreenButton.disabled = disabled;
-        
-        // Handle recording animation
-        if (recordingState === 'recording') {
-            fullscreenButton.classList.add('recording');
-        } else {
-            fullscreenButton.classList.remove('recording');
-        }
-    }
+    });
 }
 
         // ===== STT PROVIDER MANAGEMENT =====
@@ -2903,41 +2993,24 @@ function selectVoiceMethod(method) {
     recordingState = 'reviewing';
     updateTalkButton();
     
-    // Update review transcript in both locations
+    // Update ALL review transcripts
     document.getElementById('reviewTranscript').value = transcript;
+    document.getElementById('overlayReviewTranscript').value = transcript;
     
-    // Activate review section
+    // Activate review sections
     document.getElementById('reviewSection').classList.add('active');
+    document.getElementById('reviewOverlay').classList.add('active');
     
-    // Enable buttons in original review section
+    // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
     document.getElementById('editBtn').disabled = false;
     document.getElementById('deleteBtn').disabled = false;
+    document.getElementById('overlaySendBtn').disabled = false;
+    document.getElementById('overlayEditBtn').disabled = false;
+    document.getElementById('overlayDeleteBtn').disabled = false;
     
-    // Handle fullscreen mode
-    if (isVideoFullscreen) {
-        console.log('In fullscreen mode - setting up fullscreen review');
-        
-        // Update fullscreen review content
-        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
-        if (fullscreenTranscript) {
-            fullscreenTranscript.value = transcript;
-        }
-        
-        // Enable fullscreen review buttons
-        const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
-        const fullscreenEditBtn = document.getElementById('fullscreenEditBtn');
-        const fullscreenDeleteBtn = document.getElementById('fullscreenDeleteBtn');
-        
-        if (fullscreenSendBtn) fullscreenSendBtn.disabled = false;
-        if (fullscreenEditBtn) fullscreenEditBtn.disabled = false;
-        if (fullscreenDeleteBtn) fullscreenDeleteBtn.disabled = false;
-        
-        // Force fullscreen review to show
-        showFullscreenReview();
-        
-    } else {
-        // Normal mode - scroll to review section
+    // Scroll to review section only if not in fullscreen
+    if (!isVideoFullscreen) {
         document.getElementById('reviewSection').scrollIntoView({ 
             behavior: 'smooth', 
             block: 'center' 
@@ -3014,34 +3087,19 @@ function selectVoiceMethod(method) {
 }
 
         function hideReviewSection() {
-    // Hide main review section
     document.getElementById('reviewSection').classList.remove('active');
-    document.getElementById('reviewTranscript').value = '';
+    document.getElementById('reviewOverlay').classList.remove('active');
     
-    // Disable main review buttons
+    document.getElementById('reviewTranscript').value = '';
+    document.getElementById('overlayReviewTranscript').value = '';
+    
+    // Disable ALL buttons
     document.getElementById('sendBtn').disabled = true;
     document.getElementById('editBtn').disabled = true;
     document.getElementById('deleteBtn').disabled = true;
-    
-    // Hide and reset fullscreen review
-    if (fullscreenReviewSection) {
-        fullscreenReviewSection.classList.remove('show');
-        
-        // Clear fullscreen review content
-        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
-        if (fullscreenTranscript) {
-            fullscreenTranscript.value = '';
-        }
-        
-        // Disable fullscreen review buttons
-        const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
-        const fullscreenEditBtn = document.getElementById('fullscreenEditBtn');
-        const fullscreenDeleteBtn = document.getElementById('fullscreenDeleteBtn');
-        
-        if (fullscreenSendBtn) fullscreenSendBtn.disabled = true;
-        if (fullscreenEditBtn) fullscreenEditBtn.disabled = true;
-        if (fullscreenDeleteBtn) fullscreenDeleteBtn.disabled = true;
-    }
+    document.getElementById('overlaySendBtn').disabled = true;
+    document.getElementById('overlayEditBtn').disabled = true;
+    document.getElementById('overlayDeleteBtn').disabled = true;
     
     document.getElementById('talkButton').disabled = false;
 }
@@ -6373,10 +6431,62 @@ function playBeep() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
 }
+
+        function sendOverlayMessage() {
+    const reviewedText = document.getElementById('overlayReviewTranscript').value.trim();
+    
+    if (!reviewedText) {
+        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
+        return;
+    }
+    
+    // Stop any existing timer and start a new 2-minute response timer
+    stopResponseTimer();
+    startResponseTimer();
+    
+    // Hide review section
+    hideReviewSection();
+    
+    // Add message to chat and send to webhook
+    addMessage(reviewedText, 'user');
+    sendToWebhook(reviewedText);
+    
+    // Reset state
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+}
+
+function editOverlayTranscript() {
+    const transcriptElement = document.getElementById('overlayReviewTranscript');
+    if (transcriptElement) {
+        transcriptElement.focus();
+        transcriptElement.select();
+    }
+    showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
+}
+
+function deleteOverlayTranscript() {
+    // Hide review section
+    hideReviewSection();
+    
+    // Reset state for new recording
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+    fullTranscript = '';
+    
+    // Clear review boxes
+    document.getElementById('reviewTranscript').value = '';
+    document.getElementById('overlayReviewTranscript').value = '';
+    
+    showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
+}
         
     </script>
 </body>
 </html>
+
 
 
 
