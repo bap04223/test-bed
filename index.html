@@ -2420,11 +2420,11 @@ function splitTextIntoChunks(text, chunkSize) {
         
         // Check if avatar stream is connected
 if (isAvatarInitialized && !isStreamConnected) {
-    showStatus('Please connect avatar stream first using the "Connect Avatar Stream" button', 'error');
-    return;
-}
+            showStatus('Please connect avatar stream first using the "Connect Avatar Stream" button', 'error');
+            return;
+        }
 
-proceedWithRecording();
+        proceedWithRecording();
     }
 }
 
@@ -5917,6 +5917,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
