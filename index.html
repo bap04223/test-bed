@@ -501,12 +501,12 @@ body {
             overflow-y: auto;
         }
         
-        /* UPDATED Patient Image Button Styling - OVERLAY VERSION - FLOATING */
+        /* UPDATED Patient Image Button Styling - OVERLAY VERSION */
 .patient-image-btn-overlay {
-    position: absolute !important;
-    bottom: 80px !important;
-    left: 20px !important;
-    z-index: 20 !important;
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    z-index: 20;
     padding: 0 !important;
     font-size: 20px !important;
     border: none;
@@ -770,18 +770,18 @@ body {
     }
 }
             
-      .review-section {
+      /* Review section styling */
+        .review-section {
     margin-top: 40px;
     padding: 15px;
     background-color: #f9fafb;
     border: 2px solid var(--warning-color);
     border-radius: 8px;
-    display: none;
+    display: flex;
     flex-direction: column;
     height: 250px;
     flex-shrink: 0;
-    opacity: 0;
-    transition: all 0.3s ease;
+    opacity: 1;
 }
 
         .review-section.active {
@@ -1122,12 +1122,13 @@ body {
     width: 100%;
 }
 
+/* Timer Display Styles - Overlay Version */
 .timer-overlay {
-    position: fixed !important;
-    top: 20px;
+    position: absolute;
+    top: 15px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10000 !important;
+    z-index: 10;
     width: 200px;
     background: linear-gradient(135deg, #10b981, #059669);
     color: white;
@@ -1220,210 +1221,95 @@ body {
 .timer-overlay.timer-ready .timer-progress {
     width: 0%;
     background: rgba(255, 255, 255, 0.5);
-}     
+}   
 
-   
-
-#reviewSection.active {
-    display: flex !important;
-    flex-direction: column !important;
-    opacity: 1 !important;
+  /* FULLSCREEN OVERLAY STYLES */
+/* Hide overlays by default in fullscreen */
+video:fullscreen ~ .timer-overlay,
+video:fullscreen ~ .patient-image-btn-overlay {
+    display: none !important;
 }
 
-#reviewSection .review-transcript {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px;
-    height: 120px;
-    overflow-y: auto;
-    margin: 8px 0;
-    font-size: 14px;
-    line-height: 1.4;
-    resize: none;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-#reviewSection .review-buttons {
-    gap: 8px;
-    margin-top: 8px;
-}
-
-#reviewSection .review-buttons button {
-    padding: 8px 12px;
-    font-size: 13px;
-    height: auto;
-    min-height: 36px;
-}
-
-/* Enhanced floating patient image button */
-.patient-image-btn-overlay {
+/* Show overlays when video is in fullscreen */
+.video-fullscreen-active .timer-overlay,
+.video-fullscreen-active .patient-image-btn-overlay {
+    display: block !important;
     position: fixed !important;
-    bottom: 200px !important;
-    left: 20px !important;
-    z-index: 10001 !important;
-    width: 60px !important;
-    height: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    backdrop-filter: blur(15px) !important;
-    border: 3px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    z-index: 999999 !important;
 }
 
-.patient-image-btn-overlay.available:hover {
-    transform: translateY(-3px) scale(1.1) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Floating timer overlay enhancements */
-.timer-overlay {
-    position: fixed !important;
+/* Fullscreen timer positioning */
+.video-fullscreen-active .timer-overlay {
     top: 20px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 10000 !important;
-    backdrop-filter: blur(15px) !important;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
     border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Fullscreen compatibility */
-*:fullscreen .patient-image-btn-overlay,
-*:-webkit-full-screen .patient-image-btn-overlay,
-*:-moz-full-screen .patient-image-btn-overlay {
-    position: fixed !important;
-    z-index: 10001 !important;
+/* Fullscreen patient image button positioning */
+.video-fullscreen-active .patient-image-btn-overlay {
+    bottom: 120px !important;
+    left: 30px !important;
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 24px !important;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6) !important;
 }
 
-*:fullscreen #reviewSection,
-*:-webkit-full-screen #reviewSection,
-*:-moz-full-screen #reviewSection {
-    position: fixed !important;
-    z-index: 10000 !important;
-}
-
-*:fullscreen .timer-overlay,
-*:-webkit-full-screen .timer-overlay,
-*:-moz-full-screen .timer-overlay {
-    position: fixed !important;
-    z-index: 10000 !important;
-}
-
-@media (max-width: 768px) {
-    #reviewSection {
-        width: 95%;
-        bottom: 10px;
-        padding: 12px;
-    }
-    
-    #reviewSection .review-transcript {
-        height: 100px;
-        font-size: 13px;
-    }
-    
-    #reviewSection .review-buttons button {
-        padding: 6px 8px;
-        font-size: 12px;
-        min-height: 32px;
-    }
-    
-    .patient-image-btn-overlay {
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 20px !important;
-        bottom: 140px !important;
-        left: 15px !important;
-    }
-    
-    .timer-overlay {
-        width: 180px;
-        padding: 6px 10px;
-        top: 15px;
-    }
-}   
-/* ===== FULLSCREEN-ONLY FLOATING ELEMENTS ===== */
-
-/* Only float elements when in fullscreen mode */
-video:fullscreen ~ * .patient-image-btn-overlay,
-video:-webkit-full-screen ~ * .patient-image-btn-overlay,
-video:-moz-full-screen ~ * .patient-image-btn-overlay,
-*:fullscreen .patient-image-btn-overlay,
-*:-webkit-full-screen .patient-image-btn-overlay,
-*:-moz-full-screen .patient-image-btn-overlay {
-    position: fixed !important;
-    z-index: 10001 !important;
-    bottom: 200px !important;
-    left: 20px !important;
-}
-
-/* Only float review section when in fullscreen mode */
-video:fullscreen ~ * #reviewSection,
-video:-webkit-full-screen ~ * #reviewSection,
-video:-moz-full-screen ~ * #reviewSection,
-*:fullscreen #reviewSection,
-*:-webkit-full-screen #reviewSection,
-*:-moz-full-screen #reviewSection {
+/* Fullscreen review section */
+.fullscreen-review-overlay {
     position: fixed !important;
     bottom: 20px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    z-index: 10000 !important;
     width: 90% !important;
     max-width: 800px !important;
-    background: rgba(255, 255, 255, 0.98) !important;
+    z-index: 999999 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(10px) !important;
-    border: 2px solid var(--primary-color) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    display: none !important;
 }
 
-/* Only float timer when in fullscreen mode */
-video:fullscreen ~ * .timer-overlay,
-video:-webkit-full-screen ~ * .timer-overlay,
-video:-moz-full-screen ~ * .timer-overlay,
-*:fullscreen .timer-overlay,
-*:-webkit-full-screen .timer-overlay,
-*:-moz-full-screen .timer-overlay {
-    position: fixed !important;
-    z-index: 10000 !important;
-    backdrop-filter: blur(15px) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+.fullscreen-review-overlay.show {
+    display: block !important;
 }
 
-/* Enhanced visibility in fullscreen */
-*:fullscreen .patient-image-btn-overlay,
-*:-webkit-full-screen .patient-image-btn-overlay,
-*:-moz-full-screen .patient-image-btn-overlay {
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+.fullscreen-review-overlay .review-transcript {
+    height: 120px !important;
+    font-size: 16px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
 }
 
-*:fullscreen #reviewSection,
-*:-webkit-full-screen #reviewSection,
-*:-moz-full-screen #reviewSection {
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+.fullscreen-review-overlay .review-buttons {
+    gap: 15px !important;
 }
 
-/* Mobile adjustments for fullscreen only */
-@media (max-width: 768px) {
-    *:fullscreen #reviewSection,
-    *:-webkit-full-screen #reviewSection,
-    *:-moz-full-screen #reviewSection {
-        width: 95% !important;
-        bottom: 10px !important;
-        padding: 12px !important;
-    }
-    
-    *:fullscreen .patient-image-btn-overlay,
-    *:-webkit-full-screen .patient-image-btn-overlay,
-    *:-moz-full-screen .patient-image-btn-overlay {
-        width: 50px !important;
-        height: 50px !important;
-        font-size: 20px !important;
-        bottom: 140px !important;
-        left: 15px !important;
-    }
+.fullscreen-review-overlay .review-buttons button {
+    height: 50px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(5px) !important;
 }
-        
+
+/* Webkit fullscreen specific styles */
+video::-webkit-media-controls {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Firefox fullscreen specific styles */
+video::-moz-media-controls {
+    display: none !important;
+}      
         
     </style>
 </head>
@@ -2062,6 +1948,11 @@ let forceStopRecognition = false; // Flag to force stop recognition
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
 
+        // ===== FULLSCREEN MANAGEMENT VARIABLES =====
+let isVideoFullscreen = false;
+let fullscreenReviewSection = null;
+let originalReviewSection = null;
+
         
 
         // ===== PRESENTER GENDER DATABASE =====
@@ -2135,6 +2026,10 @@ initializeDIDElements();
 
 // Load collapsed state for configuration panel
     loadCollapsedState();
+            
+// Initialize fullscreen support - ADD THIS LINE
+    initializeFullscreenSupport();
+            
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -2945,23 +2840,28 @@ function selectVoiceMethod(method) {
     
     // Update review transcript
     document.getElementById('reviewTranscript').value = transcript;
-            
-            // Activate review section
-            document.getElementById('reviewSection').classList.add('active');
-            
-            // Enable buttons
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('editBtn').disabled = false;
-            document.getElementById('deleteBtn').disabled = false;
-            
-            // Scroll to review section
-            document.getElementById('reviewSection').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-            
-            showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
-        }
+    
+    // Activate review section
+    document.getElementById('reviewSection').classList.add('active');
+    
+    // Enable buttons
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('editBtn').disabled = false;
+    document.getElementById('deleteBtn').disabled = false;
+    
+    // Show fullscreen review if in fullscreen mode
+    if (isVideoFullscreen) {
+        showFullscreenReview();
+    } else {
+        // Scroll to review section only if not in fullscreen
+        document.getElementById('reviewSection').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+    
+    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
+}
 
      function sendReviewedMessage() {
     // Stop any existing timer and start a new 2-minute response timer
@@ -2988,44 +2888,54 @@ function selectVoiceMethod(method) {
             pendingTranscript = '';
         }
 
-        function editTranscript() {
-    // Focus on the editable transcript
-    const transcriptElement = document.getElementById('reviewTranscript');
-    transcriptElement.focus();
+        function editTranscript(isFullscreen = false) {
+    // Focus on the appropriate transcript element
+    const transcriptElement = isFullscreen ? 
+        document.getElementById('fullscreenReviewTranscript') : 
+        document.getElementById('reviewTranscript');
     
-    // Select all text for easy editing (textarea method)
-    transcriptElement.select();
+    if (transcriptElement) {
+        transcriptElement.focus();
+        transcriptElement.select();
+    }
     
     showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
 }
 
-        function deleteTranscript() {
-            // Hide review section
-            hideReviewSection();
-            
-            // Reset state for new recording
-            recordingState = 'stopped';
-            updateTalkButton();
-            pendingTranscript = '';
-            fullTranscript = '';
-            
-            // Clear review box
-document.getElementById('reviewTranscript').value = '';
-            
-            showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
-        }
+        function deleteTranscript(isFullscreen = false) {
+    // Hide review section
+    hideReviewSection();
+    
+    // Reset state for new recording
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+    fullTranscript = '';
+    
+    // Clear review boxes
+    document.getElementById('reviewTranscript').value = '';
+    if (isFullscreen) {
+        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+        if (fullscreenTranscript) fullscreenTranscript.value = '';
+    }
+    
+    showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
+}
 
         function hideReviewSection() {
-            document.getElementById('reviewSection').classList.remove('active');
-            document.getElementById('reviewTranscript').value = '';
-            
-            // Disable buttons
-            document.getElementById('sendBtn').disabled = true;
-            document.getElementById('editBtn').disabled = true;
-            document.getElementById('deleteBtn').disabled = true;
-            
-            document.getElementById('talkButton').disabled = false;
-        }
+    document.getElementById('reviewSection').classList.remove('active');
+    document.getElementById('reviewTranscript').value = '';
+    
+    // Disable buttons
+    document.getElementById('sendBtn').disabled = true;
+    document.getElementById('editBtn').disabled = true;
+    document.getElementById('deleteBtn').disabled = true;
+    
+    document.getElementById('talkButton').disabled = false;
+    
+    // Hide fullscreen review
+    hideFullscreenReview();
+}
 
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
@@ -5573,6 +5483,200 @@ function forceScrollToBottom() {
         }, 300);
     }, 5000);
 }
+
+      // ===== FULLSCREEN MANAGEMENT FUNCTIONS =====
+function initializeFullscreenSupport() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (!avatarVideo || !videoWrapper) return;
+    
+    // Create fullscreen review overlay (initially hidden)
+    createFullscreenReviewOverlay();
+    
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    
+    // Add double-click to enter fullscreen
+    avatarVideo.addEventListener('dblclick', () => {
+        if (!isVideoFullscreen) {
+            enterVideoFullscreen();
+        }
+    });
+    
+    // Add keyboard shortcut (F key) when video is focused
+    avatarVideo.addEventListener('keydown', (e) => {
+        if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            if (!isVideoFullscreen) {
+                enterVideoFullscreen();
+            }
+        }
+    });
+    
+    console.log('Fullscreen support initialized');
+}
+
+function createFullscreenReviewOverlay() {
+    // Create fullscreen review overlay
+    fullscreenReviewSection = document.createElement('div');
+    fullscreenReviewSection.id = 'fullscreenReviewSection';
+    fullscreenReviewSection.className = 'fullscreen-review-overlay';
+    
+    // Clone the original review section content
+    const originalReview = document.getElementById('reviewSection');
+    fullscreenReviewSection.innerHTML = originalReview.innerHTML;
+    
+    // Update IDs to avoid conflicts
+    const transcript = fullscreenReviewSection.querySelector('.review-transcript');
+    const talkBtn = fullscreenReviewSection.querySelector('#talkButton');
+    const sendBtn = fullscreenReviewSection.querySelector('#sendBtn');
+    const editBtn = fullscreenReviewSection.querySelector('#editBtn');
+    const deleteBtn = fullscreenReviewSection.querySelector('#deleteBtn');
+    
+    if (transcript) transcript.id = 'fullscreenReviewTranscript';
+    if (talkBtn) {
+        talkBtn.id = 'fullscreenTalkButton';
+        talkBtn.onclick = toggleRecording;
+    }
+    if (sendBtn) {
+        sendBtn.id = 'fullscreenSendBtn';
+        sendBtn.onclick = sendReviewedMessage;
+    }
+    if (editBtn) {
+        editBtn.id = 'fullscreenEditBtn';
+        editBtn.onclick = () => editTranscript(true);
+    }
+    if (deleteBtn) {
+        deleteBtn.id = 'fullscreenDeleteBtn';
+        deleteBtn.onclick = () => deleteTranscript(true);
+    }
+    
+    // Add to body
+    document.body.appendChild(fullscreenReviewSection);
+}
+
+function handleFullscreenChange() {
+    const fullscreenElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+    
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    isVideoFullscreen = fullscreenElement === avatarVideo;
+    
+    if (isVideoFullscreen) {
+        console.log('Video entered fullscreen mode');
+        
+        // Add class to video wrapper for CSS targeting
+        if (videoWrapper) {
+            videoWrapper.classList.add('video-fullscreen-active');
+        }
+        
+        // Sync review sections
+        syncReviewSections();
+        
+        // Show fullscreen review if needed
+        const originalReview = document.getElementById('reviewSection');
+        if (originalReview && originalReview.classList.contains('active')) {
+            showFullscreenReview();
+        }
+        
+    } else {
+        console.log('Video exited fullscreen mode');
+        
+        // Remove fullscreen class
+        if (videoWrapper) {
+            videoWrapper.classList.remove('video-fullscreen-active');
+        }
+        
+        // Hide fullscreen review
+        hideFullscreenReview();
+        
+        // Sync back to original
+        syncReviewSections(true);
+    }
+}
+
+function enterVideoFullscreen() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (avatarVideo) {
+        if (avatarVideo.requestFullscreen) {
+            avatarVideo.requestFullscreen();
+        } else if (avatarVideo.webkitRequestFullscreen) {
+            avatarVideo.webkitRequestFullscreen();
+        } else if (avatarVideo.mozRequestFullScreen) {
+            avatarVideo.mozRequestFullScreen();
+        } else if (avatarVideo.msRequestFullscreen) {
+            avatarVideo.msRequestFullscreen();
+        }
+    }
+}
+
+function syncReviewSections(toOriginal = false) {
+    const originalTranscript = document.getElementById('reviewTranscript');
+    const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+    
+    if (originalTranscript && fullscreenTranscript) {
+        if (toOriginal) {
+            // Sync from fullscreen back to original
+            originalTranscript.value = fullscreenTranscript.value;
+        } else {
+            // Sync from original to fullscreen
+            fullscreenTranscript.value = originalTranscript.value;
+        }
+    }
+    
+    // Sync button states
+    syncButtonStates(toOriginal);
+}
+
+function syncButtonStates(toOriginal = false) {
+    const buttonPairs = [
+        ['talkButton', 'fullscreenTalkButton'],
+        ['sendBtn', 'fullscreenSendBtn'],
+        ['editBtn', 'fullscreenEditBtn'],
+        ['deleteBtn', 'fullscreenDeleteBtn']
+    ];
+    
+    buttonPairs.forEach(([originalId, fullscreenId]) => {
+        const originalBtn = document.getElementById(originalId);
+        const fullscreenBtn = document.getElementById(fullscreenId);
+        
+        if (originalBtn && fullscreenBtn) {
+            if (toOriginal) {
+                // Sync from fullscreen to original
+                originalBtn.className = fullscreenBtn.className;
+                originalBtn.innerHTML = fullscreenBtn.innerHTML;
+                originalBtn.disabled = fullscreenBtn.disabled;
+            } else {
+                // Sync from original to fullscreen
+                fullscreenBtn.className = originalBtn.className;
+                fullscreenBtn.innerHTML = originalBtn.innerHTML;
+                fullscreenBtn.disabled = originalBtn.disabled;
+            }
+        }
+    });
+}
+
+function showFullscreenReview() {
+    if (fullscreenReviewSection && isVideoFullscreen) {
+        fullscreenReviewSection.classList.add('show');
+        syncReviewSections();
+    }
+}
+
+function hideFullscreenReview() {
+    if (fullscreenReviewSection) {
+        fullscreenReviewSection.classList.remove('show');
+    }
+}  
         
         function saveConfig() {
     const config = {
@@ -6119,6 +6223,48 @@ function playBeep() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
