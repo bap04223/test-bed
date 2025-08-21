@@ -4205,21 +4205,26 @@ function updatePatientImageButton() {
             .filter(url => url !== '');
         
         if (patientImages.length > 0) {
-            // Images available
-            button.className = 'patient-image-btn-overlay available';
-            if (patientImages.length === 1) {
-                button.innerHTML = '👁️ View Patient Image';
-            } else {
-                button.innerHTML = `View Patient Images (${patientImages.length})`;
-            }
-            button.disabled = false;
-            } else {
-        // No image data
-        patientImages = [];
-        button.className = 'patient-image-btn-overlay unavailable';
-        button.innerHTML = '❌ No Patient Image';
-        button.disabled = true;
+    // Images available
+    button.className = 'patient-image-btn-overlay available';
+    if (patientImages.length === 1) {
+        button.innerHTML = '👁️ View Patient Image';
+    } else {
+        button.innerHTML = `View Patient Images (${patientImages.length})`;
     }
+    button.disabled = false;
+} else {
+    // No valid images
+    button.className = 'patient-image-btn-overlay unavailable';
+    button.innerHTML = '❌ No Patient Image';
+    button.disabled = true;
+}
+} else {
+    // No image data
+    patientImages = [];
+    button.className = 'patient-image-btn-overlay unavailable';
+    button.innerHTML = '❌ No Patient Image';
+    button.disabled = true;
 }
         
         // Helper function to convert Google Drive share links to direct image URLs
@@ -5912,6 +5917,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
