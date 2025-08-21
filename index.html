@@ -1264,7 +1264,7 @@ body {
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Fullscreen review section */
+/* Enhanced fullscreen review section visibility */
 .fullscreen-review-overlay {
     position: fixed !important;
     bottom: 20px !important;
@@ -1279,28 +1279,58 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
     border: 2px solid rgba(255, 255, 255, 0.3) !important;
     display: none !important;
+    padding: 20px !important;
 }
 
 .fullscreen-review-overlay.show {
     display: block !important;
 }
 
+/* Force visibility in all fullscreen contexts */
+:fullscreen .fullscreen-review-overlay.show,
+:-webkit-full-screen .fullscreen-review-overlay.show,
+:-moz-full-screen .fullscreen-review-overlay.show {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+.fullscreen-review-overlay h3 {
+    margin: 0 0 10px 0 !important;
+    color: var(--primary-color) !important;
+    text-align: center !important;
+    font-size: 18px !important;
+}
+
 .fullscreen-review-overlay .review-transcript {
     height: 120px !important;
     font-size: 16px !important;
     background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 15px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 10px 0 !important;
 }
 
 .fullscreen-review-overlay .review-buttons {
+    display: flex !important;
     gap: 15px !important;
+    margin-top: 15px !important;
+    justify-content: space-between !important;
 }
 
 .fullscreen-review-overlay .review-buttons button {
+    flex: 1 !important;
     height: 50px !important;
     font-size: 16px !important;
     font-weight: 600 !important;
     border-radius: 8px !important;
     backdrop-filter: blur(5px) !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
 }
 
 /* Webkit fullscreen specific styles */
@@ -2839,12 +2869,12 @@ function selectVoiceMethod(method) {
         }
         
                 // ===== REVIEW SECTION FUNCTIONS =====
-        function showReviewSection(transcript) {
+ function showReviewSection(transcript) {
     pendingTranscript = transcript;
     recordingState = 'reviewing';
     updateTalkButton();
     
-    // Update review transcript
+    // Update review transcript in both locations
     document.getElementById('reviewTranscript').value = transcript;
     
     // Activate review section
@@ -2857,7 +2887,19 @@ function selectVoiceMethod(method) {
     
     // Show fullscreen review if in fullscreen mode
     if (isVideoFullscreen) {
+        // Sync the fullscreen review
+        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+        if (fullscreenTranscript) {
+            fullscreenTranscript.value = transcript;
+        }
+        
+        // Sync button states
+        syncButtonStates();
+        
+        // Show the fullscreen review
         showFullscreenReview();
+        
+        console.log('Showing fullscreen review overlay');
     } else {
         // Scroll to review section only if not in fullscreen
         document.getElementById('reviewSection').scrollIntoView({ 
@@ -5532,37 +5574,33 @@ function createFullscreenReviewOverlay() {
     fullscreenReviewSection.id = 'fullscreenReviewSection';
     fullscreenReviewSection.className = 'fullscreen-review-overlay';
     
-    // Clone the original review section content
-    const originalReview = document.getElementById('reviewSection');
-    fullscreenReviewSection.innerHTML = originalReview.innerHTML;
+    // Create the content structure
+    fullscreenReviewSection.innerHTML = `
+        <h3>Live Transcription & Review</h3>
+        <textarea class="review-transcript" id="fullscreenReviewTranscript" placeholder="No message to review yet"></textarea>
+        <div class="review-buttons">
+            <button class="btn-info" id="fullscreenTalkButton">Start Recording</button>
+            <button class="btn-success" id="fullscreenSendBtn" disabled>Send Message</button>
+            <button class="btn-warning" id="fullscreenEditBtn" disabled>Edit</button>
+            <button class="btn-danger" id="fullscreenDeleteBtn" disabled>Delete & Retry</button>
+        </div>
+    `;
     
-    // Update IDs to avoid conflicts
-    const transcript = fullscreenReviewSection.querySelector('.review-transcript');
-    const talkBtn = fullscreenReviewSection.querySelector('#talkButton');
-    const sendBtn = fullscreenReviewSection.querySelector('#sendBtn');
-    const editBtn = fullscreenReviewSection.querySelector('#editBtn');
-    const deleteBtn = fullscreenReviewSection.querySelector('#deleteBtn');
+    // Set up event handlers
+    const talkBtn = fullscreenReviewSection.querySelector('#fullscreenTalkButton');
+    const sendBtn = fullscreenReviewSection.querySelector('#fullscreenSendBtn');
+    const editBtn = fullscreenReviewSection.querySelector('#fullscreenEditBtn');
+    const deleteBtn = fullscreenReviewSection.querySelector('#fullscreenDeleteBtn');
     
-    if (transcript) transcript.id = 'fullscreenReviewTranscript';
-    if (talkBtn) {
-        talkBtn.id = 'fullscreenTalkButton';
-        talkBtn.onclick = toggleRecording;
-    }
-    if (sendBtn) {
-        sendBtn.id = 'fullscreenSendBtn';
-        sendBtn.onclick = sendReviewedMessage;
-    }
-    if (editBtn) {
-        editBtn.id = 'fullscreenEditBtn';
-        editBtn.onclick = () => editTranscript(true);
-    }
-    if (deleteBtn) {
-        deleteBtn.id = 'fullscreenDeleteBtn';
-        deleteBtn.onclick = () => deleteTranscript(true);
-    }
+    if (talkBtn) talkBtn.onclick = toggleRecording;
+    if (sendBtn) sendBtn.onclick = sendReviewedMessage;
+    if (editBtn) editBtn.onclick = () => editTranscript(true);
+    if (deleteBtn) deleteBtn.onclick = () => deleteTranscript(true);
     
     // Add to body
     document.body.appendChild(fullscreenReviewSection);
+    
+    console.log('Fullscreen review overlay created');
 }
 
 function handleFullscreenChange() {
@@ -5704,8 +5742,26 @@ function syncButtonStates(toOriginal = false) {
 
 function showFullscreenReview() {
     if (fullscreenReviewSection && isVideoFullscreen) {
+        console.log('Attempting to show fullscreen review');
+        
+        // Force the overlay to be visible
+        fullscreenReviewSection.style.display = 'block';
+        fullscreenReviewSection.style.position = 'fixed';
+        fullscreenReviewSection.style.zIndex = '999999';
         fullscreenReviewSection.classList.add('show');
+        
+        // Sync content
         syncReviewSections();
+        
+        // Log for debugging
+        console.log('Fullscreen review overlay should now be visible');
+        console.log('Overlay element:', fullscreenReviewSection);
+        console.log('Has show class:', fullscreenReviewSection.classList.contains('show'));
+    } else {
+        console.log('Cannot show fullscreen review:', {
+            hasOverlay: !!fullscreenReviewSection,
+            isFullscreen: isVideoFullscreen
+        });
     }
 }
 
@@ -6260,6 +6316,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
