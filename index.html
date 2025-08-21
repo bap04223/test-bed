@@ -503,10 +503,10 @@ body {
         
         /* UPDATED Patient Image Button Styling - OVERLAY VERSION - FLOATING */
 .patient-image-btn-overlay {
-    position: fixed !important;
-    bottom: 200px !important;
+    position: absolute !important;
+    bottom: 80px !important;
     left: 20px !important;
-    z-index: 10001 !important;
+    z-index: 20 !important;
     padding: 0 !important;
     font-size: 20px !important;
     border: none;
@@ -516,9 +516,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(15px);
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     width: 75px !important;
     height: 75px !important;
     min-width: 75px !important;
@@ -771,22 +771,15 @@ body {
 }
             
       .review-section {
-    position: fixed !important;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000 !important;
-    width: 90%;
-    max-width: 800px;
+    margin-top: 40px;
     padding: 15px;
-    background: rgba(249, 250, 251, 0.98) !important;
+    background-color: #f9fafb;
     border: 2px solid var(--warning-color);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
     display: none;
     flex-direction: column;
-    margin: 0;
+    height: 250px;
+    flex-shrink: 0;
     opacity: 0;
     transition: all 0.3s ease;
 }
@@ -1229,25 +1222,7 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }     
 
-     /* ===== FULLSCREEN FLOATING ELEMENTS ===== */
-
-/* Make review section floating and persistent */
-#reviewSection {
-    position: fixed !important;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000 !important;
-    width: 90%;
-    max-width: 800px;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(10px);
-    border: 2px solid var(--primary-color);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    margin: 0;
-}
+   
 
 #reviewSection.active {
     display: flex !important;
@@ -1367,6 +1342,88 @@ body {
         top: 15px;
     }
 }   
+/* ===== FULLSCREEN-ONLY FLOATING ELEMENTS ===== */
+
+/* Only float elements when in fullscreen mode */
+video:fullscreen ~ * .patient-image-btn-overlay,
+video:-webkit-full-screen ~ * .patient-image-btn-overlay,
+video:-moz-full-screen ~ * .patient-image-btn-overlay,
+*:fullscreen .patient-image-btn-overlay,
+*:-webkit-full-screen .patient-image-btn-overlay,
+*:-moz-full-screen .patient-image-btn-overlay {
+    position: fixed !important;
+    z-index: 10001 !important;
+    bottom: 200px !important;
+    left: 20px !important;
+}
+
+/* Only float review section when in fullscreen mode */
+video:fullscreen ~ * #reviewSection,
+video:-webkit-full-screen ~ * #reviewSection,
+video:-moz-full-screen ~ * #reviewSection,
+*:fullscreen #reviewSection,
+*:-webkit-full-screen #reviewSection,
+*:-moz-full-screen #reviewSection {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 10000 !important;
+    width: 90% !important;
+    max-width: 800px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 2px solid var(--primary-color) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Only float timer when in fullscreen mode */
+video:fullscreen ~ * .timer-overlay,
+video:-webkit-full-screen ~ * .timer-overlay,
+video:-moz-full-screen ~ * .timer-overlay,
+*:fullscreen .timer-overlay,
+*:-webkit-full-screen .timer-overlay,
+*:-moz-full-screen .timer-overlay {
+    position: fixed !important;
+    z-index: 10000 !important;
+    backdrop-filter: blur(15px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Enhanced visibility in fullscreen */
+*:fullscreen .patient-image-btn-overlay,
+*:-webkit-full-screen .patient-image-btn-overlay,
+*:-moz-full-screen .patient-image-btn-overlay {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+*:fullscreen #reviewSection,
+*:-webkit-full-screen #reviewSection,
+*:-moz-full-screen #reviewSection {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Mobile adjustments for fullscreen only */
+@media (max-width: 768px) {
+    *:fullscreen #reviewSection,
+    *:-webkit-full-screen #reviewSection,
+    *:-moz-full-screen #reviewSection {
+        width: 95% !important;
+        bottom: 10px !important;
+        padding: 12px !important;
+    }
+    
+    *:fullscreen .patient-image-btn-overlay,
+    *:-webkit-full-screen .patient-image-btn-overlay,
+    *:-moz-full-screen .patient-image-btn-overlay {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 20px !important;
+        bottom: 140px !important;
+        left: 15px !important;
+    }
+}
+        
         
     </style>
 </head>
@@ -6062,6 +6119,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
