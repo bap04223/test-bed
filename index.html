@@ -2621,35 +2621,64 @@ if (isAvatarInitialized && !isStreamConnected) {
 
         function updateTalkButton() {
     const button = document.getElementById('talkButton');
+    const fullscreenButton = document.getElementById('fullscreenTalkButton');
+    
+    let className = '';
+    let innerHTML = '';
+    let disabled = false;
     
     switch (recordingState) {
         case 'stopped':
-            button.classList.remove('recording');
-            button.className = 'btn-primary';  // BLUE when stopped
-            button.innerHTML = '🎤 Start Recording';
-            button.disabled = false;
+            className = 'btn-primary';
+            innerHTML = '🎤 Start Recording';
+            disabled = false;
             break;
             
         case 'recording':
-            button.classList.add('recording');
-            button.className = 'btn-danger recording';  // RED when recording
-            button.innerHTML = '⏹️ Stop Recording';
-            button.disabled = false;
+            className = 'btn-danger recording';
+            innerHTML = '⏹️ Stop Recording';
+            disabled = false;
             break;
             
         case 'processing':
-            button.classList.remove('recording');
-            button.className = 'btn-warning';  // ORANGE when processing
-            button.innerHTML = '⏳ Processing...';
-            button.disabled = true;
+            className = 'btn-warning';
+            innerHTML = '⏳ Processing...';
+            disabled = true;
             break;
             
         case 'reviewing':
-            button.classList.remove('recording');
-            button.className = 'btn-success';  // GREEN when reviewing
-            button.innerHTML = '📝 Reviewing...';
-            button.disabled = true;
+            className = 'btn-success';
+            innerHTML = '📝 Reviewing...';
+            disabled = true;
             break;
+    }
+    
+    // Update main button
+    if (button) {
+        button.className = className;
+        button.innerHTML = innerHTML;
+        button.disabled = disabled;
+        
+        // Handle recording animation
+        if (recordingState === 'recording') {
+            button.classList.add('recording');
+        } else {
+            button.classList.remove('recording');
+        }
+    }
+    
+    // Update fullscreen button
+    if (fullscreenButton) {
+        fullscreenButton.className = className;
+        fullscreenButton.innerHTML = innerHTML;
+        fullscreenButton.disabled = disabled;
+        
+        // Handle recording animation
+        if (recordingState === 'recording') {
+            fullscreenButton.classList.add('recording');
+        } else {
+            fullscreenButton.classList.remove('recording');
+        }
     }
 }
 
@@ -2880,28 +2909,35 @@ function selectVoiceMethod(method) {
     // Activate review section
     document.getElementById('reviewSection').classList.add('active');
     
-    // Enable buttons
+    // Enable buttons in original review section
     document.getElementById('sendBtn').disabled = false;
     document.getElementById('editBtn').disabled = false;
     document.getElementById('deleteBtn').disabled = false;
     
-    // Show fullscreen review if in fullscreen mode
+    // Handle fullscreen mode
     if (isVideoFullscreen) {
-        // Sync the fullscreen review
+        console.log('In fullscreen mode - setting up fullscreen review');
+        
+        // Update fullscreen review content
         const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
         if (fullscreenTranscript) {
             fullscreenTranscript.value = transcript;
         }
         
-        // Sync button states
-        syncButtonStates();
+        // Enable fullscreen review buttons
+        const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
+        const fullscreenEditBtn = document.getElementById('fullscreenEditBtn');
+        const fullscreenDeleteBtn = document.getElementById('fullscreenDeleteBtn');
         
-        // Show the fullscreen review
+        if (fullscreenSendBtn) fullscreenSendBtn.disabled = false;
+        if (fullscreenEditBtn) fullscreenEditBtn.disabled = false;
+        if (fullscreenDeleteBtn) fullscreenDeleteBtn.disabled = false;
+        
+        // Force fullscreen review to show
         showFullscreenReview();
         
-        console.log('Showing fullscreen review overlay');
     } else {
-        // Scroll to review section only if not in fullscreen
+        // Normal mode - scroll to review section
         document.getElementById('reviewSection').scrollIntoView({ 
             behavior: 'smooth', 
             block: 'center' 
@@ -2916,25 +2952,32 @@ function selectVoiceMethod(method) {
     stopResponseTimer();
     startResponseTimer();
     
-    const reviewedText = document.getElementById('reviewTranscript').value.trim();
-            
-            if (!reviewedText) {
-                showStatus('Message is empty. Please add some text or delete to try again.', 'error');
-                return;
-            }
-            
-            // Hide review section
-            hideReviewSection();
-            
-            // Add message to chat and send to webhook
-            addMessage(reviewedText, 'user');
-            sendToWebhook(reviewedText);
-            
-            // Reset state
-            recordingState = 'stopped';
-            updateTalkButton();
-            pendingTranscript = '';
-        }
+    // Get reviewed text from appropriate source
+    let reviewedText = '';
+    if (isVideoFullscreen) {
+        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+        reviewedText = fullscreenTranscript ? fullscreenTranscript.value.trim() : '';
+    } else {
+        reviewedText = document.getElementById('reviewTranscript').value.trim();
+    }
+    
+    if (!reviewedText) {
+        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
+        return;
+    }
+    
+    // Hide review section (handles both normal and fullscreen)
+    hideReviewSection();
+    
+    // Add message to chat and send to webhook
+    addMessage(reviewedText, 'user');
+    sendToWebhook(reviewedText);
+    
+    // Reset state
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+}
 
         function editTranscript(isFullscreen = false) {
     // Focus on the appropriate transcript element
@@ -2971,18 +3014,36 @@ function selectVoiceMethod(method) {
 }
 
         function hideReviewSection() {
+    // Hide main review section
     document.getElementById('reviewSection').classList.remove('active');
     document.getElementById('reviewTranscript').value = '';
     
-    // Disable buttons
+    // Disable main review buttons
     document.getElementById('sendBtn').disabled = true;
     document.getElementById('editBtn').disabled = true;
     document.getElementById('deleteBtn').disabled = true;
     
-    document.getElementById('talkButton').disabled = false;
+    // Hide and reset fullscreen review
+    if (fullscreenReviewSection) {
+        fullscreenReviewSection.classList.remove('show');
+        
+        // Clear fullscreen review content
+        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+        if (fullscreenTranscript) {
+            fullscreenTranscript.value = '';
+        }
+        
+        // Disable fullscreen review buttons
+        const fullscreenSendBtn = document.getElementById('fullscreenSendBtn');
+        const fullscreenEditBtn = document.getElementById('fullscreenEditBtn');
+        const fullscreenDeleteBtn = document.getElementById('fullscreenDeleteBtn');
+        
+        if (fullscreenSendBtn) fullscreenSendBtn.disabled = true;
+        if (fullscreenEditBtn) fullscreenEditBtn.disabled = true;
+        if (fullscreenDeleteBtn) fullscreenDeleteBtn.disabled = true;
+    }
     
-    // Hide fullscreen review
-    hideFullscreenReview();
+    document.getElementById('talkButton').disabled = false;
 }
 
 // ===== D-ID INITIALIZATION =====
@@ -6316,6 +6377,7 @@ function playBeep() {
     </script>
 </body>
 </html>
+
 
 
 
