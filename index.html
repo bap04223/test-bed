@@ -1098,29 +1098,37 @@ body {
     width: 100%;
 }
 
-/* Timer Display Styles */
-.timer-display {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+/* Timer Display Styles - Overlay Version */
+.timer-overlay {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 200px;
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin: 10px 0;
+    padding: 8px 12px;
+    border-radius: 20px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    animation: timerPulse 2s infinite ease-in-out;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     flex-shrink: 0;
+    transition: all 0.3s ease;
 }
 
 .timer-text {
     font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .timer-bar {
     background: rgba(255, 255, 255, 0.3);
-    height: 6px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
     overflow: hidden;
     position: relative;
 }
@@ -1129,34 +1137,67 @@ body {
     background: white;
     height: 100%;
     width: 100%;
-    border-radius: 3px;
+    border-radius: 2px;
     transition: width 0.1s linear;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
-.timer-display.warning {
-    background: linear-gradient(135deg, #ff9500, #ff6348);
-    animation: timerWarning 1s infinite ease-in-out;
+/* Green state (default) - no animation */
+.timer-overlay {
+    background: linear-gradient(135deg, #10b981, #059669);
 }
 
-.timer-display.critical {
-    background: linear-gradient(135deg, #ff3838, #ff1744);
-    animation: timerCritical 0.5s infinite ease-in-out;
+/* Orange warning state */
+.timer-overlay.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
-@keyframes timerPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-}
-
-@keyframes timerWarning {
-    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-    50% { transform: scale(1.03); box-shadow: 0 4px 12px rgba(255, 149, 0, 0.4); }
+/* Red critical state with pulsing */
+.timer-overlay.critical {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-color: rgba(255, 255, 255, 0.4);
+    animation: timerCritical 0.8s infinite ease-in-out;
 }
 
 @keyframes timerCritical {
-    0%, 100% { transform: scale(1); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
-    50% { transform: scale(1.05); box-shadow: 0 6px 16px rgba(255, 23, 68, 0.6); }
+    0%, 100% { 
+        transform: translateX(-50%) scale(1); 
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3); 
+    }
+    50% { 
+        transform: translateX(-50%) scale(1.05); 
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); 
+    }
 }
+
+/* Make sure video wrapper is positioned relative for overlay */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 450px;
+    height: calc(100vh - 300px);
+}
+
+  /* Ready state (before conversation starts) */
+.timer-overlay.timer-ready {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.timer-overlay.timer-ready .timer-progress {
+    width: 0%;
+    background: rgba(255, 255, 255, 0.5);
+}      
         
     </style>
 </head>
@@ -1640,8 +1681,16 @@ body {
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
 <div class="avatar-container" id="avatarContainer">
-    <div class="video-wrapper">
-       <video 
+   <div class="video-wrapper">
+   <!-- Timer Overlay -->
+   <div id="timerDisplay" class="timer-display timer-overlay timer-ready">
+    <div class="timer-text">Timer: <span id="timerValue">Ready</span></div>
+    <div class="timer-bar">
+        <div id="timerProgress" class="timer-progress"></div>
+    </div>
+</div>
+   
+   <video 
     id="avatarVideo" 
     width="100%" 
     height="100%"
@@ -1664,14 +1713,7 @@ margin: 0 auto;
     </div>
 </div></div>
 
-                <!-- Timer Display -->
-<div id="timerDisplay" class="timer-display" style="display: none;">
-    <div class="timer-text">Response Timer: <span id="timerValue">2:00</span></div>
-    <div class="timer-bar">
-        <div id="timerProgress" class="timer-progress"></div>
-    </div>
-</div>
-
+      
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
     <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
@@ -5238,23 +5280,26 @@ function forceScrollToBottom() {
     }
 }
         
-        function clearChat() {
-            // Reset recording state and hide review
-            recordingState = 'stopped';
-            pendingTranscript = '';
-            hideReviewSection();
+       function clearChat() {
+    // Stop any running timer and return to ready state
+    stopResponseTimer();
     
-            document.getElementById('chatContainer').innerHTML = '';
-            conversationHistory = [];
-            
-            // Reset patient image button if no scenario is selected
-            if (!currentScenario) {
-                const button = document.getElementById('patientImageBtn');
-                button.className = 'patient-image-btn disabled';
-                button.textContent = '📷 No Scenario Selected';
-                button.disabled = true;
-            }
-        }
+    // Reset recording state and hide review
+    recordingState = 'stopped';
+    pendingTranscript = '';
+    hideReviewSection();
+
+    document.getElementById('chatContainer').innerHTML = '';
+    conversationHistory = [];
+    
+    // Reset patient image button if no scenario is selected
+    if (!currentScenario) {
+        const button = document.getElementById('patientImageBtn');
+        button.className = 'patient-image-btn disabled';
+        button.textContent = '📷 No Scenario Selected';
+        button.disabled = true;
+    }
+}
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
@@ -5696,10 +5741,18 @@ function startResponseTimer() {
     const timerValue = document.getElementById('timerValue');
     const timerProgress = document.getElementById('timerProgress');
     
-    // Show timer
+    // Show timer and remove ready state
     if (timerDisplay) {
         timerDisplay.style.display = 'block';
-        timerDisplay.className = 'timer-display'; // Reset classes
+        timerDisplay.className = 'timer-display timer-overlay'; // Start green
+    }
+    
+    // Reset timer display to show countdown
+    if (timerValue) {
+        timerValue.textContent = '2:00';
+    }
+    if (timerProgress) {
+        timerProgress.style.width = '100%';
     }
     
     // Update timer every 100ms for smooth progress bar
@@ -5722,13 +5775,14 @@ function startResponseTimer() {
         
         // Change appearance based on time remaining
         if (timerDisplay) {
-            if (remaining <= 30000) { // Last 30 seconds
-                timerDisplay.className = 'timer-display critical';
-            } else if (remaining <= 60000) { // Last minute
-                timerDisplay.className = 'timer-display warning';
+            if (remaining <= 30000) { // Last 30 seconds - RED with pulsing
+                timerDisplay.className = 'timer-display timer-overlay critical';
+            } else if (remaining <= 60000) { // Last minute - ORANGE
+                timerDisplay.className = 'timer-display timer-overlay warning';
+            } else { // First 60 seconds - GREEN
+                timerDisplay.className = 'timer-display timer-overlay';
             }
         }
-        
         // Timer expired
         if (remaining <= 0) {
             clearInterval(responseTimer);
@@ -5759,12 +5813,23 @@ function stopResponseTimer() {
 
 function hideResponseTimer() {
     if (timerDisplay) {
-        timerDisplay.style.display = 'none';
+        // Return to ready state instead of hiding
+        timerDisplay.className = 'timer-display timer-overlay timer-ready';
+        const timerValue = document.getElementById('timerValue');
+        const timerProgress = document.getElementById('timerProgress');
+        
+        if (timerValue) {
+            timerValue.textContent = 'Ready';
+        }
+        if (timerProgress) {
+            timerProgress.style.width = '0%';
+        }
     }
 }
         
     </script>
 </body>
 </html>
+
 
 
