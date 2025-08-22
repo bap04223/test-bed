@@ -3100,14 +3100,21 @@ if (isFinal) {
     // Activate review sections
     document.getElementById('reviewSection').classList.add('active');
     
-    // FORCE the overlay to show with JavaScript
-    const overlay = document.getElementById('reviewOverlay');
-    if (overlay) {
-        overlay.style.display = 'block';
-        overlay.style.position = isVideoFullscreen ? 'fixed' : 'absolute';
-        overlay.style.zIndex = '999999';
-        overlay.classList.add('active');
-    }
+    // FORCE the overlay to show ONLY in fullscreen mode
+const overlay = document.getElementById('reviewOverlay');
+if (overlay && isVideoFullscreen) {
+    overlay.style.display = 'block';
+    overlay.style.position = 'fixed';
+    overlay.style.zIndex = '999999';
+    overlay.classList.add('active');
+    
+    // Apply resize styling
+    setTimeout(resizeReviewOverlay, 100);
+} else if (overlay) {
+    // Hide overlay when not in fullscreen
+    overlay.style.display = 'none';
+    overlay.classList.remove('active');
+}
     
     // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
@@ -6698,6 +6705,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
