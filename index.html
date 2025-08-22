@@ -1233,16 +1233,22 @@ body {
     }
 }
 
-        /* Fullscreen-specific timer animation without translateX */
+    /* Fullscreen-specific timer animation without translateX */
 @keyframes timerCriticalFullscreen {
     0%, 100% { 
         transform: scale(1); 
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3); 
     }
     50% { 
-        transform: scale(1.05); 
-        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.6); 
+        transform: scale(1.1); 
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.8); 
     }
+}
+
+/* Force fullscreen animation to override all other styles */
+.video-fullscreen-active .timer-overlay.critical {
+    animation: timerCriticalFullscreen 0.8s infinite ease-in-out !important;
+    animation-fill-mode: both !important;
 }
 
     /* Force timer animations in fullscreen */
@@ -6707,25 +6713,33 @@ function forceTimerStyling() {
         return;
     }
     
-  // Force styles only in fullscreen mode
 if (timerDisplay.classList.contains('critical')) {
     timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
     timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
-    timerDisplay.style.setProperty('animation', 'timerCriticalFullscreen 0.8s infinite ease-in-out', 'important');
-} else if (timerDisplay.classList.contains('warning')) {
-    timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #f59e0b, #d97706)', 'important');
-    timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.3)', 'important');
-    timerDisplay.style.setProperty('animation', 'none', 'important');
-} else {
-    timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #10b981, #059669)', 'important');
-    timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.2)', 'important');
-    timerDisplay.style.setProperty('animation', 'none', 'important');
+    
+    // Remove any existing animation first
+    timerDisplay.style.removeProperty('animation');
+    timerDisplay.style.removeProperty('animation-name');
+    timerDisplay.style.removeProperty('animation-duration');
+    timerDisplay.style.removeProperty('animation-iteration-count');
+    timerDisplay.style.removeProperty('animation-timing-function');
+    
+    // Force the animation by triggering a reflow
+    timerDisplay.offsetHeight;
+    
+    // Set the animation with separate properties for better browser compatibility
+    timerDisplay.style.setProperty('animation-name', 'timerCriticalFullscreen', 'important');
+    timerDisplay.style.setProperty('animation-duration', '0.8s', 'important');
+    timerDisplay.style.setProperty('animation-iteration-count', 'infinite', 'important');
+    timerDisplay.style.setProperty('animation-timing-function', 'ease-in-out', 'important');
+    timerDisplay.style.setProperty('animation-fill-mode', 'both', 'important');
 }
 }
       
     </script>
 </body>
 </html>
+
 
 
 
