@@ -5913,6 +5913,18 @@ if (reviewOverlay) {
     }
     reviewOverlay.style.position = 'absolute';
     reviewOverlay.style.zIndex = '15';
+    
+    // Reset any forced styles when exiting fullscreen
+    reviewOverlay.style.removeProperty('width');
+    reviewOverlay.style.removeProperty('max-width');
+    reviewOverlay.style.removeProperty('padding');
+    
+    const transcript = document.getElementById('overlayReviewTranscript');
+    if (transcript) {
+        transcript.style.removeProperty('height');
+        transcript.style.removeProperty('margin');
+        transcript.style.removeProperty('padding');
+    }
 }
     
     // Hide fullscreen review
@@ -6625,18 +6637,16 @@ function debugReviewOverlay() {
     console.log('Is video fullscreen:', isVideoFullscreen);
 }
 
-        // Force resize review overlay
+// Force resize review overlay - ONLY in fullscreen
 function resizeReviewOverlay() {
+    // Only apply resize in fullscreen mode
+    if (!isVideoFullscreen) return;
+    
     const overlay = document.getElementById('reviewOverlay');
     const transcript = document.getElementById('overlayReviewTranscript');
     
     if (overlay) {
         // Force overlay dimensions
-        overlay.style.width = '98% !important';
-        overlay.style.maxWidth = '1400px !important';
-        overlay.style.padding = '15px !important';
-        
-        // Force with direct style setting (overrides CSS)
         overlay.style.setProperty('width', '98%', 'important');
         overlay.style.setProperty('max-width', '1400px', 'important');
         overlay.style.setProperty('padding', '15px', 'important');
@@ -6649,7 +6659,7 @@ function resizeReviewOverlay() {
         transcript.style.setProperty('padding', '10px', 'important');
     }
     
-    console.log('Review overlay resized');
+    console.log('Review overlay resized for fullscreen');
 }
 
 // Call resize function whenever overlay is shown
@@ -6688,6 +6698,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
