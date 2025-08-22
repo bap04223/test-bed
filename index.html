@@ -3070,30 +3070,38 @@ if (isFinal) {
     
     // Get reviewed text from appropriate source
     let reviewedText = '';
-    if (isVideoFullscreen) {
-        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
-        reviewedText = fullscreenTranscript ? fullscreenTranscript.value.trim() : '';
-    } else {
-        reviewedText = document.getElementById('reviewTranscript').value.trim();
+   if (isVideoFullscreen) {
+    console.log('Entered fullscreen mode');
+    
+    // Add class to video wrapper for CSS targeting
+    if (videoWrapper) {
+        videoWrapper.classList.add('video-fullscreen-active');
     }
     
-    if (!reviewedText) {
-        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
-        return;
+    // Force overlays to be visible
+    const timerDisplay = document.getElementById('timerDisplay');
+    const patientBtn = document.getElementById('patientImageBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    
+    if (timerDisplay) {
+        timerDisplay.style.display = 'block';
+        timerDisplay.style.position = 'fixed';
+        timerDisplay.style.zIndex = '999999';
     }
     
-    // Hide review section (handles both normal and fullscreen)
-    hideReviewSection();
+    if (patientBtn) {
+        patientBtn.style.display = 'flex';
+        patientBtn.style.position = 'fixed';
+        patientBtn.style.zIndex = '999999';
+    }
     
-    // Add message to chat and send to webhook
-    addMessage(reviewedText, 'user');
-    sendToWebhook(reviewedText);
-    
-    // Reset state
-    recordingState = 'stopped';
-    updateTalkButton();
-    pendingTranscript = '';
-}
+    // Always show review overlay in fullscreen
+    if (reviewOverlay) {
+        reviewOverlay.style.display = 'block';
+        reviewOverlay.style.position = 'fixed';
+        reviewOverlay.style.zIndex = '999999';
+        reviewOverlay.classList.add('active');
+    }
 
         function editTranscript(isFullscreen = false) {
     // Focus on the appropriate transcript element
@@ -5833,11 +5841,15 @@ function handleFullscreenChange() {
         patientBtn.style.zIndex = '';
     }
     
-    // Reset review overlay position
-    if (reviewOverlay) {
-        reviewOverlay.style.position = 'absolute';
-        reviewOverlay.style.zIndex = '15';
+    // Hide review overlay when exiting fullscreen (unless actively reviewing)
+if (reviewOverlay) {
+    if (recordingState !== 'reviewing') {
+        reviewOverlay.style.display = 'none';
+        reviewOverlay.classList.remove('active');
     }
+    reviewOverlay.style.position = 'absolute';
+    reviewOverlay.style.zIndex = '15';
+}
     
     // Hide fullscreen review
     hideFullscreenReview();
@@ -6546,6 +6558,7 @@ function debugReviewOverlay() {
     </script>
 </body>
 </html>
+
 
 
 
