@@ -5802,13 +5802,16 @@ function handleFullscreenChange() {
         patientBtn.style.zIndex = '999999';
     }
     
-    // Always show review overlay in fullscreen mode
-    if (reviewOverlay) {
-        reviewOverlay.style.display = 'block';
-        reviewOverlay.style.position = 'fixed';
-        reviewOverlay.style.zIndex = '999999';
-        reviewOverlay.classList.add('active');
-    }
+   // Always show review overlay in fullscreen mode
+if (reviewOverlay) {
+    reviewOverlay.style.display = 'block';
+    reviewOverlay.style.position = 'fixed';
+    reviewOverlay.style.zIndex = '999999';
+    reviewOverlay.classList.add('active');
+    
+    // Force resize when entering fullscreen
+    setTimeout(resizeReviewOverlay, 100);
+}
     
     // Sync review sections
     syncReviewSections();
@@ -6550,10 +6553,46 @@ function debugReviewOverlay() {
     console.log('Z-index style:', overlay ? window.getComputedStyle(overlay).zIndex : 'N/A');
     console.log('Is video fullscreen:', isVideoFullscreen);
 }
+
+        // Force resize review overlay
+function resizeReviewOverlay() {
+    const overlay = document.getElementById('reviewOverlay');
+    const transcript = document.getElementById('overlayReviewTranscript');
+    
+    if (overlay) {
+        // Force overlay dimensions
+        overlay.style.width = '98% !important';
+        overlay.style.maxWidth = '1400px !important';
+        overlay.style.padding = '15px !important';
+        
+        // Force with direct style setting (overrides CSS)
+        overlay.style.setProperty('width', '98%', 'important');
+        overlay.style.setProperty('max-width', '1400px', 'important');
+        overlay.style.setProperty('padding', '15px', 'important');
+    }
+    
+    if (transcript) {
+        // Force textarea dimensions
+        transcript.style.setProperty('height', '60px', 'important');
+        transcript.style.setProperty('margin', '5px 0', 'important');
+        transcript.style.setProperty('padding', '10px', 'important');
+    }
+    
+    console.log('Review overlay resized');
+}
+
+// Call resize function whenever overlay is shown
+const originalShowReviewSection = showReviewSection;
+showReviewSection = function(transcript) {
+    originalShowReviewSection.call(this, transcript);
+    // Delay to ensure DOM is updated
+    setTimeout(resizeReviewOverlay, 100);
+};
       
     </script>
 </body>
 </html>
+
 
 
 
