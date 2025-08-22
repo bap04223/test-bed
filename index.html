@@ -5778,37 +5778,40 @@ function handleFullscreenChange() {
     isVideoFullscreen = !!fullscreenElement;
     
     if (isVideoFullscreen) {
-        console.log('Entered fullscreen mode');
-        
-        // Add class to video wrapper for CSS targeting
-        if (videoWrapper) {
-            videoWrapper.classList.add('video-fullscreen-active');
-        }
-        
-        // Force overlays to be visible
-        const timerDisplay = document.getElementById('timerDisplay');
-        const patientBtn = document.getElementById('patientImageBtn');
-        
-        if (timerDisplay) {
-            timerDisplay.style.display = 'block';
-            timerDisplay.style.position = 'fixed';
-            timerDisplay.style.zIndex = '999999';
-        }
-        
-        if (patientBtn) {
-            patientBtn.style.display = 'flex';
-            patientBtn.style.position = 'fixed';
-            patientBtn.style.zIndex = '999999';
-        }
-        
-        // Sync review sections
-        syncReviewSections();
-        
-        // Show fullscreen review if needed
-        const originalReview = document.getElementById('reviewSection');
-        if (originalReview && originalReview.classList.contains('active')) {
-            showFullscreenReview();
-        }
+    console.log('Entered fullscreen mode');
+    
+    // Add class to video wrapper for CSS targeting
+    if (videoWrapper) {
+        videoWrapper.classList.add('video-fullscreen-active');
+    }
+    
+    // Force overlays to be visible
+    const timerDisplay = document.getElementById('timerDisplay');
+    const patientBtn = document.getElementById('patientImageBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    
+    if (timerDisplay) {
+        timerDisplay.style.display = 'block';
+        timerDisplay.style.position = 'fixed';
+        timerDisplay.style.zIndex = '999999';
+    }
+    
+    if (patientBtn) {
+        patientBtn.style.display = 'flex';
+        patientBtn.style.position = 'fixed';
+        patientBtn.style.zIndex = '999999';
+    }
+    
+    // Always show review overlay in fullscreen mode
+    if (reviewOverlay) {
+        reviewOverlay.style.display = 'block';
+        reviewOverlay.style.position = 'fixed';
+        reviewOverlay.style.zIndex = '999999';
+        reviewOverlay.classList.add('active');
+    }
+    
+    // Sync review sections
+    syncReviewSections();
         
     } else {
     console.log('Exited fullscreen mode');
@@ -6551,6 +6554,7 @@ function debugReviewOverlay() {
     </script>
 </body>
 </html>
+
 
 
 
