@@ -2556,23 +2556,29 @@ function splitTextIntoChunks(text, chunkSize) {
                     }
                     
                     // Update live transcription display
-                    const reviewBox = document.getElementById('reviewTranscript');
-                    let displayText = '';
+                   // Update live transcription display in BOTH boxes
+const reviewBox = document.getElementById('reviewTranscript');
+const overlayBox = document.getElementById('overlayReviewTranscript');
+let displayText = '';
 
-                    // Show accumulated final transcript
-                    if (fullTranscript) {
-                        displayText += fullTranscript.trim();
-                    }
+// Show accumulated final transcript
+if (fullTranscript) {
+    displayText += fullTranscript.trim();
+}
 
-                    // Show interim transcript
-                    if (interimTranscript) {
-                        if (fullTranscript) {
-                            displayText += ' ';
-                        }
-                        displayText += interimTranscript;
-                    }
+// Show interim transcript
+if (interimTranscript) {
+    if (fullTranscript) {
+        displayText += ' ';
+    }
+    displayText += interimTranscript;
+}
 
-                    reviewBox.value = displayText || 'Listening...';
+const finalDisplayText = displayText || 'Listening...';
+reviewBox.value = finalDisplayText;
+if (overlayBox) {
+    overlayBox.value = finalDisplayText;
+}
                     
                     console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
                 };
@@ -2888,13 +2894,16 @@ function selectVoiceMethod(method) {
                         if (transcript && transcript.trim() !== '') {
                             const isFinal = data.is_final;
                             
-                            // Update transcription display
-                            const reviewBox = document.getElementById('reviewTranscript');
+                            // Update transcription display in BOTH boxes
+const reviewBox = document.getElementById('reviewTranscript');
+const overlayBox = document.getElementById('overlayReviewTranscript');
 
-                            if (isFinal) {
+if (isFinal) {
     // Add to full transcript
     fullTranscript += transcript + ' ';
-    reviewBox.value = fullTranscript.trim();
+    const finalText = fullTranscript.trim();
+    reviewBox.value = finalText;
+    if (overlayBox) overlayBox.value = finalText;
 } else {
     // Show interim results
     let displayText = '';
@@ -2903,6 +2912,7 @@ function selectVoiceMethod(method) {
     }
     displayText += transcript;
     reviewBox.value = displayText;
+    if (overlayBox) overlayBox.value = displayText;
 }
                             
                             console.log('Deepgram transcript:', transcript, 'Final:', isFinal);
@@ -5801,33 +5811,39 @@ function handleFullscreenChange() {
         }
         
     } else {
-        console.log('Exited fullscreen mode');
-        
-        // Remove fullscreen class
-        if (videoWrapper) {
-            videoWrapper.classList.remove('video-fullscreen-active');
-        }
-        
-        // Reset overlay styles
-        const timerDisplay = document.getElementById('timerDisplay');
-        const patientBtn = document.getElementById('patientImageBtn');
-        
-        if (timerDisplay) {
-            timerDisplay.style.position = '';
-            timerDisplay.style.zIndex = '';
-        }
-        
-        if (patientBtn) {
-            patientBtn.style.position = '';
-            patientBtn.style.zIndex = '';
-        }
-        
-        // Hide fullscreen review
-        hideFullscreenReview();
-        
-        // Sync back to original
-        syncReviewSections(true);
+    console.log('Exited fullscreen mode');
+    
+    // Remove fullscreen class
+    if (videoWrapper) {
+        videoWrapper.classList.remove('video-fullscreen-active');
     }
+    
+    // Reset overlay styles
+    const timerDisplay = document.getElementById('timerDisplay');
+    const patientBtn = document.getElementById('patientImageBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    
+    if (timerDisplay) {
+        timerDisplay.style.position = '';
+        timerDisplay.style.zIndex = '';
+    }
+    
+    if (patientBtn) {
+        patientBtn.style.position = '';
+        patientBtn.style.zIndex = '';
+    }
+    
+    // Reset review overlay position
+    if (reviewOverlay) {
+        reviewOverlay.style.position = 'absolute';
+        reviewOverlay.style.zIndex = '15';
+    }
+    
+    // Hide fullscreen review
+    hideFullscreenReview();
+    
+    // Sync back to original
+    syncReviewSections(true);
 }
 
 function enterVideoFullscreen() {
@@ -6530,6 +6546,7 @@ function debugReviewOverlay() {
     </script>
 </body>
 </html>
+
 
 
 
