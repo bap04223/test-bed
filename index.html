@@ -790,22 +790,42 @@ body {
     }
 }
 
-/* Force image modal visibility in fullscreen */
+/* Force image modal visibility in fullscreen - ENHANCED */
 :fullscreen .image-modal.show,
 :-webkit-full-screen .image-modal.show,
 :-moz-full-screen .image-modal.show,
 .video-fullscreen-active .image-modal.show {
     display: flex !important;
-    z-index: 9999999 !important;
+    z-index: 2147483647 !important; /* Maximum z-index value */
     position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.9) !important;
 }
 
 :fullscreen .image-modal-content,
 :-webkit-full-screen .image-modal-content,
 :-moz-full-screen .image-modal-content,
 .video-fullscreen-active .image-modal-content {
-    z-index: 9999999 !important;
+    z-index: 2147483647 !important;
     position: relative !important;
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+}
+
+/* Ensure modal appears in ALL fullscreen contexts */
+.video-wrapper:fullscreen .image-modal.show,
+.video-wrapper:-webkit-full-screen .image-modal.show,
+.video-wrapper:-moz-full-screen .image-modal.show {
+    display: flex !important;
+    z-index: 2147483647 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
 }
             
       /* Review section styling */
@@ -4685,7 +4705,7 @@ function updatePatientImageButton() {
         }
         
         // Show patient image modal with gallery functionality
-        function showPatientImage() {
+function showPatientImage() {
     if (!currentScenario || patientImages.length === 0) {
         showStatus('No scenario selected or no images available', 'error');
         return;
@@ -4707,9 +4727,32 @@ function updatePatientImageButton() {
     const modal = document.getElementById('imageModal');
     modal.classList.add('show');
     
-    // Force modal visibility if in fullscreen
+    // ENHANCED: Force fullscreen visibility immediately
     if (isVideoFullscreen) {
-        setTimeout(forceModalVisibility, 100);
+        console.log('Forcing modal visibility in fullscreen mode');
+        
+        // Apply all fullscreen styles immediately
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('position', 'fixed', 'important');
+        modal.style.setProperty('top', '0', 'important');
+        modal.style.setProperty('left', '0', 'important');
+        modal.style.setProperty('width', '100vw', 'important');
+        modal.style.setProperty('height', '100vh', 'important');
+        modal.style.setProperty('z-index', '2147483647', 'important');
+        modal.style.setProperty('background-color', 'rgba(0, 0, 0, 0.9)', 'important');
+        
+        // Also force the content to be properly sized
+        const modalContent = modal.querySelector('.image-modal-content');
+        if (modalContent) {
+            modalContent.style.setProperty('max-width', '95vw', 'important');
+            modalContent.style.setProperty('max-height', '95vh', 'important');
+            modalContent.style.setProperty('z-index', '2147483647', 'important');
+        }
+        
+        // Force a repaint
+        modal.offsetHeight;
+        
+        console.log('Modal should now be visible in fullscreen');
     }
     
     // Load the first image
@@ -4890,17 +4933,38 @@ function updateNavigationButtons() {
     }
 }
 
-       
-        // Close patient image modal
-        function closeImageModal(event) {
-            // If event is passed and it's not the backdrop click, ignore
-            if (event && event.target !== event.currentTarget && event.type === 'click') {
-                return;
-            }
-            
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('show');
+       // Close patient image modal
+function closeImageModal(event) {
+    // If event is passed and it's not the backdrop click, ignore
+    if (event && event.target !== event.currentTarget && event.type === 'click') {
+        return;
+    }
+    
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('show');
+    
+    // ENHANCED: Clean up any forced fullscreen styles
+    if (isVideoFullscreen) {
+        // Remove forced styles to let CSS handle normal behavior
+        modal.style.removeProperty('display');
+        modal.style.removeProperty('position');
+        modal.style.removeProperty('top');
+        modal.style.removeProperty('left');
+        modal.style.removeProperty('width');
+        modal.style.removeProperty('height');
+        modal.style.removeProperty('z-index');
+        modal.style.removeProperty('background-color');
+        
+        const modalContent = modal.querySelector('.image-modal-content');
+        if (modalContent) {
+            modalContent.style.removeProperty('max-width');
+            modalContent.style.removeProperty('max-height');
+            modalContent.style.removeProperty('z-index');
         }
+        
+        console.log('Cleaned up fullscreen modal styles');
+    }
+}
         
         // Add keyboard support for modal
 document.addEventListener('keydown', function(event) {
@@ -6765,6 +6829,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
