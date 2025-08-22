@@ -5905,6 +5905,11 @@ if (reviewOverlay) {
     if (timerDisplay) {
         timerDisplay.style.position = '';
         timerDisplay.style.zIndex = '';
+        
+        // Remove forced styles to restore normal CSS behavior
+        timerDisplay.style.removeProperty('background');
+        timerDisplay.style.removeProperty('border-color');
+        timerDisplay.style.removeProperty('animation');
     }
     
     if (patientBtn) {
@@ -6494,10 +6499,8 @@ function startResponseTimer() {
                 timerDisplay.className = 'timer-display timer-overlay';
             }
             
-            // Force styling in fullscreen
-            if (isVideoFullscreen) {
-                setTimeout(forceTimerStyling, 50);
-            }
+            // Apply appropriate styling (forced in fullscreen, normal CSS otherwise)
+            setTimeout(forceTimerStyling, 50);
         }
         
         // Beep in the last 10 seconds (once per second)
@@ -6678,24 +6681,30 @@ showReviewSection = function(transcript) {
 };
 
  
-        // Force timer color changes and animations in fullscreen
+ // Force timer color changes and animations in fullscreen ONLY
 function forceTimerStyling() {
     const timerDisplay = document.getElementById('timerDisplay');
-    if (!timerDisplay || !isVideoFullscreen) return;
+    if (!timerDisplay) return;
     
-    // Check current timer state based on class
+    // Only force styling in fullscreen, let normal CSS work otherwise
+    if (!isVideoFullscreen) {
+        // Remove any forced styles to let CSS work normally
+        timerDisplay.style.removeProperty('background');
+        timerDisplay.style.removeProperty('border-color');
+        timerDisplay.style.removeProperty('animation');
+        return;
+    }
+    
+    // Force styles only in fullscreen mode
     if (timerDisplay.classList.contains('critical')) {
-        // Force red critical styling with pulsing
         timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
         timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
         timerDisplay.style.setProperty('animation', 'timerCritical 0.8s infinite ease-in-out', 'important');
     } else if (timerDisplay.classList.contains('warning')) {
-        // Force orange warning styling
         timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #f59e0b, #d97706)', 'important');
         timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.3)', 'important');
         timerDisplay.style.setProperty('animation', 'none', 'important');
     } else {
-        // Default green styling
         timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #10b981, #059669)', 'important');
         timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.2)', 'important');
         timerDisplay.style.setProperty('animation', 'none', 'important');
@@ -6705,6 +6714,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
