@@ -790,42 +790,27 @@ body {
     }
 }
 
-/* Force image modal visibility in fullscreen - ENHANCED */
-:fullscreen .image-modal.show,
-:-webkit-full-screen .image-modal.show,
-:-moz-full-screen .image-modal.show,
-.video-fullscreen-active .image-modal.show {
-    display: flex !important;
-    z-index: 2147483647 !important; /* Maximum z-index value */
-    position: fixed !important;
+/* Fullscreen modal - append to fullscreen element instead of fighting it */
+.fullscreen-image-modal {
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     background-color: rgba(0, 0, 0, 0.9) !important;
-}
-
-:fullscreen .image-modal-content,
-:-webkit-full-screen .image-modal-content,
-:-moz-full-screen .image-modal-content,
-.video-fullscreen-active .image-modal-content {
-    z-index: 2147483647 !important;
-    position: relative !important;
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-}
-
-/* Ensure modal appears in ALL fullscreen contexts */
-.video-wrapper:fullscreen .image-modal.show,
-.video-wrapper:-webkit-full-screen .image-modal.show,
-.video-wrapper:-moz-full-screen .image-modal.show {
     display: flex !important;
-    z-index: 2147483647 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 999 !important;
+}
+
+.fullscreen-image-modal .image-modal-content {
+    max-width: 95% !important;
+    max-height: 95% !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
 }
             
       /* Review section styling */
@@ -4704,7 +4689,7 @@ function updatePatientImageButton() {
             return url;
         }
         
-        // Show patient image modal with gallery functionality
+      // Show patient image modal with gallery functionality
 function showPatientImage() {
     if (!currentScenario || patientImages.length === 0) {
         showStatus('No scenario selected or no images available', 'error');
@@ -4716,6 +4701,65 @@ function showPatientImage() {
     
     // Set modal title
     const patientName = currentScenario['Patient Name'] || 'Patient';
+    
+    if (isVideoFullscreen) {
+        // Create modal inside the fullscreen element
+        showFullscreenImageModal(patientName);
+    } else {
+        // Use normal modal
+        showNormalImageModal(patientName);
+    }
+    
+    // Load the first image
+    loadImageAtIndex(0);
+}
+
+// New function for fullscreen modal
+function showFullscreenImageModal(patientName) {
+    // Find the fullscreen element (video wrapper)
+    const fullscreenElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+    
+    if (!fullscreenElement) {
+        console.log('No fullscreen element found, using normal modal');
+        showNormalImageModal(patientName);
+        return;
+    }
+    
+    // Remove any existing fullscreen modal
+    const existingModal = fullscreenElement.querySelector('.fullscreen-image-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal HTML
+    const modalHTML = `
+        <div class="fullscreen-image-modal" id="fullscreenImageModal" onclick="closeFullscreenImageModal(event)">
+            <div class="image-modal-content" onclick="event.stopPropagation()">
+                <div class="image-modal-header">
+                    <h3 id="fullscreenImageModalTitle">${patientName} - ${patientImages.length > 1 ? `Image 1 of ${patientImages.length}` : 'Patient Image'}</h3>
+                    <button class="image-modal-close" onclick="closeFullscreenImageModal()">&times;</button>
+                </div>
+                <div class="image-modal-body" id="fullscreenImageModalBody">
+                    <div class="image-loading">
+                        <div class="spinner"></div>
+                        Loading image...
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to fullscreen element
+    fullscreenElement.insertAdjacentHTML('beforeend', modalHTML);
+    
+    console.log('Fullscreen image modal created and added to fullscreen element');
+}
+
+// Function for normal modal
+function showNormalImageModal(patientName) {
     const titleElement = document.getElementById('imageModalTitle');
     if (patientImages.length === 1) {
         titleElement.textContent = `${patientName} - Patient Image`;
@@ -4723,40 +4767,8 @@ function showPatientImage() {
         titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
     }
     
-    // Show modal
     const modal = document.getElementById('imageModal');
     modal.classList.add('show');
-    
-    // ENHANCED: Force fullscreen visibility immediately
-    if (isVideoFullscreen) {
-        console.log('Forcing modal visibility in fullscreen mode');
-        
-        // Apply all fullscreen styles immediately
-        modal.style.setProperty('display', 'flex', 'important');
-        modal.style.setProperty('position', 'fixed', 'important');
-        modal.style.setProperty('top', '0', 'important');
-        modal.style.setProperty('left', '0', 'important');
-        modal.style.setProperty('width', '100vw', 'important');
-        modal.style.setProperty('height', '100vh', 'important');
-        modal.style.setProperty('z-index', '2147483647', 'important');
-        modal.style.setProperty('background-color', 'rgba(0, 0, 0, 0.9)', 'important');
-        
-        // Also force the content to be properly sized
-        const modalContent = modal.querySelector('.image-modal-content');
-        if (modalContent) {
-            modalContent.style.setProperty('max-width', '95vw', 'important');
-            modalContent.style.setProperty('max-height', '95vh', 'important');
-            modalContent.style.setProperty('z-index', '2147483647', 'important');
-        }
-        
-        // Force a repaint
-        modal.offsetHeight;
-        
-        console.log('Modal should now be visible in fullscreen');
-    }
-    
-    // Load the first image
-    loadImageAtIndex(0);
 }
 
 // Load image at specific index
@@ -4767,15 +4779,27 @@ function loadImageAtIndex(index) {
     const imageUrl = patientImages[index];
     const convertedImageUrl = convertGoogleDriveUrl(imageUrl);
     
+    // Determine which modal we're using
+    const isUsingFullscreenModal = isVideoFullscreen && document.querySelector('.fullscreen-image-modal');
+    
     // Update modal title with current image number
     const patientName = currentScenario['Patient Name'] || 'Patient';
-    const titleElement = document.getElementById('imageModalTitle');
-    if (patientImages.length > 1) {
-        titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+    const titleElement = isUsingFullscreenModal ? 
+        document.getElementById('fullscreenImageModalTitle') : 
+        document.getElementById('imageModalTitle');
+        
+    if (titleElement) {
+        if (patientImages.length > 1) {
+            titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+        }
     }
     
     // Update modal body
-    const modalBody = document.getElementById('imageModalBody');
+    const modalBody = isUsingFullscreenModal ? 
+        document.getElementById('fullscreenImageModalBody') : 
+        document.getElementById('imageModalBody');
+    
+    if (!modalBody) return;
     
     // Show loading state
     modalBody.innerHTML = `
@@ -4789,16 +4813,12 @@ function loadImageAtIndex(index) {
     const img = new Image();
     
     img.onload = function() {
-        // Image loaded successfully
         const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
         modalBody.innerHTML = galleryHTML;
-        
-        // Update navigation button states
         updateNavigationButtons();
     };
     
     img.onerror = function() {
-        // Try alternative Google Drive format
         if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
             console.log('First Google Drive format failed, trying alternative...');
             img.hasTriedAlternative = true;
@@ -4813,12 +4833,10 @@ function loadImageAtIndex(index) {
             }
         }
         
-        // Image failed to load completely
         modalBody.innerHTML = createErrorHTML(imageUrl, convertedImageUrl);
         updateNavigationButtons();
     };
     
-    // Start loading the image
     img.src = convertedImageUrl;
 }
 
@@ -4934,37 +4952,39 @@ function updateNavigationButtons() {
 }
 
        // Close patient image modal
-function closeImageModal(event) {
-    // If event is passed and it's not the backdrop click, ignore
-    if (event && event.target !== event.currentTarget && event.type === 'click') {
-        return;
-    }
-    
-    const modal = document.getElementById('imageModal');
-    modal.classList.remove('show');
-    
-    // ENHANCED: Clean up any forced fullscreen styles
-    if (isVideoFullscreen) {
-        // Remove forced styles to let CSS handle normal behavior
-        modal.style.removeProperty('display');
-        modal.style.removeProperty('position');
-        modal.style.removeProperty('top');
-        modal.style.removeProperty('left');
-        modal.style.removeProperty('width');
-        modal.style.removeProperty('height');
-        modal.style.removeProperty('z-index');
-        modal.style.removeProperty('background-color');
-        
-        const modalContent = modal.querySelector('.image-modal-content');
-        if (modalContent) {
-            modalContent.style.removeProperty('max-width');
-            modalContent.style.removeProperty('max-height');
-            modalContent.style.removeProperty('z-index');
+        function closeImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            // Check if we're in fullscreen mode
+            if (isVideoFullscreen) {
+                closeFullscreenImageModal(event);
+            } else {
+                const modal = document.getElementById('imageModal');
+                modal.classList.remove('show');
+            }
+        }
+
+           
+        // ADD THE NEW FUNCTION HERE:
+        // Close fullscreen image modal
+        function closeFullscreenImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const fullscreenModal = document.querySelector('.fullscreen-image-modal');
+            if (fullscreenModal) {
+                fullscreenModal.remove();
+                console.log('Fullscreen image modal removed');
+            }
         }
         
-        console.log('Cleaned up fullscreen modal styles');
-    }
-}
+        // The next existing function continues here...
+    
         
         // Add keyboard support for modal
 document.addEventListener('keydown', function(event) {
@@ -6829,6 +6849,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
