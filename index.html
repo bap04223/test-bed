@@ -6474,6 +6474,11 @@ function startResponseTimer() {
             } else { // First 60 seconds - GREEN
                 timerDisplay.className = 'timer-display timer-overlay';
             }
+            
+            // Force styling in fullscreen
+            if (isVideoFullscreen) {
+                setTimeout(forceTimerStyling, 50);
+            }
         }
         
         // Beep in the last 10 seconds (once per second)
@@ -6678,10 +6683,35 @@ function forceModalVisibility() {
         console.log('Forced modal visibility in fullscreen');
     }
 }
+
+        // Force timer color changes and animations in fullscreen
+function forceTimerStyling() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (!timerDisplay || !isVideoFullscreen) return;
+    
+    // Check current timer state based on class
+    if (timerDisplay.classList.contains('critical')) {
+        // Force red critical styling with pulsing
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
+        timerDisplay.style.setProperty('animation', 'timerCritical 0.8s infinite ease-in-out', 'important');
+    } else if (timerDisplay.classList.contains('warning')) {
+        // Force orange warning styling
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #f59e0b, #d97706)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.3)', 'important');
+        timerDisplay.style.setProperty('animation', 'none', 'important');
+    } else {
+        // Default green styling
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #10b981, #059669)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.2)', 'important');
+        timerDisplay.style.setProperty('animation', 'none', 'important');
+    }
+}
       
     </script>
 </body>
 </html>
+
 
 
 
