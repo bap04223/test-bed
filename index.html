@@ -1274,6 +1274,34 @@ body {
     animation: timerCritical 0.8s infinite ease-in-out !important;
 }    
 
+        /* Ensure animation keyframes work in fullscreen */
+:fullscreen .video-fullscreen-active .timer-overlay.critical {
+    animation: timerCritical 0.8s infinite ease-in-out !important;
+}
+
+/* Fullscreen critical pulsing animation using class */
+.fullscreen-critical-pulse {
+    animation: fullscreenPulse 0.8s infinite ease-in-out !important;
+}
+
+@keyframes fullscreenPulse {
+    0%, 100% { 
+        transform: scale(1) !important; 
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important; 
+    }
+    50% { 
+        transform: scale(1.1) !important; 
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.8) !important; 
+    }
+}
+
+/* Ensure the animation works in all fullscreen contexts */
+:fullscreen .fullscreen-critical-pulse,
+:-webkit-full-screen .fullscreen-critical-pulse,
+:-moz-full-screen .fullscreen-critical-pulse {
+    animation: fullscreenPulse 0.8s infinite ease-in-out !important;
+}
+
 /* Make sure video wrapper is positioned relative for overlay */
 .video-wrapper {
     position: relative;
@@ -6710,35 +6738,34 @@ function forceTimerStyling() {
         timerDisplay.style.removeProperty('background');
         timerDisplay.style.removeProperty('border-color');
         timerDisplay.style.removeProperty('animation');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
         return;
     }
     
-if (timerDisplay.classList.contains('critical')) {
-    timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
-    timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
-    
-    // Remove any existing animation first
-    timerDisplay.style.removeProperty('animation');
-    timerDisplay.style.removeProperty('animation-name');
-    timerDisplay.style.removeProperty('animation-duration');
-    timerDisplay.style.removeProperty('animation-iteration-count');
-    timerDisplay.style.removeProperty('animation-timing-function');
-    
-    // Force the animation by triggering a reflow
-    timerDisplay.offsetHeight;
-    
-    // Set the animation with separate properties for better browser compatibility
-    timerDisplay.style.setProperty('animation-name', 'timerCriticalFullscreen', 'important');
-    timerDisplay.style.setProperty('animation-duration', '0.8s', 'important');
-    timerDisplay.style.setProperty('animation-iteration-count', 'infinite', 'important');
-    timerDisplay.style.setProperty('animation-timing-function', 'ease-in-out', 'important');
-    timerDisplay.style.setProperty('animation-fill-mode', 'both', 'important');
-}
+    // Force styles only in fullscreen mode
+    if (timerDisplay.classList.contains('critical')) {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
+        
+        // Add a special class for fullscreen pulsing
+        timerDisplay.classList.add('fullscreen-critical-pulse');
+        
+    } else if (timerDisplay.classList.contains('warning')) {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #f59e0b, #d97706)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.3)', 'important');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
+        
+    } else {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #10b981, #059669)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.2)', 'important');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
+    }
 }
       
     </script>
 </body>
 </html>
+
 
 
 
