@@ -3175,9 +3175,7 @@ if (isFinal) {
     document.getElementById('overlayEditBtn').disabled = false;
     document.getElementById('overlayDeleteBtn').disabled = false;
     
-    // Show keyboard shortcuts hint
-    showKeyboardHints();
-    
+     
     // Debug
     console.log('Review overlay should be visible now');
     debugReviewOverlay();
@@ -3257,18 +3255,7 @@ if (isFinal) {
     
     document.getElementById('reviewTranscript').value = '';
     document.getElementById('overlayReviewTranscript').value = '';
-    
-    // Remove keyboard hints if they exist
-    const hintsDiv = document.querySelector('.keyboard-hints');
-    if (hintsDiv) {
-        hintsDiv.remove();
-    }
-    
-    const overlayHintsDiv = document.querySelector('.keyboard-hints-overlay');
-    if (overlayHintsDiv) {
-        overlayHintsDiv.remove();
-    }
-    
+      
     // Disable ALL buttons
     document.getElementById('sendBtn').disabled = true;
     document.getElementById('editBtn').disabled = true;
@@ -5068,46 +5055,6 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
-
-// Show keyboard shortcuts in UI
-function showKeyboardHints() {
-    const reviewSection = document.getElementById('reviewSection');
-    const overlaySection = document.getElementById('reviewOverlay');
-    
-    // Add hints to regular review section
-    if (reviewSection && !reviewSection.querySelector('.keyboard-hints')) {
-        const hintsDiv = document.createElement('div');
-        hintsDiv.className = 'keyboard-hints';
-        hintsDiv.style.cssText = `
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(37, 99, 235, 0.1);
-            border-radius: 4px;
-        `;
-        hintsDiv.innerHTML = '💡 <strong>Shortcuts:</strong> SPACEBAR = Start/Stop Recording • ENTER = Send Message';
-        reviewSection.appendChild(hintsDiv);
-    }
-    
-    // Add hints to fullscreen overlay review section
-    if (overlaySection && !overlaySection.querySelector('.keyboard-hints-overlay')) {
-        const overlayHintsDiv = document.createElement('div');
-        overlayHintsDiv.className = 'keyboard-hints-overlay';
-        overlayHintsDiv.style.cssText = `
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(37, 99, 235, 0.1);
-            border-radius: 4px;
-        `;
-        overlayHintsDiv.innerHTML = '💡 <strong>Shortcuts:</strong> SPACEBAR = Start/Stop Recording • ENTER = Send Message';
-        overlaySection.appendChild(overlayHintsDiv);
-    }
-}
 
        // ===== CHATBOT CONFIGURATION MANAGEMENT =====
 
@@ -6953,6 +6900,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
