@@ -3152,20 +3152,20 @@ if (isFinal) {
     document.getElementById('reviewSection').classList.add('active');
     
     // FORCE the overlay to show ONLY in fullscreen mode
-const overlay = document.getElementById('reviewOverlay');
-if (overlay && isVideoFullscreen) {
-    overlay.style.display = 'block';
-    overlay.style.position = 'fixed';
-    overlay.style.zIndex = '999999';
-    overlay.classList.add('active');
-    
-    // Apply resize styling
-    setTimeout(resizeReviewOverlay, 100);
-} else if (overlay) {
-    // Hide overlay when not in fullscreen
-    overlay.style.display = 'none';
-    overlay.classList.remove('active');
-}
+    const overlay = document.getElementById('reviewOverlay');
+    if (overlay && isVideoFullscreen) {
+        overlay.style.display = 'block';
+        overlay.style.position = 'fixed';
+        overlay.style.zIndex = '999999';
+        overlay.classList.add('active');
+        
+        // Apply resize styling
+        setTimeout(resizeReviewOverlay, 100);
+    } else if (overlay) {
+        // Hide overlay when not in fullscreen
+        overlay.style.display = 'none';
+        overlay.classList.remove('active');
+    }
     
     // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
@@ -3175,11 +3175,14 @@ if (overlay && isVideoFullscreen) {
     document.getElementById('overlayEditBtn').disabled = false;
     document.getElementById('overlayDeleteBtn').disabled = false;
     
+    // Show keyboard shortcuts hint
+    showKeyboardHints();
+    
     // Debug
     console.log('Review overlay should be visible now');
     debugReviewOverlay();
     
-    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
+    showStatus('Review your message above. Edit if needed, then click "Send Message" or press ENTER', 'info');
 }
 
      function sendReviewedMessage() {
@@ -3248,12 +3251,23 @@ if (overlay && isVideoFullscreen) {
     showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
 }
 
-        function hideReviewSection() {
+      function hideReviewSection() {
     document.getElementById('reviewSection').classList.remove('active');
     document.getElementById('reviewOverlay').classList.remove('active');
     
     document.getElementById('reviewTranscript').value = '';
     document.getElementById('overlayReviewTranscript').value = '';
+    
+    // Remove keyboard hints if they exist
+    const hintsDiv = document.querySelector('.keyboard-hints');
+    if (hintsDiv) {
+        hintsDiv.remove();
+    }
+    
+    const overlayHintsDiv = document.querySelector('.keyboard-hints-overlay');
+    if (overlayHintsDiv) {
+        overlayHintsDiv.remove();
+    }
     
     // Disable ALL buttons
     document.getElementById('sendBtn').disabled = true;
@@ -5004,6 +5018,96 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+        // ===== KEYBOARD SHORTCUTS =====
+// Global keyboard event handler for shortcuts
+document.addEventListener('keydown', function(event) {
+    // Check if user is typing in a text input field (but allow shortcuts for dropdowns)
+    const activeElement = document.activeElement;
+    const isTextInput = (activeElement.tagName === 'INPUT' && 
+                        (activeElement.type === 'text' || 
+                         activeElement.type === 'password' || 
+                         activeElement.type === 'email' || 
+                         activeElement.type === 'search')) || 
+                       activeElement.tagName === 'TEXTAREA' ||
+                       activeElement.contentEditable === 'true';
+    
+    // Space bar for start/stop recording (allow when not typing in text inputs)
+    if (event.code === 'Space' && !isTextInput) {
+        event.preventDefault(); // Prevent page scrolling
+        const talkButton = document.getElementById('talkButton');
+        const overlayTalkButton = document.getElementById('overlayTalkButton');
+        
+        // Use overlay button if in fullscreen mode, otherwise regular button
+        const targetButton = isVideoFullscreen && overlayTalkButton ? overlayTalkButton : talkButton;
+        
+        if (targetButton && !targetButton.disabled) {
+            toggleRecording();
+        }
+        return;
+    }
+    
+    // Enter key for sending message
+    if (event.key === 'Enter' && !event.shiftKey) {
+        // Special case: if editing the review transcript, allow Enter for line breaks
+        if (activeElement.id === 'reviewTranscript' || activeElement.id === 'overlayReviewTranscript') {
+            return;
+        }
+        
+        // Send message if in review mode and not typing in a text input
+        if (recordingState === 'reviewing' && !isTextInput) {
+            event.preventDefault();
+            
+            // Use appropriate send function based on fullscreen state
+            if (isVideoFullscreen) {
+                sendOverlayMessage();
+            } else {
+                sendReviewedMessage();
+            }
+            return;
+        }
+    }
+});
+
+// Show keyboard shortcuts in UI
+function showKeyboardHints() {
+    const reviewSection = document.getElementById('reviewSection');
+    const overlaySection = document.getElementById('reviewOverlay');
+    
+    // Add hints to regular review section
+    if (reviewSection && !reviewSection.querySelector('.keyboard-hints')) {
+        const hintsDiv = document.createElement('div');
+        hintsDiv.className = 'keyboard-hints';
+        hintsDiv.style.cssText = `
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 4px;
+        `;
+        hintsDiv.innerHTML = '💡 <strong>Shortcuts:</strong> SPACEBAR = Start/Stop Recording • ENTER = Send Message';
+        reviewSection.appendChild(hintsDiv);
+    }
+    
+    // Add hints to fullscreen overlay review section
+    if (overlaySection && !overlaySection.querySelector('.keyboard-hints-overlay')) {
+        const overlayHintsDiv = document.createElement('div');
+        overlayHintsDiv.className = 'keyboard-hints-overlay';
+        overlayHintsDiv.style.cssText = `
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 4px;
+        `;
+        overlayHintsDiv.innerHTML = '💡 <strong>Shortcuts:</strong> SPACEBAR = Start/Stop Recording • ENTER = Send Message';
+        overlaySection.appendChild(overlayHintsDiv);
+    }
+}
 
        // ===== CHATBOT CONFIGURATION MANAGEMENT =====
 
@@ -6849,6 +6953,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
