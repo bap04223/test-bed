@@ -34,6 +34,26 @@
     --accent-glow: rgba(99, 102, 241, 0.3);
 }
 
+        /* Reduce gap between Random Scenario button and Avatar Control */
+.btn-info[onclick="selectRandomScenario()"] {
+    margin-bottom: 15px !important;
+}
+
+/* Reduce gap between Avatar Control section and Conversation History */
+.form-group:has(#initializeAvatarBtn) {
+    margin-bottom: 15px !important;
+}
+
+/* Alternative selector for Avatar Control section if the above doesn't work */
+h3 + button#initializeAvatarBtn {
+    margin-bottom: 15px !important;
+}
+
+/* Reduce gap after Initialize Avatar button */
+#initializeAvatarBtn {
+    margin-bottom: 15px !important;
+}
+
         /* Hide auto-populated fields that users don't need to see */
 #deepgramApiKey,
 label[for="deepgramApiKey"],
@@ -1785,7 +1805,7 @@ a:hover {
             Browser STT
         </button>
         <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
-            Deepgram (Medical)
+            Deepgram
         </button>
     </div>
 </div>
@@ -7024,6 +7044,19 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
