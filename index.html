@@ -1412,15 +1412,15 @@ a:hover {
         }
         
         function displaySessionInfo() {
-    // Add session ID display to the page
-    const header = document.querySelector('.header');
-    const sessionInfo = document.createElement('p');
-    sessionInfo.style.fontSize = '0.9em';
-    sessionInfo.style.color = 'var(--text-secondary)';
-    sessionInfo.style.marginTop = '10px';
-    sessionInfo.innerHTML = `Session ID: <code style="background: var(--input-background); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color);">${sessionId}</code>`;
-    header.appendChild(sessionInfo);
-}
+            // Add session ID display to the page
+            const header = document.querySelector('.header');
+            const sessionInfo = document.createElement('p');
+            sessionInfo.style.fontSize = '0.9em';
+            sessionInfo.style.color = 'var(--text-secondary)';
+            sessionInfo.style.marginTop = '10px';
+            sessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
+            header.appendChild(sessionInfo);
+        }
 
         // ===== NEW SESSION FUNCTION =====
 // Function to start a new session without page refresh
@@ -1516,7 +1516,7 @@ function updateSessionInfo() {
     const existingSessionInfo = header.querySelector('p:last-child');
     
     if (existingSessionInfo && existingSessionInfo.innerHTML.includes('Session ID:')) {
-        existingSessionInfo.innerHTML = `Session ID: <code style="background: var(--input-background); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color);">${sessionId}</code>`;
+        existingSessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
     } else {
         // If not found, create new one (fallback)
         displaySessionInfo();
@@ -2305,13 +2305,11 @@ async function loadChatbotConfigurations() {
                 const row = data.values[i];
                 if (row.length >= 3 && row[0] && row[1] && row[2]) {
                     chatbotConfigurations.push({
-    name: row[0].trim(),
-    webhookUrl: row[1].trim(),
-    submitWebhookUrl: row[2].trim(),
-    description: row[3] ? row[3].trim() : '',
-    deepgramApiKey: row[4] ? row[4].trim() : '',
-    elevenlabsApiKey: row[5] ? row[5].trim() : ''
-});
+                        name: row[0].trim(),
+                        webhookUrl: row[1].trim(),
+                        submitWebhookUrl: row[2].trim(),
+                        description: row[3] ? row[3].trim() : ''
+                    });
                 }
             }
             
@@ -2371,25 +2369,9 @@ function applyChatbotConfiguration() {
     currentChatbotConfig = config;
     
     document.getElementById('webhookUrl').value = config.webhookUrl;
-document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
-
-// Auto-populate API keys if provided
-if (config.deepgramApiKey && config.deepgramApiKey !== '') {
-    document.getElementById('deepgramApiKey').value = config.deepgramApiKey;
-    highlightAutoPopulatedField('deepgramApiKey');
-    showStatus('Deepgram API key loaded from configuration', 'info');
-}
-
-if (config.elevenlabsApiKey && config.elevenlabsApiKey !== '') {
-    document.getElementById('elevenlabsApiKey').value = config.elevenlabsApiKey;
-    highlightAutoPopulatedField('elevenlabsApiKey');
-    showStatus('ElevenLabs API key loaded from configuration', 'info');
+    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
     
-    // Reset the load voices button state since we have a new API key
-    resetElevenLabsButtonState();
-}
-
-saveConfig();
+    saveConfig();
     
     showStatus(`✅ Applied configuration: ${config.name}`, 'success');
     // Update the dropdown to show applied status
@@ -3937,8 +3919,6 @@ if (!submitWebhookUrl) {
         deepgramLanguage: document.getElementById('deepgramLanguage').value, // Add this line
         configSheetId: document.getElementById('configSheetId').value,
         selectedChatbot: document.getElementById('chatbotSelect').value,
-        loadedDeepgramKey: document.getElementById('deepgramApiKey').value,
-        loadedElevenlabsKey: document.getElementById('elevenlabsApiKey').value,
         scenarioSetsId: document.getElementById('scenarioSetsId').value,
         selectedScenarioSet: document.getElementById('scenarioSetSelect').value,
          browserVoice: document.getElementById('voiceSelect').value,
@@ -4088,24 +4068,19 @@ function loadCollapsedState() {
         }, 150);
     }
 }
-
-        // Visual feedback for auto-populated API keys
-function highlightAutoPopulatedField(fieldId) {
-    const field = document.getElementById(fieldId);
-    if (field && field.value) {
-        field.style.borderColor = 'var(--success-color)';
-        field.style.backgroundColor = '#f0f9ff';
-        
-        // Reset styling after 3 seconds
-        setTimeout(() => {
-            field.style.borderColor = 'var(--border-color)';
-            field.style.backgroundColor = 'var(--input-background)';
-        }, 3000);
-    }
-}
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
 
 
 
