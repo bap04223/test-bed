@@ -144,6 +144,18 @@ input:focus, select:focus, textarea:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
+
+      [contenteditable="true"] {
+    background: var(--input-background) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+[contenteditable="true"]:focus {
+    background: var(--input-background) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}  
         
         /* Button styling */
         button {
@@ -257,21 +269,22 @@ input:focus, select:focus, textarea:focus {
 .review-section {
     margin-top: 20px;
     padding: 20px;
-    background-color: #f9fafb;
+    background: linear-gradient(135deg, #1e293b, #334155);
     border: 2px solid var(--warning-color);
     border-radius: 8px;
     display: block;
     opacity: 1;
+    box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .review-section.active {
     opacity: 1;
     border-color: var(--primary-color);
-    background-color: #f0f9ff;
+    background: linear-gradient(135deg, #1e293b, #334155);
 }
 
 .review-transcript {
-    background: white;
+    background: var(--input-background);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 15px;
@@ -283,7 +296,15 @@ input:focus, select:focus, textarea:focus {
     line-height: 1.5;
     white-space: pre-wrap;
     word-wrap: break-word;
+    color: var(--text-primary);
 }
+
+     .review-section h3 {
+    color: var(--primary-color) !important;
+    text-shadow: 0 0 5px var(--accent-glow);
+    margin: 0 0 10px 0;
+    text-align: center;
+}   
 
 .review-buttons {
     display: flex;
@@ -582,13 +603,14 @@ input:focus, select:focus, textarea:focus {
         }
         
         .image-modal-header {
-            background: var(--primary-color);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
         
         .image-modal-header h3 {
             margin: 0;
@@ -4049,6 +4071,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
