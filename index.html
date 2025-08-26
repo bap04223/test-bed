@@ -37,10 +37,8 @@
         /* Hide auto-populated fields that users don't need to see */
 #deepgramApiKey,
 label[for="deepgramApiKey"],
-#deepgramApiKey + small,
 #didApiKey,
 label[for="didApiKey"],
-#didApiKey + small,
 #deepgramModel,
 label[for="deepgramModel"],
 #deepgramLanguage,
@@ -48,16 +46,14 @@ label[for="deepgramLanguage"] {
     display: none !important;
 }
 
-        /* Hide Deepgram model and language dropdowns */
-#deepgramModel,
-label[for="deepgramModel"],
-#deepgramLanguage,
-label[for="deepgramLanguage"] {
+/* Hide the D-ID API key form container and all its contents */
+form:has(#didApiKey),
+form:has(#didApiKey) + small {
     display: none !important;
 }
 
-/* Hide the D-ID API key form container */
-form:has(#didApiKey) {
+/* Hide Deepgram API key help text */
+#deepgramSettings .form-group:first-child small {
     display: none !important;
 }
         
@@ -7028,5 +7024,6 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
