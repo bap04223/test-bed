@@ -759,11 +759,6 @@ input:focus, select:focus, textarea:focus {
     gap: 8px;
     margin-top: 15px;
     padding: 10px;
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: auto;
 }
 
 .gallery-dot {
@@ -4909,52 +4904,36 @@ function loadImageAtIndex(index) {
     img.src = convertedImageUrl;
 }
 
-// Create error HTML with navigation
-function createErrorHTML(originalUrl, convertedUrl) {
+// Create gallery HTML with navigation
+function createGalleryHTML(imageUrl, patientName) {
     const showNavigation = patientImages.length > 1;
     
     return `
-        <div class="image-gallery" style="position: relative; padding-bottom: 60px;">
+        <div class="image-gallery">
             ${showNavigation ? `
                 <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
                     ❮ Previous
                 </button>
             ` : ''}
             
-            <div class="image-error">
-                <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
-                <p>The image could not be loaded. This might be due to:</p>
-                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                    <li>The image is not set to "Anyone with the link can view"</li>
-                    <li>Google Drive is blocking the image embedding</li>
-                    <li>The file is not an image format</li>
-                    <li>The URL is incorrect or the file was deleted</li>
-                </ul>
-                
-                <p><strong>Attempted URL:</strong></p>
-                <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedUrl}</p>
-                
-                <button onclick="window.open('${originalUrl}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🔗 Open Original Link
-                </button>
-            </div>
+            <img src="${imageUrl}" alt="${patientName}" class="patient-image">
             
             ${showNavigation ? `
                 <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
                     Next ❯
                 </button>
             ` : ''}
-            
-            ${showNavigation ? `
-                <div class="gallery-indicators">
-                    ${patientImages.map((_, index) => `
-                        <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
-                                onclick="loadImageAtIndex(${index})">
-                        </button>
-                    `).join('')}
-                </div>
-            ` : ''}
         </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${patientImages.map((_, index) => `
+                    <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                            onclick="loadImageAtIndex(${index})">
+                    </button>
+                `).join('')}
+            </div>
+        ` : ''}
     `;
 }
 
@@ -7017,112 +6996,3 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
