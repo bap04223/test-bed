@@ -673,14 +673,15 @@ input:focus, select:focus, textarea:focus {
         }
         
         .image-modal-body {
-            padding: 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: calc(100% - 50px);
-            overflow: hidden;
-        }
+    padding: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    position: relative;
+    padding-bottom: 50px; /* Space for dots */
+}
         
         .patient-image {
             max-width: 100%;
@@ -759,6 +760,10 @@ input:focus, select:focus, textarea:focus {
     gap: 8px;
     margin-top: 15px;
     padding: 10px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
 .gallery-dot {
@@ -6996,3 +7001,4 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
