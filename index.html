@@ -2324,7 +2324,7 @@ async function loadChatbotConfigurations() {
                 }
             }
             
-            // Auto-populate API keys from the first configuration (or you could use a different logic)
+            // Auto-populate API keys from the first configuration
             if (chatbotConfigurations.length > 0) {
                 const firstConfig = chatbotConfigurations[0];
                 
@@ -2352,22 +2352,7 @@ async function loadChatbotConfigurations() {
     }
 }
             
-            populateChatbotDropdown();
-            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
-            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
-            
-        } else {
-            showStatus('No configuration data found in the sheet', 'error');
-        }
-        
-    } catch (error) {
-        console.error('Error loading chatbot configurations:', error);
-        showStatus('Error loading configurations. Check console for details.', 'error');
-        setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
-    }
-}
-
-// Populate the chatbot selection dropdown
+        // Populate the chatbot selection dropdown
 function populateChatbotDropdown() {
     const select = document.getElementById('chatbotSelect');
     select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
@@ -4110,6 +4095,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
