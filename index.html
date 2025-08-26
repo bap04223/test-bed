@@ -1069,6 +1069,18 @@ a:hover {
             Load Scenario Sets
         </button>
 </div>
+
+                    <div class="form-group">
+    <label>Speech Recognition Provider:</label>
+    <div class="tts-provider-group">
+        <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
+            Browser STT
+        </button>
+        <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
+            Deepgram (Medical)
+        </button>
+    </div>
+</div>
         
 <!-- TTS Provider Selection -->
                 <div class="form-group">
@@ -1158,18 +1170,7 @@ a:hover {
                     </div>
                 </div>
 
-               <div class="form-group">
-    <label>Speech Recognition Provider:</label>
-    <div class="tts-provider-group">
-        <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
-            Browser STT
-        </button>
-        <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
-            Deepgram (Medical)
-        </button>
-    </div>
-</div>
-
+               
 <!-- Deepgram STT Settings -->
 <div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
     <div class="form-group" style="display: none;">
@@ -4105,6 +4106,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
