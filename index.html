@@ -16,26 +16,31 @@
         
         /* CSS Variables for easy color scheme changes */
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #10b981;
-            --danger-color: #ef4444;
-            --background: #1e3a8a;
-            --card-background: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --success-color: #059669;
-            --warning-color: #f59e0b;
-        }
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #10b981;
+    --danger-color: #ef4444;
+    --background: #0f0f23;
+    --card-background: #1a1a2e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --chat-background: #16213e;
+    --input-background: #1e293b;
+    --accent-glow: rgba(99, 102, 241, 0.3);
+}
         
         /* Main body styling */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(rgba(15, 15, 35, 0.6), rgba(22, 33, 62, 0.6)), 
+                url('https://images.unsplash.com/photo-1471864190281-a93a3070b6de?q.jpg') center center/cover no-repeat fixed;
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+}
         
         /* Container for centering content */
         .container {
@@ -95,17 +100,20 @@
         
         /* Card component for sections */
         .card {
-            background: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card h2 {
-            margin-bottom: 15px;
-            color: var(--text-primary);
-            font-size: 1.25rem;
-        }
+    background: var(--card-background);
+    padding: 20px 20px 0 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+}
+
+.card h2 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    text-shadow: 0 0 5px var(--accent-glow);
+}
         
         /* Form input styling */
         .form-group {
@@ -119,85 +127,106 @@
             color: var(--text-secondary);
         }
         
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
+        input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: var(--input-background);
+    color: var(--text-primary);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
         
         /* Button styling */
         button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-        
-        .btn-secondary {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #047857;
-        }
-        
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-        
-        /* New button style for export */
-        .btn-info {
-            background-color: #0ea5e9;
-            color: white;
-        }
-        
-        .btn-info:hover {
-            background-color: #0284c7;
-        }
-        
-        .btn-warning {
-            background-color: var(--warning-color);
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background-color: #d97706;
-        }
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
 
-         .btn-warning:hover {
-            background-color: #d97706;
-        }
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-hover), #3730a3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--secondary-color), #059669);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #047857);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+}
         
         /* ElevenLabs Load Voices button states */
         .btn-voice-load-pending {
@@ -287,13 +316,14 @@
         
         /* Chat display area */
         .chat-container {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #fafafa;
-        }
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    background: var(--chat-background);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+}
         
         /* Individual message styling */
         .message {
@@ -304,31 +334,35 @@
         }
         
         .message.user {
-            background-color: var(--primary-color);
-            color: white;
-            margin-left: auto;
-            text-align: right;
-        }
-        
-        .message.ai {
-            background-color: #e5e7eb;
-            color: var(--text-primary);
-        }
-        
-        .message.system {
-            background-color: #f3f4f6;
-            color: var(--text-secondary);
-            font-style: italic;
-            border-left: 4px solid var(--success-color);
-            max-width: 100%;
-        }
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    margin-left: auto;
+    text-align: right;
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.message.ai {
+    background: #2d3748;
+    color: var(--text-primary);
+    border-left: 3px solid var(--secondary-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.message.system {
+    background: #1a202c;
+    color: var(--text-secondary);
+    font-style: italic;
+    border-left: 4px solid var(--success-color);
+    max-width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
         
         /* Status indicator */
         .status {
     position: fixed;
     top: 20px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-20px);
     padding: 12px 24px;
     border-radius: 8px;
     text-align: center;
@@ -341,28 +375,34 @@
     backdrop-filter: blur(10px);
     transition: all 0.3s ease-in-out;
     opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.status[style*="block"] {
+.status.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
-        
-        .status.success {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status.error {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .status.info {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
+
+.status.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.status.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+.status.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
         
         /* Loading spinner */
         .spinner {
@@ -402,35 +442,36 @@
         }
         
         .tts-provider-btn {
-            flex: 1;
-            padding: 8px 12px;
-            border: 2px solid var(--border-color);
-            background: white;
-            color: var(--text-primary);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .tts-provider-btn.active {
-            border-color: var(--primary-color);
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .tts-provider-btn:hover:not(.active) {
-            border-color: var(--primary-hover);
-            background-color: #f8fafc;
-        }
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid var(--border-color);
+    background: var(--input-background);
+    color: var(--text-primary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tts-provider-btn.active {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.tts-provider-btn:hover:not(.active) {
+    border-color: var(--primary-hover);
+    background: #2d3748;
+}
         
         /* ElevenLabs specific styling */
         .elevenlabs-config {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-            background-color: #f8fafc;
-        }
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    background: var(--input-background);
+}
         
         .voice-preview-btn {
             padding: 5px 10px;
@@ -900,7 +941,21 @@
 .card {
     transition: all 0.3s ease;
 }
-        
+
+        small {
+    color: var(--text-secondary);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--primary-hover);
+    text-shadow: 0 0 5px var(--accent-glow);
+}
        
   </style>
 </head>
@@ -3801,16 +3856,31 @@ if (!submitWebhookUrl) {
         // Helper functions
         
         function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 5000);
-        }
+    const statusDiv = document.getElementById('status');
+    
+    // Show the full message
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${type}`;
+    statusDiv.style.display = 'block';
+    
+    // Remove any inline positioning that might interfere
+    statusDiv.style.left = '';
+    statusDiv.style.right = '';
+    statusDiv.style.transform = '';
+    
+    // Trigger animation
+    setTimeout(() => {
+        statusDiv.classList.add('show');
+    }, 10);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        statusDiv.classList.remove('show');
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 300);
+    }, 5000);
+}
         
        function saveConfig() {
     const config = {
@@ -3979,6 +4049,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
