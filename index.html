@@ -2305,11 +2305,13 @@ async function loadChatbotConfigurations() {
                 const row = data.values[i];
                 if (row.length >= 3 && row[0] && row[1] && row[2]) {
                     chatbotConfigurations.push({
-                        name: row[0].trim(),
-                        webhookUrl: row[1].trim(),
-                        submitWebhookUrl: row[2].trim(),
-                        description: row[3] ? row[3].trim() : ''
-                    });
+    name: row[0].trim(),
+    webhookUrl: row[1].trim(),
+    submitWebhookUrl: row[2].trim(),
+    description: row[3] ? row[3].trim() : '',
+    deepgramApiKey: row[4] ? row[4].trim() : '',
+    elevenlabsApiKey: row[5] ? row[5].trim() : ''
+});
                 }
             }
             
@@ -2369,9 +2371,25 @@ function applyChatbotConfiguration() {
     currentChatbotConfig = config;
     
     document.getElementById('webhookUrl').value = config.webhookUrl;
-    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+
+// Auto-populate API keys if provided
+if (config.deepgramApiKey && config.deepgramApiKey !== '') {
+    document.getElementById('deepgramApiKey').value = config.deepgramApiKey;
+    highlightAutoPopulatedField('deepgramApiKey');
+    showStatus('Deepgram API key loaded from configuration', 'info');
+}
+
+if (config.elevenlabsApiKey && config.elevenlabsApiKey !== '') {
+    document.getElementById('elevenlabsApiKey').value = config.elevenlabsApiKey;
+    highlightAutoPopulatedField('elevenlabsApiKey');
+    showStatus('ElevenLabs API key loaded from configuration', 'info');
     
-    saveConfig();
+    // Reset the load voices button state since we have a new API key
+    resetElevenLabsButtonState();
+}
+
+saveConfig();
     
     showStatus(`✅ Applied configuration: ${config.name}`, 'success');
     // Update the dropdown to show applied status
@@ -3919,6 +3937,9 @@ if (!submitWebhookUrl) {
         deepgramLanguage: document.getElementById('deepgramLanguage').value, // Add this line
         configSheetId: document.getElementById('configSheetId').value,
         selectedChatbot: document.getElementById('chatbotSelect').value,
+        loadedDeepgramKey: document.getElementById('deepgramApiKey').value,
+        loadedElevenlabsKey: document.getElementById('elevenlabsApiKey').value,
+        selectedChatbot: document.getElementById('chatbotSelect').value,
         scenarioSetsId: document.getElementById('scenarioSetsId').value,
         selectedScenarioSet: document.getElementById('scenarioSetSelect').value,
          browserVoice: document.getElementById('voiceSelect').value,
@@ -4068,9 +4089,25 @@ function loadCollapsedState() {
         }, 150);
     }
 }
+
+        // Visual feedback for auto-populated API keys
+function highlightAutoPopulatedField(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field && field.value) {
+        field.style.borderColor = 'var(--success-color)';
+        field.style.backgroundColor = '#f0f9ff';
+        
+        // Reset styling after 3 seconds
+        setTimeout(() => {
+            field.style.borderColor = 'var(--border-color)';
+            field.style.backgroundColor = 'var(--input-background)';
+        }, 3000);
+    }
+}
     </script>
 </body>
 </html>
+
 
 
 
