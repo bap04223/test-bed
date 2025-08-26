@@ -1743,7 +1743,15 @@ a:hover {
 </button>
     <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
     </small>
-</div>              
+</div>
+                        
+<!-- Chatbot Configuration Section - MOVED HERE -->
+<div class="form-group">
+    <label for="chatbotSelect">Select Chatbot:</label>
+    <select id="chatbotSelect" disabled style="font-size: 14px;">
+        <option value="">Load configurations first...</option>
+    </select>
+</div>
                                           
 <!-- Scenario Sets List Field -->
 <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
@@ -2054,16 +2062,7 @@ a:hover {
         ◀
     </button>
 </h2>
-    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
-
-        <!-- Chatbot Configuration Section -->
-<div class="form-group">
-    <label for="chatbotSelect">Select Chatbot:</label>
-    <select id="chatbotSelect" disabled style="font-size: 14px;">
-        <option value="">Load configurations first...</option>
-    </select>
-</div>       
-
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;"> 
 
         <!-- Scenario Sets Management Section -->
 <div class="form-group">
@@ -7024,6 +7023,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
