@@ -978,7 +978,7 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    background: #f8f9fa;
+    background: var(--chat-background);
     border-radius: 12px;
     overflow: hidden;
     flex: 1;
@@ -2162,7 +2162,7 @@ a:hover {
     controls
     style="
 border-radius: 12px; 
-background-color: #f0f0f0; 
+background-color: var(--chat-background); 
 width: 100%;
 height: 100%;
 object-fit: contain;
@@ -2393,7 +2393,7 @@ initializeDIDElements();
             sessionInfo.style.fontSize = '0.9em';
             sessionInfo.style.color = 'var(--text-secondary)';
             sessionInfo.style.marginTop = '10px';
-            sessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
+            sessionInfo.innerHTML = `Session ID: <code style="background: transparent; color: var(--text-secondary); font-family: monospace;">${sessionId}</code>`;
             header.appendChild(sessionInfo);
         }
 
@@ -2535,7 +2535,7 @@ function updateSessionInfo() {
     const existingSessionInfo = header.querySelector('p:last-child');
     
     if (existingSessionInfo && existingSessionInfo.innerHTML.includes('Session ID:')) {
-        existingSessionInfo.innerHTML = `Session ID: <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${sessionId}</code>`;
+        existingSessionInfo.innerHTML = `Session ID: <code style="background: transparent; color: var(--text-secondary); font-family: monospace;">${sessionId}</code>`;
     } else {
         // If not found, create new one (fallback)
         displaySessionInfo();
@@ -6962,6 +6962,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
