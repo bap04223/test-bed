@@ -2365,12 +2365,15 @@ function populateChatbotDropdown() {
         select.appendChild(option);
     });
     
-    select.addEventListener('change', function() {
-        if (this.value !== '') {
-            // Automatically apply the selected configuration
-            applyChatbotConfiguration();
-        }
-    });
+    // Remove any existing event listeners to prevent duplication
+select.onchange = null;
+
+// Add new event listener
+select.onchange = function() {
+    if (this.value !== '') {
+        applyScenarioSet();
+    }
+};
 }
 
 // Apply the selected chatbot configuration
@@ -2651,13 +2654,16 @@ function setButtonPending(buttonId, pendingText = null) {
                 select.appendChild(option);
             });
             
-            // Auto-load sheet data when selection changes
-            select.addEventListener('change', function() {
-                if (this.value) {
-                    saveConfig(); // Save the selection
-                    loadSheetData(); // Automatically load the data
-                }
-            });
+            // Remove any existing event listeners to prevent duplication
+select.onchange = null;
+
+// Auto-load sheet data when selection changes
+select.onchange = function() {
+    if (this.value) {
+        saveConfig(); // Save the selection
+        loadSheetData(); // Automatically load the data
+    }
+};
         }
         
         // Get selected sheet name (from dropdown only)
@@ -2731,11 +2737,11 @@ function setButtonPending(buttonId, pendingText = null) {
                 select.appendChild(option);
             }
             
-            // Clear any existing event listeners
-            select.removeEventListener('change', handleScenarioChange);
-            
-            // Add change event listener
-            select.addEventListener('change', handleScenarioChange);
+           // Clear any existing event listeners
+select.onchange = null;
+
+// Add change event listener
+select.onchange = handleScenarioChange;
         }
         
         function handleScenarioChange(e) {
@@ -4128,6 +4134,7 @@ function highlightAutoPopulatedField(fieldId) {
     </script>
 </body>
 </html>
+
 
 
 
