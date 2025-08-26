@@ -2302,22 +2302,38 @@ async function loadChatbotConfigurations() {
             chatbotConfigurations = [];
             
             for (let i = 1; i < data.values.length; i++) {
-                const row = data.values[i];
-                if (row.length >= 3 && row[0] && row[1] && row[2]) {
-                    chatbotConfigurations.push({
-    name: row[0].trim(),
-    webhookUrl: row[1].trim(),
-    submitWebhookUrl: row[2].trim(),
-    description: row[3] ? row[3].trim() : '',
-    deepgramApiKey: row[4] ? row[4].trim() : '',
-    elevenlabsApiKey: row[5] ? row[5].trim() : ''
-});
-                }
-            }
-            
-            populateChatbotDropdown();
-            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
-            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+    const row = data.values[i];
+    if (row.length >= 3 && row[0] && row[1] && row[2]) {
+        chatbotConfigurations.push({
+            name: row[0].trim(),
+            webhookUrl: row[1].trim(),
+            submitWebhookUrl: row[2].trim(),
+            description: row[3] ? row[3].trim() : '',
+            deepgramApiKey: row[4] ? row[4].trim() : '',
+            elevenlabsApiKey: row[5] ? row[5].trim() : ''
+        });
+    }
+}
+
+// Auto-populate API keys from the FIRST configuration (or you can choose a different logic)
+if (chatbotConfigurations.length > 0) {
+    const firstConfig = chatbotConfigurations[0];
+    
+    if (firstConfig.deepgramApiKey && !document.getElementById('deepgramApiKey').value) {
+        document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
+        highlightAutoPopulatedField('deepgramApiKey');
+    }
+    
+    if (firstConfig.elevenlabsApiKey && !document.getElementById('elevenlabsApiKey').value) {
+        document.getElementById('elevenlabsApiKey').value = firstConfig.elevenlabsApiKey;
+        highlightAutoPopulatedField('elevenlabsApiKey');
+        resetElevenLabsButtonState();
+    }
+}
+
+populateChatbotDropdown();
+showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
             
         } else {
             showStatus('No configuration data found in the sheet', 'error');
@@ -2395,7 +2411,8 @@ saveConfig();
     // Update the dropdown to show applied status
 if (selectElement) {
     selectElement.style.borderColor = 'var(--success-color)';
-    selectElement.style.backgroundColor = '#f0f9ff';
+    selectElement.style.backgroundColor = 'var(--input-background)';
+    selectElement.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)';
 }
     
     if (conversationHistory.length > 0) {
@@ -2502,11 +2519,16 @@ function populateScenarioSetsDropdown() {
         select.appendChild(option);
     });
     
-    select.addEventListener('change', function() {
-        if (this.value !== '') {
-            applyScenarioSet();
-        }
-    });
+    // Remove any existing event listeners first
+const newSelect = select.cloneNode(true);
+select.parentNode.replaceChild(newSelect, select);
+
+// Add the event listener to the new element
+newSelect.addEventListener('change', function() {
+    if (this.value !== '') {
+        applyChatbotConfiguration();
+    }
+});
 }
 
 // Apply the selected scenario set
@@ -4106,6 +4128,7 @@ function highlightAutoPopulatedField(fieldId) {
     </script>
 </body>
 </html>
+
 
 
 
