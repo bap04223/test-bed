@@ -2332,9 +2332,11 @@ async function loadChatbotConfigurations() {
                     document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
                 }
                 if (firstConfig.elevenlabsApiKey) {
-                    document.getElementById('elevenlabsApiKey').value = firstConfig.elevenlabsApiKey;
-                    resetElevenLabsButtonState();
-                }
+    document.getElementById('elevenlabsApiKey').value = firstConfig.elevenlabsApiKey;
+    resetElevenLabsButtonState();
+    // Auto-load voices after API key is populated
+    loadElevenLabsVoices();
+}
             }
             
             populateChatbotDropdown();
@@ -4095,6 +4097,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
