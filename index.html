@@ -42,13 +42,13 @@ label[for="didApiKey"],
 #deepgramModel,
 label[for="deepgramModel"],
 #deepgramLanguage,
-label[for="deepgramLanguage"] {
+label[for="deepgramLanguage"],
+#deepgramSettings {
     display: none !important;
 }
 
 /* Hide the D-ID API key form container and all its contents */
-form:has(#didApiKey),
-form:has(#didApiKey) + small {
+form:has(#didApiKey) {
     display: none !important;
 }
 
@@ -7024,6 +7024,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
