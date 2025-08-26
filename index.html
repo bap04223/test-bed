@@ -2281,7 +2281,6 @@ function hideReviewSection() {
         // Load sheet names from Google Sheets
         // ===== CHATBOT CONFIGURATION MANAGEMENT =====
 
-// Load chatbot configurations from Google Sheet
 async function loadChatbotConfigurations() {
     const configSheetId = document.getElementById('configSheetId').value;
     
@@ -2290,7 +2289,6 @@ async function loadChatbotConfigurations() {
         return;
     }
     
-    // Disable the load button and show loading state
     const loadBtn = document.getElementById('loadChatbotBtn');
     loadBtn.disabled = true;
     loadBtn.innerHTML = '⏳ Loading...';
@@ -2319,10 +2317,40 @@ async function loadChatbotConfigurations() {
                         name: row[0].trim(),
                         webhookUrl: row[1].trim(),
                         submitWebhookUrl: row[2].trim(),
-                        description: row[3] ? row[3].trim() : ''
+                        description: row[3] ? row[3].trim() : '',
+                        deepgramApiKey: row[4] ? row[4].trim() : '',
+                        elevenlabsApiKey: row[5] ? row[5].trim() : ''
                     });
                 }
             }
+            
+            // Auto-populate API keys from the first configuration (or you could use a different logic)
+            if (chatbotConfigurations.length > 0) {
+                const firstConfig = chatbotConfigurations[0];
+                
+                if (firstConfig.deepgramApiKey) {
+                    document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
+                }
+                if (firstConfig.elevenlabsApiKey) {
+                    document.getElementById('elevenlabsApiKey').value = firstConfig.elevenlabsApiKey;
+                    resetElevenLabsButtonState();
+                }
+            }
+            
+            populateChatbotDropdown();
+            showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+            
+        } else {
+            showStatus('No configuration data found in the sheet', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error loading chatbot configurations:', error);
+        showStatus('Error loading configurations. Check console for details.', 'error');
+        setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+    }
+}
             
             populateChatbotDropdown();
             showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
@@ -4082,6 +4110,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
