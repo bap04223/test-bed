@@ -16,24 +16,28 @@
 
         
         /* CSS Variables for easy color scheme changes */
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary-color: #10b981;
-            --danger-color: #ef4444;
-            --background: #1e3a8a;
-            --card-background: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --success-color: #059669;
-            --warning-color: #f59e0b;
-        }
+        /* CSS Variables for NIGHT MODE color scheme */
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #10b981;
+    --danger-color: #ef4444;
+    --background: #0f0f23;
+    --card-background: #1a1a2e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --chat-background: #16213e;
+    --input-background: #1e293b;
+    --accent-glow: rgba(99, 102, 241, 0.3);
+}
         
         /* LOCKED BODY STYLING - Prevent expansion */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: var(--background);
+    background: linear-gradient(135deg, #0f0f23, #16213e);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -167,20 +171,24 @@ body {
             color: var(--text-secondary);
         }
         
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            font-family: inherit;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
+        /* Enhanced input styling for night mode */
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: var(--input-background);
+    color: var(--text-primary);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
         
                 
         /* Animation for recording state */
@@ -2275,157 +2283,6 @@ function getPresenterVoice(presenterId) {
     // Ultimate fallback
     return 'en-US-AriaNeural';
 }
-
- // ===== D-ID IDLE ANIMATION VARIABLES =====
-let idleAnimationInterval = null;    // Timer for idle animation loop
-let isIdleActive = false;           // Track if idle animations are running
-let idlePatternIndex = 0;           // Current idle pattern for variation
-let lastUserActivity = Date.now();  // Track user activity for smart pausing       
-
-
-// ===== IDLE ANIMATION MANAGEMENT =====
-// Manage natural idle animations after avatar responses
-
-// Idle patterns with varying intensities
-const idlePatterns = [
-    '<break time="2000ms"/>',                                    // Subtle pause
-    '<break time="1500ms"/><break time="1000ms"/>',             // Gentle breathing
-    '<break time="1000ms"/><break time="800ms"/>',              // Light movement
-    '<break time="2500ms"/>',                                    // Thoughtful pause
-    '<break time="1200ms"/><break time="1800ms"/>',             // Natural rhythm
-    '<break time="800ms"/><break time="600ms"/><break time="1000ms"/>', // Active listening
-];
-
-// Start idle animation loop after avatar finishes speaking
-function startIdleAnimationLoop() {
-    if (idleAnimationInterval || !isStreamConnected || !isAvatarInitialized) {
-        console.log('Cannot start idle - conditions not met');
-        return;
-    }
-    
-    console.log('Starting idle animation loop');
-    isIdleActive = true;
-    idlePatternIndex = 0;
-    
-    // Start with a slight delay to let the last speech fully complete
-    setTimeout(() => {
-        if (isIdleActive) {
-            sendIdleAnimation();
-            scheduleNextIdle();
-        }
-    }, 1000);
-    
-    updateAvatarStatus('Listening...', 'info');
-}
-
-// Stop idle animation loop when user starts interaction
-function stopIdleAnimationLoop() {
-    if (!isIdleActive) return;
-    
-    console.log('Stopping idle animation loop');
-    isIdleActive = false;
-    
-    if (idleAnimationInterval) {
-        clearTimeout(idleAnimationInterval);
-        idleAnimationInterval = null;
-    }
-    
-    updateAvatarStatus('Avatar ready', 'info');
-}
-
-// Send a single idle animation to the stream
-async function sendIdleAnimation() {
-    if (!isIdleActive || !isStreamConnected || !streamId || !didSessionId) {
-        return;
-    }
-    
-    // Check if user has been active recently (pause idle if user is active)
-    const timeSinceActivity = Date.now() - lastUserActivity;
-    if (timeSinceActivity < 5000) { // Pause idle for 5 seconds after user activity
-        console.log('Pausing idle due to recent user activity');
-        return;
-    }
-    
-    try {
-        const config = getAvatarConfiguration();
-        
-        // Select pattern and advance index for variation
-        const pattern = idlePatterns[idlePatternIndex % idlePatterns.length];
-        idlePatternIndex++;
-        
-        // Get voice configuration similar to speakWithAvatar
-        let voiceConfig = {
-            type: 'microsoft',
-            voice_id: 'en-US-AriaNeural'
-        };
-        
-        const manualVoiceSelection = document.getElementById('voiceSelection').value;
-        if (manualVoiceSelection) {
-            voiceConfig.voice_id = manualVoiceSelection;
-        } else if (config.serviceType === 'clips' && config.presenterId) {
-            voiceConfig.voice_id = getPresenterVoice(config.presenterId);
-        }
-        
-        const scriptPayload = {
-            script: {
-                type: 'text',
-                ssml: true,
-                input: pattern,
-                provider: voiceConfig
-            },
-            config: {
-                stitch: true,
-            },
-            session_id: didSessionId
-        };
-        
-        if (config.serviceType === 'talks') {
-            scriptPayload.driver_url = 'bank://lively/';
-        }
-        
-        const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
-        const response = await fetch(talkUrl, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${didApiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(scriptPayload),
-        });
-        
-        if (response.ok) {
-            console.log('Idle animation sent successfully');
-        } else {
-            console.warn('Idle animation failed:', response.status);
-        }
-        
-    } catch (error) {
-        console.error('Error sending idle animation:', error);
-    }
-}
-
-// Schedule the next idle animation with natural variation
-function scheduleNextIdle() {
-    if (!isIdleActive) return;
-    
-    // Base interval of 4-6 seconds with natural variation
-    const baseInterval = 4000 + Math.random() * 2000; // 4-6 seconds
-    
-    // Adjust based on conversation stage - longer pauses over time
-    const adjustedInterval = baseInterval + (idlePatternIndex * 200);
-    
-    idleAnimationInterval = setTimeout(() => {
-        if (isIdleActive) {
-            sendIdleAnimation();
-            scheduleNextIdle(); // Schedule the next one
-        }
-    }, adjustedInterval);
-}
-
-// Track user activity to intelligently pause idle animations
-function updateUserActivity() {
-    lastUserActivity = Date.now();
-}
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -2518,7 +2375,6 @@ function newSession() {
     forceStopRecognition = false;
     recordingState = 'stopped';
     pendingTranscript = '';
-    stopIdleAnimationLoop(); // ADD THIS LINE - Stop any idle animations in new session
     
     // Update talk button
     updateTalkButton();
@@ -2660,12 +2516,6 @@ function updateSessionInfo() {
     document.getElementById('deepgramModel').addEventListener('change', saveConfig);
     document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
     document.getElementById('voiceSelection').addEventListener('change', saveConfig);  // Add this line
-         
-
-// Add user activity tracking for smart idle management
-['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
-    document.addEventListener(event, updateUserActivity);
-});
 
     
 }
@@ -2909,8 +2759,6 @@ if (overlayBox) {
         }
 
         function startRecording() {
-    stopIdleAnimationLoop(); // Stop idle when user starts speaking
-    
     if (currentSttProvider === 'deepgram') {
         // Use Deepgram
         if (!document.getElementById('deepgramApiKey').value) {
@@ -3835,8 +3683,6 @@ function setVideoElement(stream) {
 // FIXED: Enhanced Close Stream Connection with Proper Service Detection and Cleanup
 async function closeStreamConnection() {
     console.log('=== closeStreamConnection() called ===');
-
-stopIdleAnimationLoop(); // Stop idle animations when closing connection
     
      
     // Get current service type BEFORE clearing variables
@@ -4048,31 +3894,22 @@ console.log('Final voice configuration:', voiceConfig);
         console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
 
-                  // The video will automatically appear via the WebRTC stream
-// Monitor for video events to update status and manage idle animations
-if (avatarVideo) {
-    const handleVideoPlay = () => {
-        stopIdleAnimationLoop(); // Stop any idle animations when speaking starts
-        updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
-        avatarVideo.removeEventListener('play', handleVideoPlay);
-    };
-    
-    const handleVideoEnd = () => {
-        updateAvatarStatus('Avatar finished speaking', 'info');
-        
-        // Start idle animations after speech completes
-        setTimeout(() => {
-            if (isStreamConnected && !isRecording) {
-                startIdleAnimationLoop();
-            }
-        }, 500); // Small delay to ensure speech fully completed
-        
-        avatarVideo.removeEventListener('ended', handleVideoEnd);
-    };
-    
-    avatarVideo.addEventListener('play', handleVideoPlay);
-    avatarVideo.addEventListener('ended', handleVideoEnd);
-}
+        // The video will automatically appear via the WebRTC stream
+        // Monitor for video events to update status
+        if (avatarVideo) {
+            const handleVideoPlay = () => {
+                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
+                avatarVideo.removeEventListener('play', handleVideoPlay);
+            };
+            
+            const handleVideoEnd = () => {
+                updateAvatarStatus('Avatar ready', 'info');
+                avatarVideo.removeEventListener('ended', handleVideoEnd);
+            };
+            
+            avatarVideo.addEventListener('play', handleVideoPlay);
+            avatarVideo.addEventListener('ended', handleVideoEnd);
+        }
 
     } catch (error) {
         console.error('Avatar speech error:', error);
@@ -4263,19 +4100,14 @@ async function getPresenterDrivers(presenterId) {
             }
         }
 
-               // Update avatar status display with idle awareness
-function updateAvatarStatus(message, type = 'info') {
-    const statusElement = document.getElementById('avatarStatus');
-    if (statusElement) {
-        // Add idle indicator when appropriate
-        if (isIdleActive && type === 'info' && message.includes('ready')) {
-            message = message.replace('ready', 'listening (idle animations active)');
+               // Update avatar status display
+        function updateAvatarStatus(message, type = 'info') {
+            const statusElement = document.getElementById('avatarStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `avatar-status ${type}`;
+            }
         }
-        
-        statusElement.textContent = message;
-        statusElement.className = `avatar-status ${type}`;
-    }
-}
 
        // ===== PRESENTER VERIFICATION AND API TESTING =====
 // INSERT THE NEW FUNCTIONS HERE
@@ -7076,4 +6908,5 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
