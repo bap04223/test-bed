@@ -5139,9 +5139,9 @@ async function loadChatbotConfigurations() {
     showStatus('Loading chatbot configurations...', 'info');
     
     try {
-        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
         
-        // Load from the first sheet (you could also make this configurable)
+        // Load from the first sheet
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${configSheetId}/values/Sheet1?key=${apiKey}`;
         
         const response = await fetch(url);
@@ -5157,46 +5157,79 @@ async function loadChatbotConfigurations() {
             chatbotConfigurations = [];
             
             // Skip header row, process configuration rows
-for (let i = 1; i < data.values.length; i++) {
-    const row = data.values[i];
-    if (row.length >= 3 && row[0] && row[1] && row[2]) {
-        chatbotConfigurations.push({
-            name: row[0].trim(),
-            webhookUrl: row[1].trim(),
-            submitWebhookUrl: row[2].trim(),
-            description: row[3] ? row[3].trim() : '', // Optional description column
-            deepgramApiKey: row[4] ? row[4].trim() : '', // Deepgram API Key (Column E)
-            didApiKey: row[6] ? row[6].trim() : '' // D-ID API Key (Column G)
-        });
-    }
-}
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 3 && row[0] && row[1] && row[2]) {
+                    chatbotConfigurations.push({
+                        name: row[0].trim(),
+                        webhookUrl: row[1].trim(),
+                        submitWebhookUrl: row[2].trim(),
+                        description: row[3] ? row[3].trim() : '',
+                        deepgramApiKey: row[4] ? row[4].trim() : '', // Column E
+                        didApiKey: row[6] ? row[6].trim() : ''       // Column G
+                    });
+                }
+            }
+            
+            // AUTO-POPULATE API KEYS FROM FIRST CONFIGURATION
+            if (chatbotConfigurations.length > 0) {
+                const firstConfig = chatbotConfigurations[0];
+                
+                // Auto-populate Deepgram API key if present
+                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+                    document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
+                    console.log('Auto-populated Deepgram API key from first configuration');
+                }
+                
+                // Auto-populate D-ID API key if present
+                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+                    document.getElementById('didApiKey').value = firstConfig.didApiKey;
+                    console.log('Auto-populated D-ID API key from first configuration');
+                }
+                
+                // Save the auto-populated keys
+                saveConfig();
+            }
             
             populateChatbotDropdown();
-showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+            
+            // Enhanced status message showing what was auto-populated
+            let statusParts = [`Loaded ${chatbotConfigurations.length} configurations`];
+            if (chatbotConfigurations.length > 0) {
+                const firstConfig = chatbotConfigurations[0];
+                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+                    statusParts.push('Auto-filled Deepgram key');
+                }
+                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+                    statusParts.push('Auto-filled D-ID key');
+                }
+            }
+            
+            showStatus(`✅ ${statusParts.join(', ')}`, 'success');
 
-// Set button to completed status
-setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+            // Set button to completed status
+            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
 
-// Try to restore saved selection
-const savedConfig = localStorage.getItem('pharmacyChatConfig');
-if (savedConfig) {
-    const config = JSON.parse(savedConfig);
-    if (config.selectedChatbot) {
-        document.getElementById('chatbotSelect').value = config.selectedChatbot;
-    }
-}
+            // Try to restore saved selection
+            const savedConfig = localStorage.getItem('pharmacyChatConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.selectedChatbot) {
+                    document.getElementById('chatbotSelect').value = config.selectedChatbot;
+                }
+            }
             
         } else {
             showStatus('No configuration data found in the sheet', 'error');
         }
         
     } catch (error) {
-    console.error('Error loading chatbot configurations:', error);
-    showStatus('Error loading configurations. Check console for details.', 'error');
-    
-    // Set button back to pending status on error
-setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
-}
+        console.error('Error loading chatbot configurations:', error);
+        showStatus('Error loading configurations. Check console for details.', 'error');
+        
+        // Set button back to pending status on error
+        setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+    }
 } // ADD THIS MISSING CLOSING BRACE
 
 // Populate the chatbot selection dropdown
@@ -5241,30 +5274,14 @@ function applyChatbotConfiguration() {
     currentChatbotConfig = config;
     
     // Apply the configuration to the existing webhook fields
-document.getElementById('webhookUrl').value = config.webhookUrl;
-document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
-
-// Auto-populate API keys if they exist in the configuration
-if (config.deepgramApiKey) {
-    document.getElementById('deepgramApiKey').value = config.deepgramApiKey;
-}
-
-if (config.didApiKey) {
-    document.getElementById('didApiKey').value = config.didApiKey;
-}
+    document.getElementById('webhookUrl').value = config.webhookUrl;
+    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
     
     // Save the configuration
     saveConfig();
     
     // Show success message
-    // Show success message with details about what was loaded
-let statusParts = [`Configuration: ${config.name}`];
-if (config.deepgramApiKey) statusParts.push('Deepgram API Key');
-if (config.didApiKey) statusParts.push('D-ID API Key');
-
-showStatus(`✅ Loaded - ${statusParts.join(', ')}`, 'success');
-    // Set button to completed status
-setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
+    showStatus(`✅ Applied configuration: ${config.name}`, 'success');
     
     // Optional: Clear chat if there's an existing conversation
     if (conversationHistory.length > 0) {
@@ -5278,7 +5295,7 @@ setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
     }
     
     console.log('Applied chatbot configuration:', config);
-} 
+}
 
         // ===== SCENARIO SETS MANAGEMENT =====
 
@@ -6979,6 +6996,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
