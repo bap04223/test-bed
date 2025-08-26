@@ -145,6 +145,11 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+select option {
+    background: var(--input-background);
+    color: var(--text-primary);
+}
+        
       [contenteditable="true"] {
     background: var(--input-background) !important;
     color: var(--text-primary) !important;
@@ -2377,7 +2382,8 @@ function applyChatbotConfiguration() {
     // Update the dropdown to show applied status
 if (selectElement) {
     selectElement.style.borderColor = 'var(--success-color)';
-    selectElement.style.backgroundColor = '#f0f9ff';
+    selectElement.style.backgroundColor = 'var(--input-background)';
+selectElement.style.boxShadow = '0 0 0 2px rgba(16, 185, 129, 0.2)';
 }
     
     if (conversationHistory.length > 0) {
@@ -4071,6 +4077,7 @@ function loadCollapsedState() {
     </script>
 </body>
 </html>
+
 
 
 
