@@ -33,6 +33,33 @@
     --input-background: #1e293b;
     --accent-glow: rgba(99, 102, 241, 0.3);
 }
+
+        /* Hide auto-populated fields that users don't need to see */
+#deepgramApiKey,
+label[for="deepgramApiKey"],
+#deepgramApiKey + small,
+#didApiKey,
+label[for="didApiKey"],
+#didApiKey + small,
+#deepgramModel,
+label[for="deepgramModel"],
+#deepgramLanguage,
+label[for="deepgramLanguage"] {
+    display: none !important;
+}
+
+        /* Hide Deepgram model and language dropdowns */
+#deepgramModel,
+label[for="deepgramModel"],
+#deepgramLanguage,
+label[for="deepgramLanguage"] {
+    display: none !important;
+}
+
+/* Hide the D-ID API key form container */
+form:has(#didApiKey) {
+    display: none !important;
+}
         
         /* LOCKED BODY STYLING - Prevent expansion */
 body {
@@ -1799,8 +1826,8 @@ a:hover {
     <div class="form-group">
         <label for="deepgramLanguage">Language:</label>
         <select id="deepgramLanguage">
-            <option value="en-US">English (US)</option>
             <option value="en-GB">English (UK)</option>
+            <option value="en-US">English (US)</option>
             <option value="en-AU">English (AU)</option>
         </select>
     </div>
@@ -7001,4 +7028,5 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
