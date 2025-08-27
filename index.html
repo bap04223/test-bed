@@ -532,11 +532,6 @@ input:focus, select:focus, textarea:focus {
     border: 2px solid var(--border-color);
     border-radius: 12px;
     background-color: var(--chat-background);
-    background-image: url('https://interface-online.org.uk/wp-content/uploads/2022/10/strathclyde-uni-logo.png');
-    background-size: 300px 200px; /* Set specific width and height */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
     width: 100%;
     height: calc(100vh - 300px);
     max-width: 100%;
@@ -547,11 +542,6 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     margin: 0 auto;
     display: block;
-}
-
-/* Hide background image when video is playing */
-#avatarVideo[src]:not([src=""]) {
-    background-image: none;
 }
 
         .avatar-status {
@@ -2175,24 +2165,24 @@ a:hover {
                     <!-- D-ID Avatar Video Container -->
 <div class="avatar-container" id="avatarContainer">
    <div class="video-wrapper">
-    <!-- Timer Overlay -->
-    <div id="timerDisplay" class="timer-display timer-overlay timer-ready">
-        <div class="timer-text">Timer: <span id="timerValue">Ready</span></div>
-        <div class="timer-bar">
-            <div id="timerProgress" class="timer-progress"></div>
-        </div>
+   <!-- Timer Overlay -->
+   <div id="timerDisplay" class="timer-display timer-overlay timer-ready">
+    <div class="timer-text">Timer: <span id="timerValue">Ready</span></div>
+    <div class="timer-bar">
+        <div id="timerProgress" class="timer-progress"></div>
     </div>
+</div>
 
-    <!-- Patient Image Button Overlay -->
-    <button 
-        class="patient-image-btn-overlay disabled" 
-        id="patientImageBtn"
-        onclick="showPatientImage()"
-        disabled
-        title="No Scenario Selected"
-    >
-        ❌
-    </button>
+   <!-- Patient Image Button Overlay -->
+   <button 
+    class="patient-image-btn-overlay disabled" 
+    id="patientImageBtn"
+    onclick="showPatientImage()"
+    disabled
+    title="No Scenario Selected"
+>
+    ❌
+</button>
        
        <!-- Review Overlay for Fullscreen -->
 <div id="reviewOverlay" class="review-overlay" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 999999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); padding: 20px;">
@@ -7055,6 +7045,37 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
