@@ -1672,6 +1672,144 @@ video::-moz-media-controls {
     transform: translateX(-50%) !important;
 }
 
+        /* Multi-Panel Avatar Layout */
+.video-wrapper.multi-panel {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.avatar-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    height: 100%;
+    min-height: 450px;
+    flex: 1;
+}
+
+.avatar-panel {
+    background: var(--card-background);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.avatar-panel.speaking {
+    border-color: var(--success-color);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    transform: scale(1.02);
+    z-index: 5;
+}
+
+.avatar-panel.listening {
+    opacity: 0.7;
+}
+
+.panel-header {
+    background: var(--input-background);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.panel-header h4 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.panel-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--text-secondary);
+    color: white;
+    font-weight: 500;
+}
+
+.panel-status.speaking {
+    background: var(--success-color);
+    animation: pulse 1.5s infinite;
+}
+
+.panel-status.connecting {
+    background: var(--warning-color);
+}
+
+.panel-status.error {
+    background: var(--danger-color);
+}
+
+.avatar-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: var(--chat-background);
+    border-radius: 0 0 10px 10px;
+    flex: 1;
+}
+
+.avatar-placeholder {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    background: var(--chat-background);
+    border-radius: 0 0 10px 10px;
+}
+
+.avatar-placeholder.hidden {
+    display: none;
+}
+
+.placeholder-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.placeholder-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .avatar-panels {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+    
+    .avatar-panel:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .avatar-panels {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .placeholder-icon {
+        font-size: 36px;
+    }
+}
+
      /* Enhanced small text and links */
 small {
     color: var(--text-secondary);
@@ -2170,7 +2308,7 @@ a:hover {
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
 <div class="avatar-container" id="avatarContainer">
-   <div class="video-wrapper">
+   <div class="video-wrapper multi-panel" id="videoWrapper">
    <!-- Timer Overlay -->
    <div id="timerDisplay" class="timer-display timer-overlay timer-ready">
     <div class="timer-text">Timer: <span id="timerValue">Ready</span></div>
@@ -2189,6 +2327,51 @@ a:hover {
 >
     ❌
 </button>
+       
+       <!-- Multi-Panel Video Container -->
+       <div class="avatar-panels" id="avatarPanels">
+           <!-- Doctor Panel -->
+           <div class="avatar-panel doctor-panel" id="doctorPanel">
+               <div class="panel-header">
+                   <h4>Doctor</h4>
+                   <div class="panel-status" id="doctorStatus">Ready</div>
+               </div>
+               <video id="doctorVideo" class="avatar-video" autoplay muted>
+               </video>
+               <div class="avatar-placeholder" id="doctorPlaceholder">
+                   <div class="placeholder-icon">👨‍⚕️</div>
+                   <div class="placeholder-text">Doctor</div>
+               </div>
+           </div>
+           
+           <!-- Nurse Panel -->
+           <div class="avatar-panel nurse-panel" id="nursePanel">
+               <div class="panel-header">
+                   <h4>Nurse</h4>
+                   <div class="panel-status" id="nurseStatus">Ready</div>
+               </div>
+               <video id="nurseVideo" class="avatar-video" autoplay muted>
+               </video>
+               <div class="avatar-placeholder" id="nursePlaceholder">
+                   <div class="placeholder-icon">👩‍⚕️</div>
+                   <div class="placeholder-text">Nurse</div>
+               </div>
+           </div>
+           
+           <!-- Pharmacist Panel -->
+           <div class="avatar-panel pharmacist-panel" id="pharmacistPanel">
+               <div class="panel-header">
+                   <h4>Pharmacist</h4>
+                   <div class="panel-status" id="pharmacistStatus">Ready</div>
+               </div>
+               <video id="pharmacistVideo" class="avatar-video" autoplay muted>
+               </video>
+               <div class="avatar-placeholder" id="pharmacistPlaceholder">
+                   <div class="placeholder-icon">💊</div>
+                   <div class="placeholder-text">Pharmacist</div>
+               </div>
+           </div>
+       </div>
        
        <!-- Review Overlay for Fullscreen -->
 <div id="reviewOverlay" class="review-overlay" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 999999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); padding: 20px;">
@@ -2209,26 +2392,7 @@ a:hover {
         </button>
     </div>
 </div>
-   
-   <video 
-    id="avatarVideo" 
-    width="100%" 
-    height="100%"
-    autoplay 
-    controls
-    style="
-border-radius: 12px; 
-background-color: var(--chat-background); 
-width: 100%;
-height: 100%;
-object-fit: contain;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-display: block;
-margin: 0 auto;
-"
->
-</video>
-</div>
+   </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
 </div></div>
@@ -2297,6 +2461,50 @@ margin: 0 auto;
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
         let currentVoiceMethod = 'text'; // Add this line
+
+        // ===== MULTIDISCIPLINARY MEETING VARIABLES =====
+        let meetingParticipants = {
+            doctor: {
+                streamId: null,
+                sessionId: null,
+                peerConnection: null,
+                videoElement: null,
+                isConnected: false,
+                isActive: false,
+                presenterId: 'wayne_20240711',
+                role: 'Doctor'
+            },
+            nurse: {
+                streamId: null,
+                sessionId: null,
+                peerConnection: null,
+                videoElement: null,
+                isConnected: false,
+                isActive: false,
+                presenterId: 'amy-Aq6OmGZnMt',
+                role: 'Nurse'
+            },
+            pharmacist: {
+                streamId: null,
+                sessionId: null,
+                peerConnection: null,
+                videoElement: null,
+                isConnected: false,
+                isActive: false,
+                presenterId: 'stacey-G6mPtqx8eS',
+                role: 'Pharmacist'
+            }
+        };
+
+        let conversationManager = {
+            currentSpeaker: null,
+            conversationState: 'idle',
+            meetingType: 'patient_consultation',
+            speakingQueue: [],
+            meetingContext: {}
+        };
+
+        let conversationOrchestrator = null;
 
 
         // ===== TIMER VARIABLES =====
@@ -2509,13 +2717,34 @@ function newSession() {
         mediaRecorder = null;
     }
     
-    // FIXED: Complete D-ID Streaming Cleanup
-    console.log('Performing complete D-ID cleanup...');
+    // FIXED: Complete D-ID Streaming Cleanup (Multi-Panel)
+    console.log('Performing complete multi-panel D-ID cleanup...');
     
-    // Close stream connection completely
-    closeStreamConnection().then(() => {
-        console.log('Stream connection closed for new session');
+    // Close all participant connections
+    Object.keys(meetingParticipants).forEach(async (participantKey) => {
+        const participant = meetingParticipants[participantKey];
+        
+        if (participant.peerConnection) {
+            participant.peerConnection.close();
+            participant.peerConnection = null;
+        }
+        
+        if (participant.videoElement && participant.videoElement.srcObject) {
+            participant.videoElement.srcObject.getTracks().forEach(track => track.stop());
+            participant.videoElement.srcObject = null;
+        }
+        
+        participant.streamId = null;
+        participant.sessionId = null;
+        participant.isConnected = false;
+        participant.isActive = false;
     });
+    
+    // Reset UI
+    resetAllParticipants();
+    
+    // Reset orchestrator
+    conversationOrchestrator = null;
     
     // Reset avatar initialization state
     isAvatarInitialized = false;
@@ -2748,6 +2977,150 @@ function splitTextIntoChunks(text, chunkSize) {
     
     return chunks.filter(chunk => chunk.length > 0);
 }
+
+      function initializeVideoElements() {
+    Object.keys(meetingParticipants).forEach(participant => {
+        const videoElement = document.getElementById(`${participant}Video`);
+        if (videoElement) {
+            meetingParticipants[participant].videoElement = videoElement;
+        }
+    });
+}
+
+async function initializeParticipant(participantKey) {
+    const participant = meetingParticipants[participantKey];
+    
+    try {
+        updateParticipantStatus(participantKey, 'Connecting...', 'connecting');
+        
+        const streamResponse = await fetch('https://api.d-id.com/clips/streams', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                presenter_id: participant.presenterId,
+                stream_warmup: true
+            }),
+        });
+        
+        if (!streamResponse.ok) {
+            throw new Error(`Failed to create stream for ${participantKey}`);
+        }
+        
+        const streamData = await streamResponse.json();
+        participant.streamId = streamData.id;
+        participant.sessionId = streamData.session_id;
+        
+        const sessionClientAnswer = await createParticipantPeerConnection(
+            participantKey, 
+            streamData.offer, 
+            streamData.ice_servers
+        );
+        
+        const sdpResponse = await fetch(`https://api.d-id.com/clips/streams/${participant.streamId}/sdp`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                answer: sessionClientAnswer,
+                session_id: participant.sessionId,
+            }),
+        });
+        
+        if (!sdpResponse.ok) {
+            throw new Error(`Failed to send SDP for ${participantKey}`);
+        }
+        
+        participant.isConnected = true;
+        updateParticipantStatus(participantKey, 'Ready', 'ready');
+        
+        console.log(`${participantKey} initialized successfully`);
+        
+    } catch (error) {
+        console.error(`Error initializing ${participantKey}:`, error);
+        updateParticipantStatus(participantKey, 'Error', 'error');
+        throw error;
+    }
+}
+
+async function createParticipantPeerConnection(participantKey, offer, iceServers) {
+    const participant = meetingParticipants[participantKey];
+    
+    if (participant.peerConnection) {
+        participant.peerConnection.close();
+        participant.peerConnection = null;
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    participant.peerConnection = new RTCPeerConnection({ iceServers });
+    
+    participant.peerConnection.addEventListener('track', (event) => {
+        console.log(`Received remote stream for ${participantKey}`);
+        const remoteStream = event.streams[0];
+        setParticipantVideoElement(participantKey, remoteStream);
+    });
+    
+    participant.peerConnection.addEventListener('icecandidate', (event) => {
+        if (event.candidate && participant.streamId && participant.sessionId) {
+            const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
+            
+            fetch(`https://api.d-id.com/clips/streams/${participant.streamId}/ice`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    candidate,
+                    sdpMid,
+                    sdpMLineIndex,
+                    session_id: participant.sessionId,
+                }),
+            }).then(response => {
+                if (response.ok) {
+                    console.log(`ICE candidate sent successfully for ${participantKey}`);
+                } else {
+                    console.error(`Failed to send ICE candidate for ${participantKey}:`, response.status);
+                }
+            }).catch(error => {
+                console.error(`Error sending ICE candidate for ${participantKey}:`, error);
+            });
+        }
+    });
+    
+    await participant.peerConnection.setRemoteDescription(offer);
+    const sessionClientAnswer = await participant.peerConnection.createAnswer();
+    await participant.peerConnection.setLocalDescription(sessionClientAnswer);
+    
+    return sessionClientAnswer;
+}
+
+function setParticipantVideoElement(participantKey, stream) {
+    const participant = meetingParticipants[participantKey];
+    if (!stream || !participant.videoElement) return;
+    
+    participant.videoElement.srcObject = stream;
+    participant.videoElement.muted = false;
+    participant.videoElement.volume = 0.8;
+    
+    // Hide placeholder when video starts
+    const placeholder = document.getElementById(`${participantKey}Placeholder`);
+    if (placeholder) {
+        placeholder.classList.add('hidden');
+    }
+    
+    if (participant.videoElement.paused) {
+        participant.videoElement.play().then(() => {
+            console.log(`Video playback started for ${participantKey}`);
+        }).catch(error => {
+            console.error(`Video play failed for ${participantKey}:`, error);
+        });
+    }
+}  
         
         // ===== SPEECH RECOGNITION SETUP =====
         // Configure the browser's speech recognition API
@@ -3390,68 +3763,42 @@ if (isFinal) {
         // FIXED: Enhanced Avatar Initialization with Automatic Connection
 async function initializeDID() {
     try {
-        console.log('=== initializeDID() called ===');
-        updateAvatarStatus('Initializing D-ID Streaming...', 'loading');
+        console.log('=== initializeDID() - Multi-Panel Mode ===');
+        updateAvatarStatus('Initializing multi-panel D-ID system...', 'loading');
         
-        // Get API key from configuration
         didApiKey = document.getElementById('didApiKey').value;
-        
         if (!didApiKey) {
             throw new Error('D-ID API key not provided');
         }
         
-        // Get video element
-        avatarVideo = document.getElementById('avatarVideo');
+        // Initialize video elements
+        initializeVideoElements();
         
-        if (!avatarVideo) {
-            throw new Error('Avatar video element not found');
-        }
-        
-        // Clean up any existing connections before initializing
-        if (peerConnection || streamId) {
-            console.log('Cleaning up existing connections before initialization...');
-            await closeStreamConnection();
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        // Test the API key by making a simple request
+        // Test API connection
         await testDIDConnection();
         
-        console.log('D-ID Streaming API initialized successfully');
+        // Initialize each participant
+        const initPromises = Object.keys(meetingParticipants).map(participant => 
+            initializeParticipant(participant)
+        );
+        
+        await Promise.all(initPromises);
+        
         isAvatarInitialized = true;
         
-        // Test permissions and fetch presenters
-        try {
-            updateAvatarStatus('Testing API permissions...', 'loading');
-            await testDIDPermissions();
-            
-            const currentServiceType = document.getElementById('serviceType').value;
-            if (currentServiceType === 'clips') {
-                updateAvatarStatus('Fetching available presenters...', 'loading');
-                await fetchAvailablePresenters();
-            }
-        } catch (testError) {
-            console.warn('Permission/presenter testing failed:', testError);
-            // Continue anyway - don't fail initialization
-        }
+        // Initialize conversation orchestrator
+        conversationOrchestrator = new ConversationOrchestrator();
         
-        // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
-updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
-await connectStream();
-
-// Set button to completed status
-setButtonCompleted('initializeAvatarBtn', 'Avatar Connected');
-
-return true;
+        setButtonCompleted('initializeAvatarBtn', 'Multi-Panel Connected');
+        updateAvatarStatus('Multi-panel system ready', 'success');
+        
+        return true;
         
     } catch (error) {
-        console.error('D-ID initialization error:', error);
+        console.error('Multi-panel D-ID initialization error:', error);
         updateAvatarStatus(`Error: ${error.message}`, 'error');
-isAvatarInitialized = false;
-
-// Reset button to pending status on error
-setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
-return false;
+        setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+        return false;
     }
 }
 
@@ -3791,82 +4138,76 @@ function setVideoElement(stream) {
 
 // FIXED: Enhanced Close Stream Connection with Proper Service Detection and Cleanup
 async function closeStreamConnection() {
-    console.log('=== closeStreamConnection() called ===');
-    
-     
-    // Get current service type BEFORE clearing variables
-    const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
-    console.log('Closing stream connection for service type:', currentServiceType);
+    console.log('=== closeStreamConnection() - Multi-Panel Mode ===');
     
     // Reset connection state immediately
     isStreamConnected = false;
     
-    // Clean up video element
-    if (avatarVideo && avatarVideo.srcObject) {
-        console.log('Stopping video tracks...');
-        avatarVideo.srcObject.getTracks().forEach(track => {
-            track.stop();
-            console.log('Stopped track:', track.kind);
-        });
-        avatarVideo.srcObject = null;
-        avatarVideo.src = '';
-    }
-    
-    // Clean up peer connection
-    if (peerConnection) {
-        console.log('Closing peer connection...');
+    // Close all participant connections
+    Object.keys(meetingParticipants).forEach(async (participantKey) => {
+        const participant = meetingParticipants[participantKey];
         
-        // Remove all event listeners first
-        peerConnection.removeEventListener('icegatheringstatechange', onIceGatheringStateChange);
-        peerConnection.removeEventListener('icecandidate', onIceCandidate);
-        peerConnection.removeEventListener('iceconnectionstatechange', onIceConnectionStateChange);
-        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
-        peerConnection.removeEventListener('signalingstatechange', onSignalingStateChange);
-        peerConnection.removeEventListener('track', onTrack);
-        
-        // Close the connection
-        peerConnection.close();
-        peerConnection = null;
-        console.log('Peer connection closed and nullified');
-    }
-    
-    // Delete stream on server if we have IDs
-    if (streamId && didSessionId) {
-        console.log('Deleting stream on server:', streamId);
-        const deleteUrl = `https://api.d-id.com/${currentServiceType}/streams/${streamId}`;
-        
-        try {
-            const deleteResponse = await fetch(deleteUrl, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Basic ${didApiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ session_id: didSessionId }),
+        // Clean up video element
+        if (participant.videoElement && participant.videoElement.srcObject) {
+            console.log(`Stopping video tracks for ${participantKey}...`);
+            participant.videoElement.srcObject.getTracks().forEach(track => {
+                track.stop();
+                console.log(`Stopped track for ${participantKey}:`, track.kind);
             });
-            
-            if (deleteResponse.ok) {
-                console.log('Stream deleted successfully on server');
-            } else {
-                console.warn('Failed to delete stream on server:', deleteResponse.status);
-            }
-        } catch (error) {
-            console.error('Error deleting stream on server:', error);
+            participant.videoElement.srcObject = null;
+            participant.videoElement.src = '';
         }
-    }
+        
+        // Clean up peer connection
+        if (participant.peerConnection) {
+            console.log(`Closing peer connection for ${participantKey}...`);
+            participant.peerConnection.close();
+            participant.peerConnection = null;
+        }
+        
+        // Delete stream on server if we have IDs
+        if (participant.streamId && participant.sessionId) {
+            console.log(`Deleting stream on server for ${participantKey}:`, participant.streamId);
+            const deleteUrl = `https://api.d-id.com/clips/streams/${participant.streamId}`;
+            
+            try {
+                const deleteResponse = await fetch(deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Basic ${didApiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ session_id: participant.sessionId }),
+                });
+                
+                if (deleteResponse.ok) {
+                    console.log(`Stream deleted successfully on server for ${participantKey}`);
+                } else {
+                    console.warn(`Failed to delete stream on server for ${participantKey}:`, deleteResponse.status);
+                }
+            } catch (error) {
+                console.error(`Error deleting stream on server for ${participantKey}:`, error);
+            }
+        }
+        
+        // Clear stream variables
+        participant.streamId = null;
+        participant.sessionId = null;
+        participant.isConnected = false;
+        participant.isActive = false;
+    });
     
-    // Clear stream variables
-    streamId = null;
-    didSessionId = null;
+    // Reset UI
+    resetAllParticipants();
     
-    console.log('Stream cleanup completed');
+    console.log('Multi-panel stream cleanup completed');
 
-// Reset initialize button if avatar was initialized
-if (isAvatarInitialized) {
-    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
-    isAvatarInitialized = false;
-    updateAvatarStatus('Connection closed - Re-initialize avatar to reconnect', 'info');
-}
+    // Reset initialize button if avatar was initialized
+    if (isAvatarInitialized) {
+        setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+        isAvatarInitialized = false;
+        updateAvatarStatus('Connection closed - Re-initialize avatar to reconnect', 'info');
+    }
 } 
         
         // Test D-ID API connection
@@ -5776,16 +6117,21 @@ function applyScenarioSet() {
                 }
                 
                 if (aiResponse) {
-                    addMessage(aiResponse, 'ai');
-                    
-                // Generate avatar speech if initialized
-if (isAvatarInitialized && isStreamConnected) {
-    console.log('Triggering avatar speech for response');
-    speakWithAvatar(aiResponse);
-} else if (isAvatarInitialized && !isStreamConnected) {
-    console.warn('Stream not connected for speech');
-    updateAvatarStatus('Connection lost - click Initialize Avatar', 'error');
-}
+                    // Use conversation orchestrator if available, otherwise fallback
+                    if (conversationOrchestrator) {
+                        await conversationOrchestrator.processStudentMessage(message);
+                    } else {
+                        // Fallback to single avatar
+                        addMessage(aiResponse, 'ai');
+                        
+                        if (isAvatarInitialized && isStreamConnected) {
+                            console.log('Triggering avatar speech for response');
+                            speakWithAvatar(aiResponse);
+                        } else if (isAvatarInitialized && !isStreamConnected) {
+                            console.warn('Stream not connected for speech');
+                            updateAvatarStatus('Connection lost - click Initialize Avatar', 'error');
+                        }
+                    }
                 } else {
                     console.error('Could not find response in data:', data);
                     showStatus('Unexpected response format from webhook', 'error');
@@ -6067,9 +6413,245 @@ function forceScrollToBottom() {
     button.title = 'No Scenario Selected';
 }
 }
+
+// ===== CONVERSATION ORCHESTRATOR CLASS =====
+        class ConversationOrchestrator {
+            constructor() {
+                this.participants = ['doctor', 'nurse', 'pharmacist'];
+                this.conversationRules = {
+                    patient_consultation: {
+                        initialSpeaker: 'doctor',
+                        speakingOrder: ['doctor', 'nurse', 'pharmacist'],
+                        maxTurnLength: 30000,
+                        allowInterruptions: true
+                    }
+                };
+            }
+            
+            async processStudentMessage(message) {
+                try {
+                    const nextSpeaker = this.determineNextSpeaker(message);
+                    const response = await this.generateRoleSpecificResponse(nextSpeaker, message);
+                    await this.makeParticipantSpeak(nextSpeaker, response);
+                    this.updateConversationState(nextSpeaker, response);
+                    
+                } catch (error) {
+                    console.error('Conversation orchestration error:', error);
+                    showStatus('Error managing conversation flow', 'error');
+                }
+            }
+            
+            determineNextSpeaker(studentMessage) {
+                const message = studentMessage.toLowerCase();
+                
+                if (message.includes('medication') || message.includes('drug') || message.includes('prescription')) {
+                    return 'pharmacist';
+                }
+                if (message.includes('symptoms') || message.includes('care') || message.includes('comfort')) {
+                    return 'nurse';
+                }
+                if (message.includes('diagnosis') || message.includes('treatment') || message.includes('examination')) {
+                    return 'doctor';
+                }
+                
+                return this.getNextInRotation();
+            }
+            
+            getNextInRotation() {
+                const lastSpeaker = conversationManager.currentSpeaker;
+                const participants = this.participants;
+                
+                if (!lastSpeaker) return 'doctor';
+                
+                const currentIndex = participants.indexOf(lastSpeaker);
+                return participants[(currentIndex + 1) % participants.length];
+            }
+            
+            async generateRoleSpecificResponse(participantKey, studentMessage) {
+                const participant = meetingParticipants[participantKey];
+                const role = participant.role;
+                
+                const payload = {
+                    sessionId: sessionId,
+                    message: studentMessage,
+                    scenario: currentScenario,
+                    speakingRole: role,
+                    participantKey: participantKey,
+                    conversationContext: {
+                        previousSpeakers: conversationManager.speakingQueue.slice(-3),
+                        meetingType: conversationManager.meetingType,
+                        currentPhase: this.getCurrentMeetingPhase()
+                    },
+                    roleInstructions: this.getRoleInstructions(role),
+                    timestamp: new Date().toISOString(),
+                    conversationHistory: conversationHistory
+                };
+                
+                const response = await fetch(document.getElementById('webhookUrl').value, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const responseText = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    data = { response: responseText };
+                }
+                
+                return data.response || data.message || data.text || responseText;
+            }
+            
+            getRoleInstructions(role) {
+                const instructions = {
+                    'Doctor': 'You are the attending physician leading this consultation. Focus on medical assessment, diagnosis, and treatment decisions. Keep responses professional and authoritative.',
+                    'Nurse': 'You are an experienced nurse participating in patient care. Focus on patient comfort, care coordination, and practical nursing considerations. Provide supportive and caring responses.',
+                    'Pharmacist': 'You are the clinical pharmacist. Focus on medication safety, drug interactions, dosing, and pharmaceutical care. Provide expert medication-related guidance.'
+                };
+                
+                return instructions[role] || `You are a ${role.toLowerCase()} participating in a multidisciplinary patient consultation.`;
+            }
+            
+            getCurrentMeetingPhase() {
+                const messageCount = conversationHistory.length;
+                if (messageCount < 3) return 'introduction';
+                if (messageCount < 8) return 'assessment';
+                if (messageCount < 15) return 'discussion';
+                return 'conclusion';
+            }
+            
+            async makeParticipantSpeak(participantKey, text) {
+                const participant = meetingParticipants[participantKey];
+                
+                if (!participant.isConnected) {
+                    console.error(`${participantKey} is not connected`);
+                    return;
+                }
+                
+                this.setActiveSpeaker(participantKey);
+                await this.speakWithParticipant(participantKey, text);
+                addMessage(`[${participant.role}]: ${text}`, 'ai');
+            }
+            
+            setActiveSpeaker(participantKey) {
+                Object.keys(meetingParticipants).forEach(key => {
+                    const panel = document.getElementById(`${key}Panel`);
+                    if (panel) {
+                        panel.classList.remove('speaking');
+                        panel.classList.add('listening');
+                    }
+                    updateParticipantStatus(key, 'Listening', 'ready');
+                });
+                
+                const activePanel = document.getElementById(`${participantKey}Panel`);
+                if (activePanel) {
+                    activePanel.classList.remove('listening');
+                    activePanel.classList.add('speaking');
+                }
+                
+                updateParticipantStatus(participantKey, 'Speaking', 'speaking');
+                conversationManager.currentSpeaker = participantKey;
+            }
+            
+            async speakWithParticipant(participantKey, text) {
+                const participant = meetingParticipants[participantKey];
+                
+                try {
+                    const voiceConfig = getVoiceForRole(participant.role);
+                    
+                    const scriptPayload = {
+                        script: {
+                            type: 'text',
+                            input: text,
+                            provider: voiceConfig
+                        },
+                        config: {
+                            stitch: true,
+                        },
+                        session_id: participant.sessionId
+                    };
+                    
+                    const talkResponse = await fetch(`https://api.d-id.com/clips/streams/${participant.streamId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Basic ${didApiKey}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(scriptPayload),
+                    });
+                    
+                    if (!talkResponse.ok) {
+                        throw new Error(`Talk stream failed for ${participantKey}: ${talkResponse.status}`);
+                    }
+                    
+                    console.log(`${participantKey} speech sent successfully`);
+                    
+                } catch (error) {
+                    console.error(`Error making ${participantKey} speak:`, error);
+                    updateParticipantStatus(participantKey, 'Speech Error', 'error');
+                }
+            }
+            
+            updateConversationState(speaker, message) {
+                conversationManager.speakingQueue.push({
+                    speaker: speaker,
+                    message: message,
+                    timestamp: Date.now()
+                });
+                
+                if (conversationManager.speakingQueue.length > 10) {
+                    conversationManager.speakingQueue = conversationManager.speakingQueue.slice(-10);
+                }
+            }
+        }
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
+
+        // Multi-panel utility functions
+        function updateParticipantStatus(participantKey, statusText, statusType) {
+            const statusElement = document.getElementById(`${participantKey}Status`);
+            if (statusElement) {
+                statusElement.textContent = statusText;
+                statusElement.className = `panel-status ${statusType}`;
+            }
+        }
+
+        function getVoiceForRole(role) {
+            const roleVoices = {
+                'Doctor': { type: 'microsoft', voice_id: 'en-US-DavisNeural' },
+                'Nurse': { type: 'microsoft', voice_id: 'en-US-AriaNeural' },
+                'Pharmacist': { type: 'microsoft', voice_id: 'en-US-JennyNeural' }
+            };
+            
+            return roleVoices[role] || { type: 'microsoft', voice_id: 'en-US-AriaNeural' };
+        }
+
+        function resetAllParticipants() {
+            Object.keys(meetingParticipants).forEach(key => {
+                const panel = document.getElementById(`${key}Panel`);
+                if (panel) {
+                    panel.classList.remove('speaking', 'listening');
+                }
+                updateParticipantStatus(key, 'Ready', 'ready');
+                
+                const placeholder = document.getElementById(`${key}Placeholder`);
+                if (placeholder) {
+                    placeholder.classList.remove('hidden');
+                }
+            });
+            conversationManager.currentSpeaker = null;
+        }
         
         function showStatus(message, type) {
     const statusDiv = document.getElementById('status');
@@ -7050,3 +7632,4 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
