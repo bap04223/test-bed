@@ -3777,12 +3777,12 @@ async function initializeDID() {
         // Test API connection
         await testDIDConnection();
         
-        // Initialize each participant
-        const initPromises = Object.keys(meetingParticipants).map(participant => 
-            initializeParticipant(participant)
-        );
-        
-        await Promise.all(initPromises);
+       // Initialize each participant sequentially to avoid rate limits
+        for (const participant of Object.keys(meetingParticipants)) {
+            await initializeParticipant(participant);
+            // Add small delay between initializations
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         
         isAvatarInitialized = true;
         
@@ -7632,4 +7632,5 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
