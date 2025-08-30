@@ -3,443 +3,2641 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webhook Status Indicator Demo</title>
+    <title>Text-Bot Pharmacy Consultation Training - AI Patient Simulator</title>
+    
+    <!-- Modern styling for the interface -->
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0f23;
-            color: #e2e8f0;
-            padding: 20px;
+        /* Reset default browser styles and set custom properties for colors */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
+        /* CSS Variables for easy color scheme changes */
+        :root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #10b981;
+    --danger-color: #ef4444;
+    --background: #0f0f23;
+    --card-background: #1a1a2e;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --chat-background: #16213e;
+    --input-background: #1e293b;
+    --accent-glow: rgba(99, 102, 241, 0.3);
+}
+        
+        /* Main body styling */
+      body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(rgba(15, 15, 35, 0.6), rgba(22, 33, 62, 0.6)), 
+                url('https://images.unsplash.com/photo-1471864190281-a93a3070b6de?q.jpg') center center/cover no-repeat fixed;
+    color: var(--text-primary);
+    line-height: 1.6;
+    height: 125vh;
+    overflow: hidden;
+    zoom: 0.8;
+}
+        
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: #1a1a2e;
-            padding: 30px;
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 20px;
+    height: 125vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+        
+        /* Header section styling */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-background);
             border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out both;
         }
+        
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        /* Improved instructions styling for better centering */
+        .instructions-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .instructions-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .instructions-column ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions-column li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        /* Grid layout for main content - 2 COLUMNS NOW */
+        .grid {
+    display: grid;
+    grid-template-columns: 1fr 2.0fr;
+    gap: 20px;
+    flex: 1;
+    align-items: stretch;
+    overflow: hidden;
+}
+        
+        /* Card component for sections */
+       .card {
+    background: var(--card-background);
+    padding: 20px 20px 0 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out both;
+}
 
+.card:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.card:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.card:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+        .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 20px;
+}
+
+.scrollable-section {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    max-height: none;
+}
+
+.card h2 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    text-shadow: 0 0 5px var(--accent-glow);
+}
+        
+        /* Form input styling */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-
+        
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-weight: 500;
-            color: #94a3b8;
+            color: var(--text-secondary);
         }
+        
+        input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: var(--input-background);
+    color: var(--text-primary);
+}
 
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            background: #1e293b;
-            color: #e2e8f0;
-            font-size: 16px;
-        }
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
 
-        /* Status indicator styles */
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        .status-active {
-            background-color: #10b981;
-            box-shadow: 0 0 4px #10b981;
-        }
-
-        .status-inactive {
-            background-color: #ef4444;
-            box-shadow: 0 0 4px #ef4444;
-        }
-
-        .status-checking {
-            background-color: #f59e0b;
-            box-shadow: 0 0 4px #f59e0b;
-            animation: pulse 2s infinite;
-        }
-
-        .status-unknown {
-            background-color: #6b7280;
-            box-shadow: 0 0 4px #6b7280;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
+select option {
+    background: var(--input-background);
+    color: var(--text-primary);
+}
+        
+        /* Button styling */
         button {
             padding: 10px 20px;
-            background: #6366f1;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
             color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #047857;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        /* New button style for export */
+        .btn-info {
+            background-color: #0ea5e9;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: #0284c7;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #d97706;
+        }
+
+        /* Insert this CSS block after the existing button hover styles */
+/* Status Button States */
+.btn-status-pending {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+}
+
+.btn-status-pending:hover {
+    background-color: #dc2626 !important;
+}
+
+.btn-status-completed {
+    background-color: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-status-completed:hover {
+    background-color: #047857 !important;
+}
+
+.btn-status-completed::after {
+    content: " ✓";
+    font-weight: bold;
+}
+
+                /* Back to Landing Page Button */
+.back-to-landing-btn {
+    position: fixed;
+    top: 29px;
+    left: 88px;
+    z-index: 1000;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-to-landing-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover), #3730a3); 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+    color: white;
+}
+
+.back-to-landing-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .back-to-landing-btn {
+        top: 15px;
+        right: 15px;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+        
+        /* Chat display area */
+        .chat-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    padding-bottom: 80px;
+    background: var(--chat-background);
+    margin: 0;
+    min-height: 200px;
+    max-height: none;
+    height: auto;
+    word-wrap: break-word;
+    word-break: break-word;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin-bottom: 15px;
+}
+        
+        /* Individual message styling */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.ai {
+    background: #2d3748;
+    color: var(--text-primary);
+    border-left: 3px solid var(--secondary-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.message.system {
+    background: #1a202c;
+    color: var(--text-secondary);
+    font-style: italic;
+    border-left: 4px solid var(--success-color);
+    max-width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+        
+        /* Status indicator */
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .status.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Button group styling for control buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .button-group button {
+            flex: 1;
+            min-width: 140px;
+        }
+        
+        /* Input group for message input */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .input-group textarea {
+            flex: 1;
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .input-group button {
+            height: fit-content;
+            padding: 12px 20px;
+            white-space: nowrap;
+        }
+        
+        /* Patient Image Button Styling */
+        .patient-image-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 500;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
-            margin: 10px 10px 0 0;
-        }
-
-        button:hover {
-            background: #4f46e5;
-        }
-
-        .status-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #1e293b;
-            border-radius: 6px;
-            border-left: 4px solid #10b981;
-        }
-
-        .demo-controls {
-            margin-top: 30px;
-            padding: 20px;
-            background: #16213e;
-            border-radius: 8px;
-        }
-
-        h3 {
-            color: #6366f1;
-            margin-bottom: 15px;
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin: 15px 0;
-        }
-
-        .checkbox-item {
+            transition: all 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
-
-        input[type="checkbox"] {
-            width: auto;
+        
+        .patient-image-btn.available {
+            background-color: var(--success-color);
+            color: white;
         }
+        
+        .patient-image-btn.available:hover {
+            background-color: #047857;
+        }
+        
+        .patient-image-btn.unavailable {
+            background-color: var(--danger-color);
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .patient-image-btn.disabled {
+            background-color: var(--text-secondary);
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        /* Image Modal Styling */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .image-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-modal-content {
+            position: relative;
+            max-width: 98%;
+            max-height: 98%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .image-modal-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .image-modal-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        
+        .image-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        
+        .image-modal-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .image-modal-body {
+            padding: 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100% - 50px);
+            overflow: hidden;
+        }
+        
+        .patient-image {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+        
+        .image-loading {
+            padding: 40px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .image-error {
+            padding: 40px;
+            color: var(--danger-color);
+            text-align: center;
+        }
+
+        /* Image Gallery Styles */
+.image-gallery {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 4px;
+    z-index: 10;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.gallery-nav:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.gallery-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: translateY(-50%) scale(1);
+}
+
+.gallery-nav-prev {
+    left: 10px;
+}
+
+.gallery-nav-next {
+    right: 10px;
+}
+
+/* Gallery Indicators (Dots) */
+.gallery-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 10px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.gallery-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gallery-dot:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.gallery-dot.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Mobile Responsive Gallery */
+@media (max-width: 768px) {
+    .gallery-nav {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .gallery-nav-prev {
+        left: 5px;
+    }
+    
+    .gallery-nav-next {
+        right: 5px;
+    }
+    
+    .gallery-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
+        
+        /* Modal Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+
+        .card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    flex-shrink: 0;
+}
+
+.card-icon:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+        
+/* Status indicator styles */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.status-active {
+    background-color: #10b981;
+    box-shadow: 0 0 4px #10b981;
+}
+
+.status-inactive {
+    background-color: #ef4444;
+    box-shadow: 0 0 4px #ef4444;
+}
+
+.status-checking {
+    background-color: #f59e0b;
+    box-shadow: 0 0 4px #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+.status-unknown {
+    background-color: #6b7280;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+        
     </style>
 </head>
+
 <body>
+    <!-- Back to Landing Page Button -->
+<a href="https://bap04223.github.io/Landing-Page/" class="back-to-landing-btn" title="Return to Landing Page">
+    ← Back to Hub
+</a>
     <div class="container">
-        <h2>Chatbot Selection with Webhook Status</h2>
+        <!-- Header section with title and description -->
+        <div class="header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+    <div class="card-icon" style="margin: 0;">💬</div>
+    <h1 style="margin: 0;">Text-Bot Consultation Training</h1>
+    <div class="card-icon" style="margin: 0;">💬</div>
+</div>
+            <p>Practice your consultation skills with our AI-powered patients</p>
+        </div>
+               
+        <!-- Main content grid -->
+        <div class="grid">
+            <!-- Configuration section -->
+           <div class="card">
+    <h2>Configuration</h2>
+    <div class="card-content">
+        <div class="scrollable-section">
         
-        <div class="form-group">
-            <label for="chatbotSelect">Select Chatbot:</label>
-            <select id="chatbotSelect">
-                <option value="">Select a chatbot configuration...</option>
-            </select>
-        </div>
-
-        <button onclick="checkAllWebhookStatus()">Check All Webhook Status</button>
-        <button onclick="loadSampleConfigurations()">Load Sample Configs</button>
-
-        <div id="statusInfo" class="status-info" style="display: none;">
-            <h4>Webhook Status Legend:</h4>
-            <p><span class="status-indicator status-active"></span>Active - Webhook is responding</p>
-            <p><span class="status-indicator status-inactive"></span>Inactive - Webhook is not responding</p>
-            <p><span class="status-indicator status-checking"></span>Checking - Status check in progress</p>
-            <p><span class="status-indicator status-unknown"></span>Unknown - Status not checked yet</p>
-        </div>
-
-        <div class="demo-controls">
-            <h3>Demo Controls</h3>
-            <p>Simulate different webhook statuses:</p>
-            <div class="checkbox-group">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="chatbot1" checked>
-                    <label for="chatbot1">Patient Simulator 1 (Active)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="chatbot2">
-                    <label for="chatbot2">Patient Simulator 2 (Inactive)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="chatbot3" checked>
-                    <label for="chatbot3">Mental Health Bot (Active)</label>
-                </div>
-                <div class="checkbox-item">
-                    <input type="checkbox" id="chatbot4">
-                    <label for="chatbot4">Pharmacy Tutor (Inactive)</label>
-                </div>
-            </div>
-            <button onclick="updateSimulatedStatus()">Update Simulated Status</button>
-        </div>
+        <!-- Chatbot Configuration Section -->
+    <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+        <label for="configSheetId">Chatbot ID's:</label>
+        <input 
+            type="password" 
+            id="configSheetId" 
+            placeholder="Google Sheet ID containing chatbot configurations"
+            title="The Google Sheet ID containing your chatbot configurations"
+            autocomplete="new-password"
+            style="font-size: 14px;"
+        >
+        <button 
+            class="btn-secondary btn-status-pending" 
+            onclick="loadChatbotConfigurations()" 
+            style="width: 100%; margin-top: 10px; font-size: 14px;"
+            id="loadChatbotBtn"
+        >
+            Load Chatbot Configurations
+        </button>
+    </div>
+    
+    <!-- Hidden webhook fields - populated by chatbot configuration -->
+    <input type="hidden" id="webhookUrl" />
+    <input type="hidden" id="submitWebhookUrl" />
+    
+    <!-- Scenario Sets Management Section -->
+    <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+        <label for="scenarioSetsId">Scenario Sets List:</label>
+        <input 
+            type="password" 
+            id="scenarioSetsId" 
+            placeholder="Google Sheet ID containing list of scenario sets"
+            title="The Google Sheet ID containing your scenario sets list"
+            autocomplete="new-password"
+            style="font-size: 14px;"
+        >
+        <button 
+            class="btn-secondary btn-status-pending" 
+            onclick="loadScenarioSets()" 
+            style="width: 100%; margin-top: 10px; font-size: 14px;"
+            id="loadSetsBtn"
+        >
+            Load Scenario Sets
+        </button>
     </div>
 
-    <script>
-        let chatbotConfigurations = [];
+    <div class="form-group" style="margin-top: 15px;">
+        <label for="chatbotSelect">Select Chatbot:</label>
+        <select id="chatbotSelect" disabled style="font-size: 14px;">
+            <option value="">Load configurations first...</option>
+        </select>
+    </div>
 
-        // Load sample configurations
-        function loadSampleConfigurations() {
-            chatbotConfigurations = [
-                {
-                    name: "Patient Simulator 1",
-                    webhookUrl: "https://your-n8n.com/webhook/patient-sim-1",
-                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-1",
-                    description: "General patient consultation",
-                    status: "unknown" // unknown, active, inactive, checking
-                },
-                {
-                    name: "Patient Simulator 2", 
-                    webhookUrl: "https://your-n8n.com/webhook/patient-sim-2",
-                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-2",
-                    description: "Pediatric patient scenarios",
-                    status: "unknown"
-                },
-                {
-                    name: "Mental Health Bot",
-                    webhookUrl: "https://your-n8n.com/webhook/mental-health",
-                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-mental",
-                    description: "Mental health consultations",
-                    status: "unknown"
-                },
-                {
-                    name: "Pharmacy Tutor",
-                    webhookUrl: "https://your-n8n.com/webhook/pharmacy-tutor",
-                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-tutor", 
-                    description: "Educational pharmacy bot",
-                    status: "unknown"
-                }
-            ];
+    <div class="form-group" style="margin-top: 15px;">
+        <label for="scenarioSetSelect">Select Scenario Set:</label>
+        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+            <option value="">Load scenario sets first...</option>
+        </select>
+    </div>
+    
+    <!-- Hidden field - automatically populated from scenario set selection -->
+    <input type="hidden" id="sheetId">
+    
+    <!-- Google Sheets configuration -->
+    <div class="form-group">
+        <label for="sheetName">Sheet Name:</label>
+        <select id="sheetName" disabled>
+            <option value="">Select scenario set first</option>
+        </select>
+    </div>
+    
+    <!-- Scenario selection dropdown -->
+    <div class="form-group" style="margin-top: 20px;">
+        <label for="scenarioSelect">Select Scenario:</label>
+        <select id="scenarioSelect" disabled>
+            <option value="">Load sheet data first...</option>
+        </select>
+    </div>
+    
+    <button class="btn-info" onclick="selectRandomScenario()" style="margin-top: 10px; width: 100%;">
+    Random Scenario
+</button>
+    
+    <!-- Patient Image Button -->
+    <button 
+        class="patient-image-btn disabled" 
+        id="patientImageBtn"
+        onclick="showPatientImage()"
+        disabled
+    >
+        📷 No Scenario Selected
+    </button>
+</div>
+        </div>
+   </div>
 
-            populateChatbotDropdown();
-            document.getElementById('statusInfo').style.display = 'block';
-        }
-
-        // Populate dropdown with status indicators
-        function populateChatbotDropdown() {
-            const select = document.getElementById('chatbotSelect');
-            select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
-
-            chatbotConfigurations.forEach((config, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                
-                // Create status indicator HTML
-                const statusClass = `status-${config.status}`;
-                const statusDot = `<span class="status-indicator ${statusClass}"></span>`;
-                
-                // Set option text (note: HTML won't render in option text, but we'll handle this differently)
-                option.textContent = `${config.name} - ${config.description}`;
-                option.setAttribute('data-status', config.status);
-                
-                select.appendChild(option);
-            });
-
-            // Custom styling for the select dropdown (this is a workaround since HTML in options doesn't work)
-            customizeSelectOptions();
-        }
-
-        // Custom function to add visual status indicators
-        function customizeSelectOptions() {
-            const select = document.getElementById('chatbotSelect');
+           
             
-            // Remove any existing custom dropdown
-            const existingCustom = document.querySelector('.custom-select-wrapper');
-            if (existingCustom) {
-                existingCustom.remove();
-            }
-
-            // Create a custom styled select
-            const wrapper = document.createElement('div');
-            wrapper.className = 'custom-select-wrapper';
-            wrapper.style.cssText = `
-                position: relative;
-                display: inline-block;
-                width: 100%;
-            `;
-
-            const customSelect = document.createElement('div');
-            customSelect.className = 'custom-select';
-            customSelect.style.cssText = `
-                position: relative;
-                background: #1e293b;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                padding: 12px;
-                cursor: pointer;
-                color: #e2e8f0;
-                font-size: 16px;
-            `;
-
-            const selectedOption = document.createElement('div');
-            selectedOption.className = 'selected-option';
-            selectedOption.innerHTML = '<span class="status-indicator status-unknown"></span>Select a chatbot configuration...';
-
-            const optionsList = document.createElement('div');
-            optionsList.className = 'options-list';
-            optionsList.style.cssText = `
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: #1e293b;
-                border: 1px solid #334155;
-                border-top: none;
-                border-radius: 0 0 6px 6px;
-                max-height: 200px;
-                overflow-y: auto;
-                z-index: 1000;
-                display: none;
-            `;
-
-            // Add options to the custom dropdown
-            chatbotConfigurations.forEach((config, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'custom-option';
-                optionDiv.style.cssText = `
-                    padding: 12px;
-                    cursor: pointer;
-                    border-bottom: 1px solid #334155;
-                    transition: background-color 0.2s;
-                `;
+            <!-- Chat and input area -->
+            <div class="card">
+    <h2>Conversation</h2>
+    <div class="card-content">
+        <div class="chat-container" id="chatContainer">
+                    <p style="text-align: center; color: var(--text-secondary);">
+                        Select a scenario and type a message to begin the consultation...
+                    </p>
+                </div>
                 
-                const statusClass = `status-${config.status}`;
-                optionDiv.innerHTML = `
-                    <span class="status-indicator ${statusClass}"></span>
-                    ${config.name} - ${config.description}
-                `;
+                <!-- Message input area -->
+<div class="form-group">
+    <label for="messageInput">Your Message:</label>
+    <textarea 
+        id="messageInput" 
+        placeholder="Type your consultation message here..."
+        rows="3"
+        onkeydown="handleKeyPress(event)"
+        style="margin-bottom: 10px;"
+    ></textarea>
+    <button class="btn-primary" onclick="sendMessage()" style="width: 100%;">
+        Send Message
+    </button>
+</div>
+                
+                <!-- Primary action buttons -->
+<div class="button-group" style="margin-top: 40px; margin-bottom: 20px;">
+     <button class="btn-secondary" onclick="clearChat()">
+        Clear Chat
+    </button>
+    <button class="btn-danger" onclick="submitConversation()">
+        Submit for Evaluation
+    </button>
+    <button class="btn-info" onclick="exportConversation()">
+        Export Chat
+    </button>
+</div>
 
-                optionDiv.addEventListener('mouseenter', () => {
-                    optionDiv.style.backgroundColor = '#334155';
-                });
+<!-- Secondary control buttons -->
+<div class="button-group" style="margin-top: 20px; style="width: 100%;">
+   
+    <button class="btn-warning" onclick="newSession()">
+        New Session
+    </button>
+</div>   
+                
+                <!-- Status display area for system messages -->
+                <div id="status" class="status info" style="display: none;"></div>
+            </div>
+        </div>
 
-                optionDiv.addEventListener('mouseleave', () => {
-                    optionDiv.style.backgroundColor = 'transparent';
-                });
+    
+    <!-- Patient Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
+        <div class="image-modal-content" onclick="event.stopPropagation()">
+            <div class="image-modal-header">
+                <h3 id="imageModalTitle">Patient Image</h3>
+                <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
+            </div>
+            <div class="image-modal-body" id="imageModalBody">
+                <div class="image-loading">
+                    <div class="spinner"></div>
+                    Loading image...
+                </div>
+            </div>
+        </div>
+    </div>
+   </div>
+</div> 
 
-                optionDiv.addEventListener('click', () => {
-                    selectedOption.innerHTML = `
-                        <span class="status-indicator ${statusClass}"></span>
-                        ${config.name} - ${config.description}
-                    `;
-                    optionsList.style.display = 'none';
-                    
-                    // Update the original select
-                    select.value = index;
-                    
-                    // Trigger change event
-                    const event = new Event('change');
-                    select.dispatchEvent(event);
-                });
+<!-- JavaScript code for functionality -->
+    <script>
+        // ===== GLOBAL VARIABLES =====
+        // These store the state of our application
+        
+        let currentScenario = null;       // Store the selected patient scenario
+        let conversationHistory = [];     // Store all messages in the conversation
+        let sheetData = [];              // Store data loaded from Google Sheets
+        let sessionId = '';              // Unique session identifier for this training session
 
-                optionsList.appendChild(optionDiv);
-            });
+        // ===== CHATBOT CONFIGURATION VARIABLES =====
+let chatbotConfigurations = [];     // Store loaded chatbot configurations
+let currentChatbotConfig = null;    // Currently selected chatbot configuration
 
-            customSelect.appendChild(selectedOption);
-            customSelect.appendChild(optionsList);
-            wrapper.appendChild(customSelect);
+// ===== SCENARIO SETS VARIABLES =====
+let scenarioSets = [];              // Store loaded scenario sets
+let currentScenarioSet = null;      // Currently selected scenario set
 
-            // Toggle dropdown
-            customSelect.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isVisible = optionsList.style.display === 'block';
-                optionsList.style.display = isVisible ? 'none' : 'block';
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', () => {
-                optionsList.style.display = 'none';
-            });
-
-            // Insert the custom select after the original select
-            select.style.display = 'none';
-            select.parentNode.insertBefore(wrapper, select.nextSibling);
+        // ===== MULTI-IMAGE GALLERY VARIABLES =====
+let currentImageIndex = 0;
+let patientImages = [];
+        
+        // ===== INITIALIZATION =====
+        // This runs when the page loads
+        
+        window.onload = function() {
+            // Generate unique session ID for this training session
+            generateSessionId();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load saved configuration from localStorage
+            loadSavedConfig();
+            
+            // Display session info
+            displaySessionInfo();
+            
+            // Focus on message input
+            document.getElementById('messageInput').focus();
+        };
+        
+        // ===== SESSION MANAGEMENT =====
+        // Generate and manage unique session IDs
+        
+        function generateSessionId() {
+            // Generate a unique session ID using timestamp and random string
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substring(2, 15);
+            sessionId = `session_${timestamp}_${randomStr}`;
+            
+            console.log('New session started:', sessionId);
+        }
+        
+        function displaySessionInfo() {
+            // Add session ID display to the page
+            const header = document.querySelector('.header');
+            const sessionInfo = document.createElement('p');
+            sessionInfo.style.fontSize = '0.9em';
+            sessionInfo.style.color = 'var(--text-secondary)';
+            sessionInfo.style.marginTop = '10px';
+            sessionInfo.innerHTML = `Session ID: <code style="background: var(--input-background); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color);">${sessionId}</code>`;
+            header.appendChild(sessionInfo);
         }
 
-        // Check webhook status (real implementation would ping the webhook)
+        // Function to start a new session without page refresh
+function newSession() {
+    console.log('Starting new session...');
+    
+    // Generate new session ID
+    generateSessionId();
+    
+    // Clear conversation history and chat display
+    clearChat();
+    
+    // Reset any selected scenario
+    currentScenario = null;
+    
+    // Reset dropdowns to initial states
+    document.getElementById('scenarioSelect').innerHTML = '<option value="">Load sheet data first...</option>';
+    document.getElementById('scenarioSelect').disabled = true;
+    
+    // Update patient image button
+    updatePatientImageButton();
+    
+    // Update session info display
+    updateSessionInfo();
+    
+    // Show confirmation
+    showStatus(`New session started! Session ID: ${sessionId}`, 'success');
+    
+    // Add welcome message
+    addMessage('New session started. Select a scenario and type a message to begin the consultation.', 'system');
+    
+    // Focus on message input
+    document.getElementById('messageInput').focus();
+    
+    console.log('New session created:', sessionId);
+}
+
+// Helper function to update session info display
+function updateSessionInfo() {
+    // Find and update the existing session info paragraph
+    const header = document.querySelector('.header');
+    const existingSessionInfo = header.querySelector('p:last-child');
+    
+    if (existingSessionInfo && existingSessionInfo.innerHTML.includes('Session ID:')) {
+        existingSessionInfo.innerHTML = `Session ID: <code style="background: var(--input-background); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color);">${sessionId}</code>`;
+    } else {
+        // If not found, create new one (fallback)
+        displaySessionInfo();
+    }
+}
+        
+        // ===== EVENT LISTENERS =====
+        // Set up various UI interactions
+        
+        function setupEventListeners() {
+            // Save configuration when changed
+            document.getElementById('webhookUrl').addEventListener('change', saveConfig);
+            document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
+            document.getElementById('sheetId').addEventListener('change', saveConfig);
+            document.getElementById('configSheetId').addEventListener('change', saveConfig);
+            document.getElementById('scenarioSetsId').addEventListener('change', saveConfig);
+        }
+        
+        // ===== MESSAGE HANDLING =====
+        // Handle sending messages and keyboard shortcuts
+        
+        
+function handleKeyPress(event) {
+    // Send message on Enter (but not Shift+Enter, which should create new line)
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+    // Keep the existing Ctrl+Enter or Cmd+Enter functionality as backup
+    else if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showStatus('Please enter a message', 'error');
+                return;
+            }
+            
+            if (!document.getElementById('webhookUrl').value) {
+                showStatus('Please enter webhook URL first', 'error');
+                return;
+            }
+            
+            if (!currentScenario) {
+                showStatus('Please select a patient scenario first', 'error');
+                return;
+            }
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Send to webhook
+            sendToWebhook(message);
+            
+            // Focus back on input
+            messageInput.focus();
+        }
+
+
+        
+        // ===== CHATBOT CONFIGURATION MANAGEMENT =====
+
+        async function loadChatbotConfigurations() {
+            const configSheetId = document.getElementById('configSheetId').value;
+            
+            if (!configSheetId) {
+                showStatus('Please enter Configuration Sheet ID first', 'error');
+                return;
+            }
+            
+            const loadBtn = document.getElementById('loadChatbotBtn');
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = '⏳ Loading...';
+            
+            showStatus('Loading chatbot configurations...', 'info');
+            
+            try {
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${configSheetId}/values/Sheet1?key=${apiKey}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 1) {
+                    chatbotConfigurations = [];
+                    
+                    for (let i = 1; i < data.values.length; i++) {
+                        const row = data.values[i];
+                        if (row.length >= 3 && row[0] && row[1] && row[2]) {
+                            chatbotConfigurations.push({
+                                name: row[0].trim(),
+                                webhookUrl: row[1].trim(),
+                                submitWebhookUrl: row[2].trim(),
+                                description: row[3] ? row[3].trim() : '',
+                                status: 'unknown'
+                            });
+                        }
+                    }
+                    
+                    populateChatbotDropdown();
+                    showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+                    setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+                    
+                    // Automatically check webhook status after loading
+                    showStatus('Checking webhook status...', 'info');
+                    checkAllWebhookStatus();
+                    
+                } else {
+                    showStatus('No configuration data found in the sheet', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error loading chatbot configurations:', error);
+                showStatus('Error loading configurations. Check console for details.', 'error');
+                setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+            }
+        }
+
+        // Check webhook status
         async function checkWebhookStatus(webhookUrl, timeoutMs = 5000) {
             try {
-                // Set a timeout for the request
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-                // For demo purposes, we'll simulate the check
-                // In real implementation, you'd do:
-                /*
                 const response = await fetch(webhookUrl, {
-                    method: 'HEAD', // or 'GET' with minimal payload
-                    signal: controller.signal,
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({
+                        healthCheck: true,
+                        timestamp: new Date().toISOString()
+                    }),
+                    signal: controller.signal,
                     mode: 'cors'
                 });
+
                 clearTimeout(timeoutId);
                 return response.ok;
-                */
-
-                // Simulate check delay
-                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 500));
-                clearTimeout(timeoutId);
-                
-                // Simulate different responses based on URL
-                if (webhookUrl.includes('patient-sim-2') || webhookUrl.includes('pharmacy-tutor')) {
-                    return false; // Simulate inactive
-                }
-                return true; // Simulate active
 
             } catch (error) {
-                console.error('Webhook check failed:', error);
+                console.log(`Webhook check failed for ${webhookUrl}:`, error.message);
                 return false;
             }
         }
 
-        // Check all webhook statuses
+        // Check all webhook statuses automatically
         async function checkAllWebhookStatus() {
-            for (let i = 0; i < chatbotConfigurations.length; i++) {
-                const config = chatbotConfigurations[i];
-                config.status = 'checking';
+            if (chatbotConfigurations.length === 0) {
+                return;
             }
-            
-            // Update UI immediately to show checking status
+
+            // Set all to checking status
+            chatbotConfigurations.forEach(config => {
+                config.status = 'checking';
+            });
             populateChatbotDropdown();
 
-            // Check each webhook
-            for (let i = 0; i < chatbotConfigurations.length; i++) {
-                const config = chatbotConfigurations[i];
-                
+            // Check each webhook concurrently
+            const statusChecks = chatbotConfigurations.map(async (config) => {
                 try {
                     const isActive = await checkWebhookStatus(config.webhookUrl);
                     config.status = isActive ? 'active' : 'inactive';
                 } catch (error) {
                     config.status = 'inactive';
                 }
-
-                // Update UI after each check
+                
+                // Update UI after each check completes
                 populateChatbotDropdown();
+            });
+
+            await Promise.all(statusChecks);
+            
+            const activeCount = chatbotConfigurations.filter(c => c.status === 'active').length;
+            const totalCount = chatbotConfigurations.length;
+            showStatus(`Webhook status check complete: ${activeCount}/${totalCount} active`, 'info');
+        }
+
+        function populateChatbotDropdown() {
+            const select = document.getElementById('chatbotSelect');
+            select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
+            select.disabled = false;
+            
+            chatbotConfigurations.forEach((config, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                
+                // Create status prefix
+                let statusPrefix = '';
+                switch(config.status) {
+                    case 'active': statusPrefix = '🟢 '; break;
+                    case 'inactive': statusPrefix = '🔴 '; break;
+                    case 'checking': statusPrefix = '🟡 '; break;
+                    default: statusPrefix = '⚪ '; break;
+                }
+                
+                if (config.description) {
+                    option.textContent = `${statusPrefix}${config.name} - ${config.description}`;
+                } else {
+                    option.textContent = `${statusPrefix}${config.name}`;
+                }
+                
+                option.setAttribute('data-status', config.status);
+                select.appendChild(option);
+            });
+
+            select.removeEventListener('change', handleChatbotChange);
+            select.addEventListener('change', handleChatbotChange);
+        }
+
+        function handleChatbotChange() {
+            const selectElement = document.getElementById('chatbotSelect');
+            if (selectElement.value !== '') {
+                applyChatbotConfiguration();
             }
         }
 
-        // Update simulated status based on checkboxes (for demo)
-        function updateSimulatedStatus() {
-            const checkboxes = ['chatbot1', 'chatbot2', 'chatbot3', 'chatbot4'];
+        function applyChatbotConfiguration() {
+            const selectElement = document.getElementById('chatbotSelect');
+            const selectedIndex = selectElement.value;
             
-            checkboxes.forEach((checkboxId, index) => {
-                const checkbox = document.getElementById(checkboxId);
-                if (chatbotConfigurations[index]) {
-                    chatbotConfigurations[index].status = checkbox.checked ? 'active' : 'inactive';
+            if (selectedIndex === '' || !chatbotConfigurations[selectedIndex]) {
+                showStatus('Please select a chatbot configuration first', 'error');
+                return;
+            }
+            
+            const config = chatbotConfigurations[selectedIndex];
+            currentChatbotConfig = config;
+            
+            document.getElementById('webhookUrl').value = config.webhookUrl;
+            document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+            
+            saveConfig();
+            
+            showStatus(`✅ Applied configuration: ${config.name}`, 'success');
+            
+            if (conversationHistory.length > 0) {
+                const shouldClear = confirm('Apply new chatbot configuration? This will clear the current conversation.');
+                if (shouldClear) {
+                    clearChat();
+                    addMessage(`Switched to: ${config.name}`, 'system');
                 }
-            });
-
-            populateChatbotDropdown();
+            } else {
+                addMessage(`Chatbot configured: ${config.name}`, 'system');
+            }
+            
+            console.log('Applied chatbot configuration:', config);
         }
 
-        // Auto-load sample configurations on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadSampleConfigurations();
+        // ===== SCENARIO SETS MANAGEMENT =====
+
+        async function loadScenarioSets() {
+            const scenarioSetsId = document.getElementById('scenarioSetsId').value;
+            
+            if (!scenarioSetsId) {
+                showStatus('Please enter Scenario Sets Sheet ID first', 'error');
+                return;
+            }
+            
+            const loadBtn = document.getElementById('loadSetsBtn');
+            loadBtn.disabled = true;
+            loadBtn.innerHTML = '⏳ Loading...';
+            
+            showStatus('Loading scenario sets...', 'info');
+            
+            try {
+                const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+                let url = `https://sheets.googleapis.com/v4/spreadsheets/${scenarioSetsId}/values/Sheet1?key=${apiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 1) {
+                    scenarioSets = [];
+                    
+                    for (let i = 1; i < data.values.length; i++) {
+                        const row = data.values[i];
+                        if (row.length >= 2 && row[0] && row[1]) {
+                            scenarioSets.push({
+                                name: row[0].trim(),
+                                sheetId: row[1].trim(),
+                                description: row[2] ? row[2].trim() : ''
+                            });
+                        }
+                    }
+                    
+                    populateScenarioSetsDropdown();
+                    showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
+                    setButtonCompleted('loadSetsBtn', 'Sets Loaded');
+                    
+                } else {
+                    showStatus('No scenario sets data found in the sheet', 'error');
+                    loadBtn.disabled = false;
+                    loadBtn.innerHTML = '❌ No Data Found';
+                }
+                
+            } catch (error) {
+                console.error('Error loading scenario sets:', error);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    showStatus('CORS error: Please ensure your Google Sheet is publicly accessible (Anyone with link can view)', 'error');
+                } else {
+                    showStatus('Error loading scenario sets. Check console for details.', 'error');
+                }
+                
+                setButtonStatus('loadSetsBtn', 'pending', 'Load Failed - Retry');
+            }
+        }
+
+        function populateScenarioSetsDropdown() {
+            const select = document.getElementById('scenarioSetSelect');
+            select.innerHTML = '<option value="">Select a scenario set...</option>';
+            select.disabled = false;
+            
+            scenarioSets.forEach((scenarioSet, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                
+                if (scenarioSet.description) {
+                    option.textContent = `${scenarioSet.name} - ${scenarioSet.description}`;
+                } else {
+                    option.textContent = scenarioSet.name;
+                }
+                
+                select.appendChild(option);
+            });
+            
+            select.addEventListener('change', function() {
+                if (this.value !== '') {
+                    applyScenarioSet();
+                }
+            });
+        }
+
+        function applyScenarioSet() {
+            const selectElement = document.getElementById('scenarioSetSelect');
+            const selectedIndex = selectElement.value;
+            
+            if (selectedIndex === '' || !scenarioSets[selectedIndex]) {
+                showStatus('Please select a scenario set first', 'error');
+                return;
+            }
+            
+            const scenarioSet = scenarioSets[selectedIndex];
+            currentScenarioSet = scenarioSet;
+            
+            document.getElementById('sheetId').value = scenarioSet.sheetId;
+            
+            sheetData = [];
+            document.getElementById('sheetName').innerHTML = '<option value="">Loading sheet names...</option>';
+            document.getElementById('sheetName').disabled = true;
+            document.getElementById('scenarioSelect').innerHTML = '<option value="">Load sheet data first...</option>';
+            document.getElementById('scenarioSelect').disabled = true;
+            
+            currentScenario = null;
+            updatePatientImageButton();
+            
+            saveConfig();
+            
+            showStatus(`✅ Applied scenario set: ${scenarioSet.name}`, 'success');
+            
+            console.log('Auto-loading sheet names for scenario set:', scenarioSet.name);
+            loadSheetNames();
+            
+            console.log('Applied scenario set:', scenarioSet);
+        }
+
+        // ===== BUTTON STATUS MANAGEMENT =====
+        function setButtonStatus(buttonId, status, newText = null) {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            
+            button.classList.remove('btn-status-pending', 'btn-status-completed');
+            
+            if (status === 'pending') {
+                button.classList.add('btn-status-pending');
+            } else if (status === 'completed') {
+                button.classList.add('btn-status-completed');
+            }
+            
+            if (newText) {
+                button.innerHTML = newText;
+            }
+        }
+
+        function setButtonCompleted(buttonId, successText = null) {
+            setButtonStatus(buttonId, 'completed', successText);
+        }
+
+        function setButtonPending(buttonId, pendingText = null) {
+            setButtonStatus(buttonId, 'pending', pendingText);
+        }
+
+
+async function loadSheetNames() {
+    const sheetId = document.getElementById('sheetId').value;
+    
+    if (!sheetId) {
+        showStatus('Please enter Sheet ID first', 'error');
+        return;
+    }
+    
+    showStatus('Loading sheet names...', 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title&key=${apiKey}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const sheetNames = data.sheets.map(sheet => sheet.properties.title);
+        
+        populateSheetNameDropdown(sheetNames);
+        showStatus(`Found ${sheetNames.length} sheets`, 'success');
+        
+    } catch (error) {
+        console.error('Error loading sheet names:', error);
+        showStatus('Could not load sheet names automatically.', 'error');
+        
+        const select = document.getElementById('sheetName');
+        select.disabled = false;
+        select.innerHTML = '<option value="">Enter sheet name manually below...</option>';
+    }
+}
+
+function populateSheetNameDropdown(sheetNames) {
+    const select = document.getElementById('sheetName');
+    select.innerHTML = '<option value="">Select a sheet...</option>';
+    select.disabled = false;
+    
+    sheetNames.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+    });
+    
+    select.addEventListener('change', function() {
+        if (this.value) {
+            saveConfig();
+            loadSheetData();
+        }
+    });
+}
+
+function getSelectedSheetName() {
+    const dropdown = document.getElementById('sheetName');
+    return dropdown.value;
+}
+
+async function loadSheetData() {
+    const sheetId = document.getElementById('sheetId').value;
+    const sheetName = getSelectedSheetName();
+    
+    if (!sheetId || !sheetName) {
+        showStatus('Please enter Sheet ID and select Sheet Name', 'error');
+        return;
+    }
+    
+    showStatus(`Loading data from sheet: ${sheetName}...`, 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(sheetName)}?key=${apiKey}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.values && data.values.length > 0) {
+            sheetData = data.values;
+            populateScenarioDropdown();
+            showStatus(`Loaded ${data.values.length - 1} scenarios from ${sheetName}`, 'success');
+        } else {
+            showStatus('No data found in the selected sheet', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error loading sheet:', error);
+        showStatus('Error loading sheet data. Check console for details.', 'error');
+    }
+}
+        
+        // Populate the scenario selection dropdown
+        function populateScenarioDropdown() {
+            const select = document.getElementById('scenarioSelect');
+            select.innerHTML = '<option value="">Select a scenario...</option>';
+            select.disabled = false;
+            
+            // Skip header row, process all data rows
+            for (let i = 1; i < sheetData.length; i++) {
+                const row = sheetData[i];
+                const option = document.createElement('option');
+                option.value = i;
+                // Use column A (index 0) for the scenario name
+                option.textContent = `${i}. ${row[0]}`;
+                select.appendChild(option);
+            }
+            
+            // Clear any existing event listeners
+            select.removeEventListener('change', handleScenarioChange);
+            
+            // Add change event listener
+            select.addEventListener('change', handleScenarioChange);
+        }
+        
+        function handleScenarioChange(e) {
+            if (e.target.value) {
+                selectScenario(parseInt(e.target.value));
+            }
+        }
+        
+        // Handle scenario selection
+        function selectScenario(rowIndex) {
+            const headers = sheetData[0];
+            const row = sheetData[rowIndex];
+            
+            // Create scenario object
+            currentScenario = {};
+            headers.forEach((header, index) => {
+                currentScenario[header] = row[index];
+            });
+            
+            console.log('Selected scenario:', currentScenario);
+            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+            
+            // Update patient image button based on image availability
+            updatePatientImageButton();
+            
+            // Clear previous conversation
+            clearChat();
+            
+            // Add initial message
+            addMessage('Scenario loaded. Type your first message to start the consultation.', 'ai');
+        }
+        
+        // Update patient image button state based on scenario
+        // Update patient image button state based on scenario
+function updatePatientImageButton() {
+    const button = document.getElementById('patientImageBtn');
+    
+    if (!currentScenario) {
+        // No scenario selected
+        button.className = 'patient-image-btn disabled';
+        button.textContent = '📷 No Scenario Selected';
+        button.disabled = true;
+        return;
+    }
+    
+    // Check for image URL in various possible column names
+    const imageData = currentScenario['Patient Image'] || 
+                     currentScenario['Image URL'] || 
+                     currentScenario['Photo URL'] || 
+                     currentScenario['Image'] || 
+                     currentScenario['Photo'] ||
+                     currentScenario['Picture URL'] ||
+                     currentScenario['Picture'];
+    
+    if (imageData && imageData.trim() !== '') {
+        // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
+        patientImages = imageData
+            .split(/[,;\n\r]+/)
+            .map(url => url.trim())
+            .filter(url => url !== '');
+        
+        if (patientImages.length > 0) {
+            // Images available
+            button.className = 'patient-image-btn available';
+            if (patientImages.length === 1) {
+                button.innerHTML = '👁️ View Patient Image';
+            } else {
+                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
+            }
+            button.disabled = false;
+        } else {
+            // No valid images
+            button.className = 'patient-image-btn unavailable';
+            button.innerHTML = '❌ No Patient Image';
+            button.disabled = true;
+        }
+    } else {
+        // No image data
+        patientImages = [];
+        button.className = 'patient-image-btn unavailable';
+        button.innerHTML = '❌ No Patient Image';
+        button.disabled = true;
+    }
+}
+        
+        // Helper function to convert Google Drive share links to direct image URLs
+        function convertGoogleDriveUrl(url) {
+            if (!url || typeof url !== 'string') {
+                return url;
+            }
+            
+            // Check if it's a Google Drive share link
+            if (url.includes('drive.google.com/file/d/')) {
+                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    // Use a much larger size parameter for high resolution
+                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+                    console.log('Converted Google Drive URL:', url, '->', directUrl);
+                    return directUrl;
+                }
+            }
+            
+            // Return original URL if not a Google Drive link or conversion failed
+            return url;
+        }
+        
+        // Show patient image modal
+        // Show patient image modal with gallery functionality
+function showPatientImage() {
+    if (!currentScenario || patientImages.length === 0) {
+        showStatus('No scenario selected or no images available', 'error');
+        return;
+    }
+    
+    // Reset to first image
+    currentImageIndex = 0;
+    
+    // Set modal title
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    const titleElement = document.getElementById('imageModalTitle');
+    if (patientImages.length === 1) {
+        titleElement.textContent = `${patientName} - Patient Image`;
+    } else {
+        titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('imageModal');
+    modal.classList.add('show');
+    
+    // Load the first image
+    loadImageAtIndex(0);
+}
+
+        // Load image at specific index
+function loadImageAtIndex(index) {
+    if (index < 0 || index >= patientImages.length) return;
+    
+    currentImageIndex = index;
+    const imageUrl = patientImages[index];
+    
+    // Check for image URL - if somehow empty, skip
+    if (!imageUrl || imageUrl.trim() === '') {
+        showStatus('No image URL available for this patient', 'error');
+        return;
+    }
+    
+    // Convert Google Drive share links to direct image URLs
+    const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+    
+    // Log URL conversion for debugging
+    if (convertedImageUrl !== imageUrl.trim()) {
+        console.log('Original URL:', imageUrl.trim());
+        console.log('Converted URL:', convertedImageUrl);
+    }
+    
+    // Update modal title with current image number
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    const titleElement = document.getElementById('imageModalTitle');
+    if (patientImages.length > 1) {
+        titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('imageModal');
+    const modalBody = document.getElementById('imageModalBody');
+    
+    // Show loading state
+    modalBody.innerHTML = `
+        <div class="image-loading">
+            <div class="spinner"></div>
+            Loading image ${index + 1} of ${patientImages.length}...
+        </div>
+    `;
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
+        modalBody.innerHTML = galleryHTML;
+        updateNavigationButtons();
+    };
+    
+    img.onerror = function() {
+        // Image failed to load - try alternative Google Drive formats
+        if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            console.log('First Google Drive format failed, trying alternative...');
+            img.hasTriedAlternative = true;
+            
+            // Extract file ID and try different format
+            const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                // Try the uc format as backup
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log('Trying alternative URL:', alternativeUrl);
+                img.src = alternativeUrl;
+                return;
+            }
+        }
+        
+        // Image failed to load completely - show error with navigation
+        modalBody.innerHTML = `
+            <div class="image-gallery">
+                ${patientImages.length > 1 ? `
+                    <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                        ❮ Previous
+                    </button>
+                ` : ''}
+                
+                <div class="image-error">
+                    <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
+                    <p>The image could not be loaded. This might be due to:</p>
+                    <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                        <li>The image is not set to "Anyone with the link can view"</li>
+                        <li>Google Drive is blocking the image embedding</li>
+                        <li>The file is not an image format</li>
+                        <li>The URL is incorrect or the file was deleted</li>
+                    </ul>
+                    
+                    <p><strong>Attempted URL:</strong></p>
+                    <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                    
+                    ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                    
+                    <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        🔗 Open Original Link
+                    </button>
+                </div>
+                
+                ${patientImages.length > 1 ? `
+                    <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                        Next ❯
+                    </button>
+                ` : ''}
+            </div>
+            
+            ${patientImages.length > 1 ? `
+                <div class="gallery-indicators">
+                    ${patientImages.map((_, index) => `
+                        <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                                onclick="loadImageAtIndex(${index})">
+                        </button>
+                    `).join('')}
+                </div>
+            ` : ''}
+        `;
+        updateNavigationButtons();
+    };
+    
+    // Start loading the image
+    img.src = convertedImageUrl;
+}
+
+// Create gallery HTML with navigation
+function createGalleryHTML(imageUrl, patientName) {
+    const showNavigation = patientImages.length > 1;
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
+            
+            <img src="${imageUrl}" alt="${patientName}" class="patient-image">
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${patientImages.map((_, index) => `
+                    <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                            onclick="loadImageAtIndex(${index})">
+                    </button>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+}
+
+// Navigation functions
+function nextImage() {
+    const nextIndex = (currentImageIndex + 1) % patientImages.length;
+    loadImageAtIndex(nextIndex);
+}
+
+function previousImage() {
+    const prevIndex = (currentImageIndex - 1 + patientImages.length) % patientImages.length;
+    loadImageAtIndex(prevIndex);
+}
+
+// Update navigation button states
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (prevBtn && nextBtn) {
+        // For circular navigation, buttons are always enabled
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
+        
+        // Update indicators
+        const dots = document.querySelectorAll('.gallery-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentImageIndex);
         });
+    }
+}
+        
+        // Close patient image modal
+        function closeImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+        
+        // Add keyboard support for modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+        
+        // Select a random scenario
+        function selectRandomScenario() {
+            if (sheetData.length <= 1) {
+                showStatus('Please load sheet data first', 'error');
+                return;
+            }
+            
+            // Generate random index (skip header row at index 0)
+            const randomIndex = Math.floor(Math.random() * (sheetData.length - 1)) + 1;
+            
+            // Update dropdown to show selected scenario
+            document.getElementById('scenarioSelect').value = randomIndex;
+            
+            // Select the scenario
+            selectScenario(randomIndex);
+            
+            showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
+        }
+
+// ===== EXPORT CONVERSATION FUNCTION =====
+        // Export conversation as a downloadable text file
+        
+        function exportConversation() {
+            if (conversationHistory.length === 0) {
+                showStatus('No conversation to export', 'error');
+                return;
+            }
+            
+            try {
+                // Create formatted text content
+                let exportText = '';
+                
+                // Add header information
+                exportText += '='.repeat(60) + '\n';
+                exportText += 'PHARMACY CONSULTATION TRAINING - CONVERSATION EXPORT\n';
+                exportText += '='.repeat(60) + '\n\n';
+                
+                // Add session information
+                exportText += `Session ID: ${sessionId}\n`;
+                exportText += `Export Date: ${new Date().toLocaleString()}\n`;
+                exportText += `Session Start: ${new Date(parseInt(sessionId.split('_')[1])).toLocaleString()}\n\n`;
+                
+                // Add scenario information if available
+                if (currentScenario) {
+                    exportText += 'SCENARIO DETAILS:\n';
+                    exportText += '-'.repeat(20) + '\n';
+                    Object.keys(currentScenario).forEach(key => {
+                        if (currentScenario[key] && currentScenario[key].toString().trim() !== '') {
+                            exportText += `${key}: ${currentScenario[key]}\n`;
+                        }
+                    });
+                    exportText += '\n';
+                }
+
+                // Add conversation statistics
+const userMessages = conversationHistory.filter(h => h.sender === 'user').length;
+const aiMessages = conversationHistory.filter(h => h.sender === 'ai').length;
+const systemMessages = conversationHistory.filter(h => h.sender === 'system').length;
+const sessionDuration = Date.now() - parseInt(sessionId.split('_')[1]);
+const durationMinutes = Math.floor(sessionDuration / 60000);
+const durationSeconds = Math.floor((sessionDuration % 60000) / 1000);
+
+exportText += 'CONVERSATION STATISTICS:\n';
+exportText += '-'.repeat(25) + '\n';
+exportText += `Total Messages: ${conversationHistory.length}\n`;
+exportText += `Student Messages: ${userMessages}\n`;
+exportText += `AI Patient Messages: ${aiMessages}\n`;
+exportText += `System Messages: ${systemMessages}\n`;
+exportText += `Session Duration: ${durationMinutes}m ${durationSeconds}s\n\n`;
+                
+                // Add full conversation - capture everything displayed in the chat
+exportText += 'FULL CONVERSATION:\n';
+exportText += '-'.repeat(20) + '\n\n';
+
+const chatContainer = document.getElementById('chatContainer');
+const messageElements = chatContainer.getElementsByClassName('message');
+
+for (let i = 0; i < messageElements.length; i++) {
+                    const messageElement = messageElements[i];
+                    const messageClass = messageElement.className;
+                    
+                    // Determine speaker type from CSS class
+                    let speaker = 'UNKNOWN';
+                    if (messageClass.includes('user')) {
+                        speaker = 'STUDENT';
+                    } else if (messageClass.includes('ai')) {
+                        speaker = 'AI PATIENT';
+                    } else if (messageClass.includes('system')) {
+                        speaker = 'SYSTEM';
+                    }
+                    
+                    // Get the message content and clean it up
+                    let messageContent = messageElement.innerHTML
+                        .replace(/<br\s*\/?>/gi, '\n') // Convert <br> to newlines
+                        .replace(/<\/p><p[^>]*>/gi, '\n\n') // Convert paragraph breaks
+                        .replace(/<p[^>]*>/gi, '') // Remove opening p tags
+                        .replace(/<\/p>/gi, '') // Remove closing p tags
+                        .replace(/<h[1-6][^>]*>/gi, '\n**') // Convert headers to markdown-style bold
+                        .replace(/<\/h[1-6]>/gi, '**\n') // Close headers
+                        .replace(/<strong[^>]*>/gi, '**') // Convert bold to markdown
+                        .replace(/<\/strong>/gi, '**')
+                        .replace(/<em[^>]*>/gi, '*') // Convert italic to markdown
+                        .replace(/<\/em>/gi, '*')
+                        .replace(/<ul[^>]*>/gi, '\n') // Convert lists
+                        .replace(/<\/ul>/gi, '')
+                        .replace(/<li[^>]*>/gi, '  • ') // Convert list items to bullets
+                        .replace(/<\/li>/gi, '\n')
+                        .replace(/<div[^>]*class="spinner"[^>]*><\/div>/gi, '') // Remove spinner divs
+                        .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+                        .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+                        .replace(/&amp;/g, '&') // Replace HTML entities
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&quot;/g, '"')
+                        .replace(/\n\s*\n\s*\n/g, '\n\n') // Remove excessive line breaks
+                        .trim();
+                    
+                    // Skip empty messages or spinner messages
+                    if (!messageContent || messageContent.includes('spinner') || messageContent === '') {
+                        continue;
+                    }
+                    
+                    // Add speaker and message
+                    exportText += `${speaker}:\n`;
+                    
+                    // Add message with proper formatting
+                    const lines = messageContent.split('\n');
+                    lines.forEach(line => {
+                        if (line.trim()) {
+                            exportText += `  ${line.trim()}\n`;
+                        } else {
+                            exportText += '\n';
+                        }
+                    });
+                    
+                    exportText += '\n'; // Add space between messages
+                }
+                
+                // Add export footer
+                exportText += '='.repeat(60) + '\n';
+                exportText += 'End of Conversation Export\n';
+                exportText += 'Generated by Pharmacy Training System v1.1\n';
+                exportText += '='.repeat(60) + '\n';
+                
+                // Create and download the file
+                const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                
+                // Create download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                
+                // Generate filename with timestamp and scenario info
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+                const scenarioName = currentScenario && currentScenario['Scenario Name'] 
+                    ? currentScenario['Scenario Name'].replace(/[^a-zA-Z0-9]/g, '_') 
+                    : 'Unknown_Scenario';
+                
+                downloadLink.download = `Pharmacy_Training_${scenarioName}_${dateStr}_${timeStr}.txt`;
+                
+                // Trigger download
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // Clean up URL object
+                window.URL.revokeObjectURL(url);
+                
+                showStatus('✅ Conversation exported successfully!', 'success');
+                console.log('Conversation exported:', downloadLink.download);
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus(`❌ Export failed: ${error.message}`, 'error');
+            }
+        }
+
+// ===== WEBHOOK COMMUNICATION =====
+        // Send data to n8n webhook
+        
+        async function sendToWebhook(message) {
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            
+            if (!webhookUrl) {
+    showStatus('Webhook URL not configured. Please select a chatbot first.', 'error');
+    return;
+}
+            
+            // Show loading spinner
+            addMessage('<div class="spinner"></div>', 'ai');
+            
+            try {
+                // Prepare data to send
+                const payload = {
+                    sessionId: sessionId,
+                    message: message,
+                    scenario: currentScenario,
+                    timestamp: new Date().toISOString(),
+                    conversationHistory: conversationHistory,
+                    studentInfo: {
+                        sessionStartTime: new Date(parseInt(sessionId.split('_')[1])).toISOString(),
+                        messageCount: conversationHistory.filter(h => h.sender === 'user').length + 1
+                    }
+                };
+                
+                console.log('Sending to webhook:', webhookUrl);
+                console.log('Payload:', payload);
+                
+                // Send POST request to webhook
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Try to get response as text first
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                let data;
+                try {
+                    // Try to parse as JSON
+                    data = JSON.parse(responseText);
+                    console.log('Parsed response:', data);
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    // If not JSON, treat the text as the response
+                    data = { response: responseText };
+                }
+                
+                // Remove loading spinner
+                removeLastMessage();
+                
+                // Check various possible response formats
+                let aiResponse = null;
+                
+                // Common n8n response formats
+                if (data.response) {
+                    aiResponse = data.response;
+                } else if (data.message) {
+                    aiResponse = data.message;
+                } else if (data.text) {
+                    aiResponse = data.text;
+                } else if (data.output) {
+                    aiResponse = data.output;
+                } else if (typeof data === 'string') {
+                    aiResponse = data;
+                } else if (Array.isArray(data) && data.length > 0) {
+                    // Sometimes n8n returns an array
+                    aiResponse = data[0].response || data[0].message || data[0];
+                }
+                
+                if (aiResponse) {
+                    addMessage(aiResponse, 'ai');
+                } else {
+                    console.error('Could not find response in data:', data);
+                    showStatus('Unexpected response format from webhook', 'error');
+                    addMessage('Received response but could not parse it. Check console for details.', 'ai');
+                }
+                
+            } catch (error) {
+                console.error('Webhook error:', error);
+                removeLastMessage();
+                
+                // More specific error messages
+                if (error.message.includes('Failed to fetch')) {
+                    showStatus('Cannot reach webhook - check URL and CORS settings', 'error');
+                    addMessage('Connection failed. Make sure your n8n webhook is accessible and CORS is enabled.', 'ai');
+                } else {
+                    showStatus(`Error: ${error.message}`, 'error');
+                    addMessage(`Error: ${error.message}`, 'ai');
+                }
+            }
+        }
+
+// ===== SUBMIT CONVERSATION FUNCTION =====
+        // Function to submit conversation history to a separate webhook
+        
+        async function submitConversation() {
+            const submitWebhookUrl = document.getElementById('submitWebhookUrl').value;
+            
+            if (!submitWebhookUrl) {
+    showStatus('Submit webhook URL not configured. Please select a chatbot first.', 'error');
+    return;
+}
+            
+            if (conversationHistory.length === 0) {
+                showStatus('No conversation to submit', 'error');
+                return;
+            }
+            
+            showStatus('Submitting conversation...', 'info');
+            
+            // Add submitting message to chat
+            addMessage('📤 Submitting conversation for evaluation...', 'system');
+            
+            try {
+                // Prepare comprehensive data for submission
+                const submissionPayload = {
+                    sessionId: sessionId,
+                    scenario: currentScenario,
+                    conversationHistory: conversationHistory,
+                    submissionTime: new Date().toISOString(),
+                    sessionInfo: {
+                        sessionStartTime: new Date(parseInt(sessionId.split('_')[1])).toISOString(),
+                        totalMessages: conversationHistory.length,
+                        userMessages: conversationHistory.filter(h => h.sender === 'user').length,
+                        aiMessages: conversationHistory.filter(h => h.sender === 'ai').length,
+                        duration: Date.now() - parseInt(sessionId.split('_')[1]) // Duration in milliseconds
+                    },
+                    metadata: {
+                        userAgent: navigator.userAgent,
+                        timestamp: new Date().toISOString(),
+                        type: 'conversation_submission'
+                    }
+                };
+                
+                console.log('Submitting conversation:', submissionPayload);
+                
+                // Send POST request to submit webhook
+                const response = await fetch(submitWebhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    mode: 'cors',
+                    body: JSON.stringify(submissionPayload)
+                });
+                
+                console.log('Submit response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response body:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+                }
+                
+                // Get response from submission webhook
+                const responseText = await response.text();
+                console.log('Submit raw response text:', responseText);
+                
+                // Check if response is empty
+                if (!responseText || responseText.trim() === '') {
+                    console.warn('Empty response received from webhook');
+                    addMessage('📋 Evaluation Complete:\n\nConversation submitted successfully, but no feedback was returned. The evaluation may be processing in the background.', 'system');
+                    showStatus('✅ Conversation submitted (no feedback received)', 'success');
+                    return;
+                }
+                
+                let responseData;
+                let feedbackMessage = '';
+                
+                try {
+                    // Try to parse as JSON first
+                    responseData = JSON.parse(responseText);
+                    console.log('Parsed JSON response:', responseData);
+                    
+                    // Check various possible response formats for feedback
+                    if (responseData.feedback) {
+                        feedbackMessage = responseData.feedback;
+                    } else if (responseData.evaluation) {
+                        feedbackMessage = responseData.evaluation;
+                    } else if (responseData.response) {
+                        feedbackMessage = responseData.response;
+                    } else if (responseData.message) {
+                        feedbackMessage = responseData.message;
+                    } else if (responseData.data && responseData.data.feedback) {
+                        feedbackMessage = responseData.data.feedback;
+                    } else if (responseData.data && responseData.data.response) {
+                        feedbackMessage = responseData.data.response;
+                    } else if (responseData.result) {
+                        feedbackMessage = responseData.result;
+                    } else {
+                        // If JSON but no recognizable feedback field, stringify the object
+                        feedbackMessage = `Raw response: ${JSON.stringify(responseData, null, 2)}`;
+                    }
+                    
+                } catch (parseError) {
+                    console.log('Not JSON, treating as plain text');
+                    // Check if it looks like HTML
+                    if (responseText.trim().startsWith('<') && responseText.trim().includes('html')) {
+                        console.warn('Received HTML response instead of JSON');
+                        feedbackMessage = 'Received HTML response instead of expected feedback. Check your n8n workflow output format.';
+                    } else {
+                        // Plain text response
+                        feedbackMessage = responseText.trim();
+                    }
+                }
+                
+                console.log('Final feedback message:', feedbackMessage);
+                
+                // Format the feedback message for better display
+                function formatFeedback(text) {
+                    if (!text) return text;
+                    
+                    // Convert markdown-style formatting to HTML
+                    let formatted = text
+                        // Convert **bold** to <strong>bold</strong>
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        // Convert *italic* to <em>italic</em>
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        // Convert ### Heading to <h3>Heading</h3>
+                        .replace(/^### (.*$)/gm, '<h3 style="margin: 15px 0 10px 0; color: var(--primary-color); font-size: 1.1em;">$1</h3>')
+                        // Convert ## Heading to <h2>Heading</h2>
+                        .replace(/^## (.*$)/gm, '<h2 style="margin: 20px 0 10px 0; color: var(--primary-color); font-size: 1.2em;">$1</h2>')
+                        // Convert # Heading to <h1>Heading</h1>
+                        .replace(/^# (.*$)/gm, '<h1 style="margin: 20px 0 15px 0; color: var(--primary-color); font-size: 1.3em;">$1</h1>')
+                        // Convert - bullet points to proper list items
+                        .replace(/^- (.*$)/gm, '<li style="margin: 5px 0; padding-left: 5px;">$1</li>')
+                        // Convert 1. numbered lists to proper list items
+                        .replace(/^\d+\. (.*$)/gm, '<li style="margin: 5px 0; padding-left: 5px;">$1</li>')
+                       // Convert double line breaks to paragraph breaks FIRST
+        .replace(/\n\n+/g, '</p><p style="margin: 15px 0; line-height: 1.6;">')
+        // Convert remaining single line breaks to <br>
+        .replace(/\n/g, '<br>')
+        // Clean up any escaped newlines that might exist
+        .replace(/\\n\\n+/g, '</p><p style="margin: 15px 0; line-height: 1.6;">')
+        .replace(/\\n/g, '<br>');
+                    
+                    // Wrap in paragraph tags if not already wrapped
+                    if (!formatted.includes('<p>') && !formatted.includes('<h')) {
+    formatted = `<p style="margin: 15px 0; line-height: 1.6;">${formatted}</p>`;
+                    } else if (formatted.includes('<p>')) {
+                        // Ensure it starts with a paragraph
+                        if (!formatted.startsWith('<p>') && !formatted.startsWith('<h')) {
+                            formatted = `<p style="margin: 10px 0; line-height: 1.5;">${formatted}`;
+                        }
+                        // Ensure it ends with a closing paragraph
+                        if (!formatted.endsWith('</p>') && !formatted.endsWith('</h3>') && !formatted.endsWith('</h2>') && !formatted.endsWith('</h1>')) {
+                            formatted = `${formatted}</p>`;
+                        }
+                    }
+                    
+                    // Wrap list items in proper ul tags
+                    if (formatted.includes('<li>')) {
+                        formatted = formatted
+                            .replace(/(<li>.*?<\/li>)/gs, '<ul style="margin: 10px 0; padding-left: 20px;">$1</ul>')
+                            .replace(/<\/ul>\s*<ul[^>]*>/g, ''); // Merge consecutive lists
+                    }
+                    
+                    return formatted;
+                }
+                
+                // Display the feedback/response
+                if (feedbackMessage) {
+                    const formattedFeedback = formatFeedback(feedbackMessage);
+                    addMessage(`📋 Evaluation Feedback:<br><br>${formattedFeedback}`, 'system');
+                    showStatus('✅ Conversation submitted and evaluated successfully!', 'success');
+                } else {
+                    addMessage('📋 Evaluation Complete:\n\nConversation submitted successfully, but the feedback format was not recognized. Check console for raw response.', 'system');
+                    showStatus('✅ Conversation submitted (feedback format issue)', 'success');
+                }
+                
+            } catch (error) {
+                console.error('Submit conversation error:', error);
+                
+                // More specific error messages
+                if (error.message.includes('Failed to fetch')) {
+                    showStatus('Cannot reach submit webhook - check URL and CORS settings', 'error');
+                    addMessage('❌ Submission failed. Make sure your n8n submit webhook is accessible and CORS is enabled.', 'system');
+                } else if (error.message.includes('NetworkError')) {
+                    showStatus('Network error - check n8n webhook configuration', 'error');
+                    addMessage('❌ Network error. Check that your n8n webhook is running and accessible.', 'system');
+                } else {
+                    showStatus(`❌ Submission error: ${error.message}`, 'error');
+                    addMessage(`❌ Submission failed: ${error.message}`, 'system');
+                }
+            }
+        }
+
+// ===== CHAT MANAGEMENT =====
+        // Handle chat display and messages
+        
+        function addMessage(text, sender) {
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = text;
+            
+            // Add to container
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Add to history (excluding loading spinners)
+if (!text.includes('spinner')) {
+    conversationHistory.push({
+        sender: sender,
+        message: text,
+        timestamp: new Date().toISOString()
+    });
+}
+        }
+        
+        function removeLastMessage() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messages = chatContainer.getElementsByClassName('message');
+            if (messages.length > 0) {
+                messages[messages.length - 1].remove();
+            }
+        }
+        
+        function clearChat() {
+            document.getElementById('chatContainer').innerHTML = '';
+            conversationHistory = [];
+            
+            // Reset patient image button if no scenario is selected
+            if (!currentScenario) {
+                const button = document.getElementById('patientImageBtn');
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+            }
+        }
+        
+        // ===== UTILITY FUNCTIONS =====
+        // Helper functions
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+       function saveConfig() {
+    const config = {
+        webhookUrl: document.getElementById('webhookUrl').value,
+        submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
+        sheetId: document.getElementById('sheetId').value,
+        sheetName: getSelectedSheetName(),
+        configSheetId: document.getElementById('configSheetId').value,
+        selectedChatbot: document.getElementById('chatbotSelect').value,
+        scenarioSetsId: document.getElementById('scenarioSetsId').value,
+        selectedScenarioSet: document.getElementById('scenarioSetSelect').value
+    };
+    localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
+} 
+        
+        function loadSavedConfig() {
+    const saved = localStorage.getItem('pharmacyChatConfig');
+    if (saved) {
+        const config = JSON.parse(saved);
+        document.getElementById('webhookUrl').value = config.webhookUrl || '';
+        document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
+        document.getElementById('sheetId').value = config.sheetId || '';
+        document.getElementById('configSheetId').value = config.configSheetId || '';
+        document.getElementById('scenarioSetsId').value = config.scenarioSetsId || '';
+        
+        // Restore saved chatbot selection if configurations are already loaded
+        if (config.selectedChatbot && chatbotConfigurations.length > 0) {
+            document.getElementById('chatbotSelect').value = config.selectedChatbot;
+        }
+        
+        // Try to set sheet name in dropdown first
+        const sheetNameDropdown = document.getElementById('sheetName');
+        if (config.sheetName) {
+            // If dropdown has options, try to select the saved value
+            if (sheetNameDropdown.options.length > 1) {
+                sheetNameDropdown.value = config.sheetName;
+            }
+        }
+    }
+}
+
+        // Add status property to configurations when loaded
+async function loadChatbotConfigurations() {
+    // ... your existing code ...
+    
+    for (let i = 1; i < data.values.length; i++) {
+        const row = data.values[i];
+        if (row.length >= 3 && row[0] && row[1] && row[2]) {
+            chatbotConfigurations.push({
+                name: row[0].trim(),
+                webhookUrl: row[1].trim(),
+                submitWebhookUrl: row[2].trim(),
+                description: row[3] ? row[3].trim() : '',
+                status: 'unknown' // Add status tracking
+            });
+        }
+    }
+    
+    populateChatbotDropdown();
+    // Auto-check webhook status after loading
+    setTimeout(() => checkAllWebhookStatus(), 1000);
+}
+
+// Check webhook status
+async function checkWebhookStatus(webhookUrl, timeoutMs = 5000) {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        // Simple health check - send minimal payload
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                healthCheck: true,
+                timestamp: new Date().toISOString()
+            }),
+            signal: controller.signal,
+            mode: 'cors'
+        });
+
+        clearTimeout(timeoutId);
+        return response.ok;
+
+    } catch (error) {
+        console.log(`Webhook check failed for ${webhookUrl}:`, error.message);
+        return false;
+    }
+}
+
+// Check all webhook statuses
+async function checkAllWebhookStatus() {
+    // Set all to checking
+    chatbotConfigurations.forEach(config => {
+        config.status = 'checking';
+    });
+    populateChatbotDropdown();
+
+    // Check each webhook
+    for (let config of chatbotConfigurations) {
+        try {
+            const isActive = await checkWebhookStatus(config.webhookUrl);
+            config.status = isActive ? 'active' : 'inactive';
+        } catch (error) {
+            config.status = 'inactive';
+        }
+        
+        // Update UI after each check
+        populateChatbotDropdown();
+    }
+}
+
+// Modified populate function with status indicators
+function populateChatbotDropdown() {
+    const select = document.getElementById('chatbotSelect');
+    select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
+    select.disabled = false;
+    
+    chatbotConfigurations.forEach((config, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Create status prefix
+        let statusPrefix = '';
+        switch(config.status) {
+            case 'active': statusPrefix = '🟢 '; break;
+            case 'inactive': statusPrefix = '🔴 '; break;
+            case 'checking': statusPrefix = '🟡 '; break;
+            default: statusPrefix = '⚪ '; break;
+        }
+        
+        if (config.description) {
+            option.textContent = `${statusPrefix}${config.name} - ${config.description}`;
+        } else {
+            option.textContent = `${statusPrefix}${config.name}`;
+        }
+        
+        select.appendChild(option);
+    });
+}
     </script>
 </body>
 </html>
+
