@@ -3,647 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Patient Hub</title>
+    <title>Webhook Status Indicator Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: 
-                radial-gradient(ellipse at top, rgba(120, 119, 198, 0.3), transparent 50%),
-                radial-gradient(ellipse at bottom, rgba(255, 118, 117, 0.2), transparent 50%),
-                linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(22, 33, 62, 0.9)), 
-                url('https://images.unsplash.com/photo-1471864190281-a93a3070b6de?q=80&w=2070') center center/cover no-repeat fixed;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
             color: #e2e8f0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Floating particles background */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: float 15s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            50% { transform: translateY(-100px) translateX(50px) rotate(180deg); }
+            padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 2rem;
-            text-align: center;
-            position: relative;
-            z-index: 2;
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 12px;
         }
 
-        .hero {
-            margin-bottom: 4rem;
-            position: relative;
+        .form-group {
+            margin-bottom: 20px;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.3), transparent);
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 16px;
+        }
+
+        /* Status indicator styles */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            filter: blur(20px);
-            animation: pulse 3s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .status-active {
+            background-color: #10b981;
+            box-shadow: 0 0 4px #10b981;
+        }
+
+        .status-inactive {
+            background-color: #ef4444;
+            box-shadow: 0 0 4px #ef4444;
+        }
+
+        .status-checking {
+            background-color: #f59e0b;
+            box-shadow: 0 0 4px #f59e0b;
+            animation: pulse 2s infinite;
+        }
+
+        .status-unknown {
+            background-color: #6b7280;
+            box-shadow: 0 0 4px #6b7280;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
-            50% { transform: translateX(-50%) scale(1.2); opacity: 0.8; }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
-        .hero h1 {
-            font-size: 3.8rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffffff, #a5b4fc, #c084fc);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            animation: fadeInUp 0.8s ease-out, textShimmer 3s ease-in-out infinite;
-            letter-spacing: -0.02em;
-        }
-
-        @keyframes textShimmer {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.1); }
-        }
-
-        .hero p {
-            font-size: 1.3rem;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 2rem;
-            max-width: 650px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.7;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .chatbot-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2.5rem;
-            margin-top: 3rem;
-            perspective: 1000px;
-        }
-
-        .chatbot-card {
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(25px) saturate(1.2);
-            border-radius: 24px;
-            padding: 2.5rem 2rem;
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.4),
-                0 1px 0 rgba(255, 255, 255, 0.1) inset,
-                0 -1px 0 rgba(255, 255, 255, 0.05) inset;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.8s ease-out 0.4s both;
-            transform-style: preserve-3d;
-        }
-
-        .chatbot-card:nth-child(2) { animation-delay: 0.6s; }
-        .chatbot-card:nth-child(3) { animation-delay: 0.8s; }
-
-        .chatbot-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 24px;
-        }
-
-        .chatbot-card:hover {
-            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
-            box-shadow: 
-                0 40px 80px rgba(0,0,0,0.5),
-                0 1px 0 rgba(255, 255, 255, 0.15) inset;
-            background: rgba(26, 26, 46, 0.95);
-        }
-
-        .chatbot-card:hover::before {
-            opacity: 1;
-        }
-
-        /* Glow effects for each card */
-        .text-chat:hover {
-            box-shadow: 
-                0 40px 80px rgba(0,0,0,0.5),
-                0 0 40px rgba(79, 172, 254, 0.3);
-        }
-
-        .voice-chat:hover {
-            box-shadow: 
-                0 40px 80px rgba(0,0,0,0.5),
-                0 0 40px rgba(67, 233, 123, 0.3);
-        }
-
-        .avatar-chat:hover {
-            box-shadow: 
-                0 40px 80px rgba(0,0,0,0.5),
-                0 0 40px rgba(250, 112, 154, 0.3);
-        }
-
-        .card-icon {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 1.5rem;
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            color: white;
-            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-icon::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 22px;
-            padding: 2px;
-            background: linear-gradient(45deg, rgba(255,255,255,0.3), transparent, rgba(255,255,255,0.1));
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask-composite: xor;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .text-chat .card-icon {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
-        }
-
-        .voice-chat .card-icon {
-            background: linear-gradient(135deg, #43e97b, #38f9d7);
-            box-shadow: 0 8px 20px rgba(67, 233, 123, 0.3);
-        }
-
-        .avatar-chat .card-icon {
-            background: linear-gradient(135deg, #fa709a, #fee140);
-            box-shadow: 0 8px 20px rgba(250, 112, 154, 0.3);
-        }
-
-        .chatbot-card:hover .card-icon {
-            transform: scale(1.15) rotateY(15deg);
-        }
-
-        .chatbot-card:hover .card-icon::before {
-            opacity: 1;
-        }
-
-        .card-title {
-            font-size: 1.9rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #ffffff, #e2e8f0);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1rem;
-            letter-spacing: -0.01em;
-        }
-
-        .card-description {
-            font-size: 1.05rem;
-            color: #94a3b8;
-            line-height: 1.7;
-            margin-bottom: 2rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .card-button {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6, #10b981);
-            background-size: 200% 200%;
+        button {
+            padding: 10px 20px;
+            background: #6366f1;
             color: white;
             border: none;
-            padding: 1.1rem 2.8rem;
-            border-radius: 50px;
-            font-size: 1.05rem;
-            font-weight: 700;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-            letter-spacing: 0.5px;
-            animation: gradientShift 3s ease infinite;
+            font-size: 16px;
+            margin: 10px 10px 0 0;
         }
 
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+        button:hover {
+            background: #4f46e5;
         }
 
-        .card-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: left 0.6s ease;
+        .status-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1e293b;
+            border-radius: 6px;
+            border-left: 4px solid #10b981;
         }
 
-        .card-button:hover::before {
-            left: 100%;
+        .demo-controls {
+            margin-top: 30px;
+            padding: 20px;
+            background: #16213e;
+            border-radius: 8px;
         }
 
-        .card-button:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4);
-            animation-play-state: paused;
+        h3 {
+            color: #6366f1;
+            margin-bottom: 15px;
         }
 
-        .card-button:active {
-            transform: translateY(-1px) scale(1.02);
-        }
-
-        .features {
+        .checkbox-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
-            justify-content: center;
-            margin-top: 1rem;
-            margin-bottom: 2rem;
+            gap: 15px;
+            margin: 15px 0;
         }
 
-        .feature-tag {
-            background: rgba(99, 102, 241, 0.15);
-            backdrop-filter: blur(10px);
-            color: #c7d2fe;
-            padding: 0.6rem 1.2rem;
-            border-radius: 25px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            transition: all 0.3s ease;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .feature-tag:hover {
-            background: rgba(99, 102, 241, 0.25);
-            transform: translateY(-2px);
-            color: #e0e7ff;
-        }
-
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.6);
-            animation: bounce 2s infinite;
-            z-index: 10;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-10px); }
-            60% { transform: translateX(-50%) translateY(-5px); }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Enhanced mobile responsiveness */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.8rem;
-            }
-            
-            .hero p {
-                font-size: 1.1rem;
-                padding: 0 1rem;
-            }
-            
-            .chatbot-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-            
-            .chatbot-card {
-                padding: 2rem 1.5rem;
-                margin: 0 0.5rem;
-            }
-
-            .chatbot-card:hover {
-                transform: translateY(-10px) rotateX(0deg) rotateY(0deg);
-            }
-        }
-
-        @media (max-width: 1024px) and (min-width: 769px) {
-            .chatbot-grid {
-                gap: 2rem;
-            }
-            
-            .chatbot-card {
-                padding: 2rem 1.5rem;
-            }
-        }
-
-        /* Loading animation */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0f0f23, #16213e);
+        .checkbox-item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 0.5s ease;
+            gap: 8px;
         }
 
-        .loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid #6366f1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        input[type="checkbox"] {
+            width: auto;
         }
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loader"></div>
-    </div>
-
-    <div class="particles" id="particles"></div>
-
     <div class="container">
-        <div class="hero">
-            <h1>AI Patient Hub</h1>
-            <p>Experience the future of Pharmacy consultation training with our advanced AI Patient interfaces. Choose your preferred interaction style and start enhancing your skills today.</p>
+        <h2>Chatbot Selection with Webhook Status</h2>
+        
+        <div class="form-group">
+            <label for="chatbotSelect">Select Chatbot:</label>
+            <select id="chatbotSelect">
+                <option value="">Select a chatbot configuration...</option>
+            </select>
         </div>
 
-        <div class="chatbot-grid">
-            <!-- Text Chat Card -->
-            <div class="chatbot-card text-chat">
-                <div class="card-icon">💬</div>
-                <h3 class="card-title">Text Chat</h3>
-                <p class="card-description">Classic text-based conversation interface for quick and efficient communication with our AI assistant.</p>
-                <div class="features">
-                    <span class="feature-tag">Fast Response</span>
-                    <span class="feature-tag">Mobile Friendly</span>
-                    <span class="feature-tag">Low Bandwidth</span>
-                </div>
-                <button onclick="confirmAndRedirect('https://bap04223.github.io/V0.0/', 'Text Chat')" class="card-button">Start Text Chat</button>
-            </div>
+        <button onclick="checkAllWebhookStatus()">Check All Webhook Status</button>
+        <button onclick="loadSampleConfigurations()">Load Sample Configs</button>
 
-            <!-- Voice Chat Card -->
-            <div class="chatbot-card voice-chat">
-                <div class="card-icon">🎤</div>
-                <h3 class="card-title">Voice Chat</h3>
-                <p class="card-description">Speak naturally and hear responses with our advanced voice recognition and text-to-speech technology.</p>
-                <div class="features">
-                    <span class="feature-tag">Voice Recognition</span>
-                    <span class="feature-tag">Natural Speech</span>
-                    <span class="feature-tag">Hands-Free</span>
-                </div>
-                <button onclick="confirmAndRedirect('https://bap04223.github.io/V1.3/', 'Voice Chat')" class="card-button">Start Voice Chat</button>
-            </div>
-
-            <!-- Avatar Video Chat Card -->
-            <div class="chatbot-card avatar-chat">
-                <div class="card-icon">🎭</div>
-                <h3 class="card-title">Avatar Video Chat</h3>
-                <p class="card-description">Immersive video chat experience with our AI avatar that provides visual cues and expressions.</p>
-                <div class="features">
-                    <span class="feature-tag">Visual Avatar</span>
-                    <span class="feature-tag">Expressions</span>
-                    <span class="feature-tag">Immersive</span>
-                </div>
-                <button onclick="confirmAndRedirect('https://bap04223.github.io/V2.3/', 'Avatar Chat')" class="card-button">Start Video Chat</button>
-            </div>
+        <div id="statusInfo" class="status-info" style="display: none;">
+            <h4>Webhook Status Legend:</h4>
+            <p><span class="status-indicator status-active"></span>Active - Webhook is responding</p>
+            <p><span class="status-indicator status-inactive"></span>Inactive - Webhook is not responding</p>
+            <p><span class="status-indicator status-checking"></span>Checking - Status check in progress</p>
+            <p><span class="status-indicator status-unknown"></span>Unknown - Status not checked yet</p>
         </div>
-    </div>
 
-    <div class="scroll-indicator">
-        <div style="font-size: 1.5rem;">✨</div>
+        <div class="demo-controls">
+            <h3>Demo Controls</h3>
+            <p>Simulate different webhook statuses:</p>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chatbot1" checked>
+                    <label for="chatbot1">Patient Simulator 1 (Active)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chatbot2">
+                    <label for="chatbot2">Patient Simulator 2 (Inactive)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chatbot3" checked>
+                    <label for="chatbot3">Mental Health Bot (Active)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chatbot4">
+                    <label for="chatbot4">Pharmacy Tutor (Inactive)</label>
+                </div>
+            </div>
+            <button onclick="updateSimulatedStatus()">Update Simulated Status</button>
+        </div>
     </div>
 
     <script>
-        // Loading screen
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }, 1000);
-        });
+        let chatbotConfigurations = [];
 
-        // Create floating particles
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
+        // Load sample configurations
+        function loadSampleConfigurations() {
+            chatbotConfigurations = [
+                {
+                    name: "Patient Simulator 1",
+                    webhookUrl: "https://your-n8n.com/webhook/patient-sim-1",
+                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-1",
+                    description: "General patient consultation",
+                    status: "unknown" // unknown, active, inactive, checking
+                },
+                {
+                    name: "Patient Simulator 2", 
+                    webhookUrl: "https://your-n8n.com/webhook/patient-sim-2",
+                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-2",
+                    description: "Pediatric patient scenarios",
+                    status: "unknown"
+                },
+                {
+                    name: "Mental Health Bot",
+                    webhookUrl: "https://your-n8n.com/webhook/mental-health",
+                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-mental",
+                    description: "Mental health consultations",
+                    status: "unknown"
+                },
+                {
+                    name: "Pharmacy Tutor",
+                    webhookUrl: "https://your-n8n.com/webhook/pharmacy-tutor",
+                    submitWebhookUrl: "https://your-n8n.com/webhook/submit-tutor", 
+                    description: "Educational pharmacy bot",
+                    status: "unknown"
+                }
+            ];
 
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                particlesContainer.appendChild(particle);
-            }
+            populateChatbotDropdown();
+            document.getElementById('statusInfo').style.display = 'block';
         }
 
-        // Enhanced card interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-            
-            const cards = document.querySelectorAll('.chatbot-card');
-            
-            cards.forEach(card => {
-                // Add tilt effect based on mouse position
-                card.addEventListener('mousemove', function(e) {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    
-                    const rotateX = (y - centerY) / 10;
-                    const rotateY = (centerX - x) / 10;
-                    
-                    card.style.transform = `translateY(-15px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    card.style.transform = 'translateY(0) rotateX(0deg) rotateY(0deg)';
-                });
+        // Populate dropdown with status indicators
+        function populateChatbotDropdown() {
+            const select = document.getElementById('chatbotSelect');
+            select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
 
-                // Add ripple effect on click
-                card.addEventListener('click', function(e) {
-                    const ripple = document.createElement('div');
-                    const rect = card.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.cssText = `
-                        position: absolute;
-                        width: ${size}px;
-                        height: ${size}px;
-                        left: ${x}px;
-                        top: ${y}px;
-                        background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-                        border-radius: 50%;
-                        transform: scale(0);
-                        animation: ripple 0.6s ease-out;
-                        pointer-events: none;
-                        z-index: 10;
-                    `;
-                    
-                    card.style.position = 'relative';
-                    card.appendChild(ripple);
-                    
-                    setTimeout(() => ripple.remove(), 600);
-                });
+            chatbotConfigurations.forEach((config, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                
+                // Create status indicator HTML
+                const statusClass = `status-${config.status}`;
+                const statusDot = `<span class="status-indicator ${statusClass}"></span>`;
+                
+                // Set option text (note: HTML won't render in option text, but we'll handle this differently)
+                option.textContent = `${config.name} - ${config.description}`;
+                option.setAttribute('data-status', config.status);
+                
+                select.appendChild(option);
             });
 
-            // Add CSS for ripple animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes ripple {
-                    to {
-                        transform: scale(2);
-                        opacity: 0;
-                    }
-                }
+            // Custom styling for the select dropdown (this is a workaround since HTML in options doesn't work)
+            customizeSelectOptions();
+        }
+
+        // Custom function to add visual status indicators
+        function customizeSelectOptions() {
+            const select = document.getElementById('chatbotSelect');
+            
+            // Remove any existing custom dropdown
+            const existingCustom = document.querySelector('.custom-select-wrapper');
+            if (existingCustom) {
+                existingCustom.remove();
+            }
+
+            // Create a custom styled select
+            const wrapper = document.createElement('div');
+            wrapper.className = 'custom-select-wrapper';
+            wrapper.style.cssText = `
+                position: relative;
+                display: inline-block;
+                width: 100%;
             `;
-            document.head.appendChild(style);
-        });
 
-        function confirmAndRedirect(url, chatType) {
-            const confirmed = confirm(`You are about to access ${chatType} on an external site. Continue?`);
-            if (confirmed) {
-                // Add a subtle loading effect
-                document.body.style.transition = 'opacity 0.3s ease';
-                document.body.style.opacity = '0.7';
+            const customSelect = document.createElement('div');
+            customSelect.className = 'custom-select';
+            customSelect.style.cssText = `
+                position: relative;
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                padding: 12px;
+                cursor: pointer;
+                color: #e2e8f0;
+                font-size: 16px;
+            `;
+
+            const selectedOption = document.createElement('div');
+            selectedOption.className = 'selected-option';
+            selectedOption.innerHTML = '<span class="status-indicator status-unknown"></span>Select a chatbot configuration...';
+
+            const optionsList = document.createElement('div');
+            optionsList.className = 'options-list';
+            optionsList.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #1e293b;
+                border: 1px solid #334155;
+                border-top: none;
+                border-radius: 0 0 6px 6px;
+                max-height: 200px;
+                overflow-y: auto;
+                z-index: 1000;
+                display: none;
+            `;
+
+            // Add options to the custom dropdown
+            chatbotConfigurations.forEach((config, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'custom-option';
+                optionDiv.style.cssText = `
+                    padding: 12px;
+                    cursor: pointer;
+                    border-bottom: 1px solid #334155;
+                    transition: background-color 0.2s;
+                `;
                 
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 300);
+                const statusClass = `status-${config.status}`;
+                optionDiv.innerHTML = `
+                    <span class="status-indicator ${statusClass}"></span>
+                    ${config.name} - ${config.description}
+                `;
+
+                optionDiv.addEventListener('mouseenter', () => {
+                    optionDiv.style.backgroundColor = '#334155';
+                });
+
+                optionDiv.addEventListener('mouseleave', () => {
+                    optionDiv.style.backgroundColor = 'transparent';
+                });
+
+                optionDiv.addEventListener('click', () => {
+                    selectedOption.innerHTML = `
+                        <span class="status-indicator ${statusClass}"></span>
+                        ${config.name} - ${config.description}
+                    `;
+                    optionsList.style.display = 'none';
+                    
+                    // Update the original select
+                    select.value = index;
+                    
+                    // Trigger change event
+                    const event = new Event('change');
+                    select.dispatchEvent(event);
+                });
+
+                optionsList.appendChild(optionDiv);
+            });
+
+            customSelect.appendChild(selectedOption);
+            customSelect.appendChild(optionsList);
+            wrapper.appendChild(customSelect);
+
+            // Toggle dropdown
+            customSelect.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = optionsList.style.display === 'block';
+                optionsList.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                optionsList.style.display = 'none';
+            });
+
+            // Insert the custom select after the original select
+            select.style.display = 'none';
+            select.parentNode.insertBefore(wrapper, select.nextSibling);
+        }
+
+        // Check webhook status (real implementation would ping the webhook)
+        async function checkWebhookStatus(webhookUrl, timeoutMs = 5000) {
+            try {
+                // Set a timeout for the request
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                // For demo purposes, we'll simulate the check
+                // In real implementation, you'd do:
+                /*
+                const response = await fetch(webhookUrl, {
+                    method: 'HEAD', // or 'GET' with minimal payload
+                    signal: controller.signal,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                clearTimeout(timeoutId);
+                return response.ok;
+                */
+
+                // Simulate check delay
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 500));
+                clearTimeout(timeoutId);
+                
+                // Simulate different responses based on URL
+                if (webhookUrl.includes('patient-sim-2') || webhookUrl.includes('pharmacy-tutor')) {
+                    return false; // Simulate inactive
+                }
+                return true; // Simulate active
+
+            } catch (error) {
+                console.error('Webhook check failed:', error);
+                return false;
             }
         }
 
-        // Smooth scroll reveal animation
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        // Check all webhook statuses
+        async function checkAllWebhookStatus() {
+            for (let i = 0; i < chatbotConfigurations.length; i++) {
+                const config = chatbotConfigurations[i];
+                config.status = 'checking';
+            }
+            
+            // Update UI immediately to show checking status
+            populateChatbotDropdown();
 
-        const observer = new IntersectionObserver(function(entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
+            // Check each webhook
+            for (let i = 0; i < chatbotConfigurations.length; i++) {
+                const config = chatbotConfigurations[i];
+                
+                try {
+                    const isActive = await checkWebhookStatus(config.webhookUrl);
+                    config.status = isActive ? 'active' : 'inactive';
+                } catch (error) {
+                    config.status = 'inactive';
+                }
+
+                // Update UI after each check
+                populateChatbotDropdown();
+            }
+        }
+
+        // Update simulated status based on checkboxes (for demo)
+        function updateSimulatedStatus() {
+            const checkboxes = ['chatbot1', 'chatbot2', 'chatbot3', 'chatbot4'];
+            
+            checkboxes.forEach((checkboxId, index) => {
+                const checkbox = document.getElementById(checkboxId);
+                if (chatbotConfigurations[index]) {
+                    chatbotConfigurations[index].status = checkbox.checked ? 'active' : 'inactive';
                 }
             });
-        }, observerOptions);
 
-        // Parallax effect for hero section
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const hero = document.querySelector('.hero');
-            const rate = scrolled * -0.3;
-            
-            if (hero) {
-                hero.style.transform = `translateY(${rate}px)`;
-            }
+            populateChatbotDropdown();
+        }
+
+        // Auto-load sample configurations on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSampleConfigurations();
         });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
