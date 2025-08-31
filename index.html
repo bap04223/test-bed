@@ -1779,6 +1779,29 @@ a:hover {
 .video-transition-streaming {
     opacity: 0 !important;
 }  
+
+     /* Ensure consistent video sizing and positioning */
+#avatarVideo, #idleVideo {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; /* Changed from contain to cover for consistent sizing */
+    object-position: center center !important;
+    border-radius: 12px;
+}
+
+/* Maintain aspect ratio container */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9; /* Force consistent aspect ratio */
+    background: var(--chat-background);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto;
+}   
         
     </style>
 </head>
@@ -2362,6 +2385,8 @@ z-index: 2;
 "
 >
 </video>
+
+       
 </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
@@ -2460,6 +2485,8 @@ let isStreamConnected = false;    // Track streaming connection status
 let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
 let currentIdleVideoUrl = null;   // Store current idle video URL
 let isStreamingContent = false;   // Track if actively streaming content
+let currentDriverId = null;       // Store the driver ID for consistency
+let currentPresenterConfig = null; // Store complete presenter configuration
 let statsIntervalId = null;       // Stats monitoring interval
 let lastBytesReceived = 0;        // Track streaming data
 
@@ -3683,12 +3710,12 @@ async function connectStream() {
         let streamUrl = '';
         
         if (config.serviceType === 'talks') {
-            if (!config.sourceUrl) {
-                throw new Error('Source image URL is required for talks service');
-            }
-            payload.source_url = config.sourceUrl;
-            streamUrl = 'https://api.d-id.com/talks/streams';
-            console.log('Talks payload:', payload);
+    if (!config.sourceUrl) {
+        throw new Error('Source image URL is required for talks service');
+    }
+    payload.source_url = config.sourceUrl;
+    streamUrl = 'https://api.d-id.com/talks/streams';
+    console.log('Talks payload:', payload);
             
         } else if (config.serviceType === 'clips') {
             if (!config.presenterId) {
@@ -3698,17 +3725,14 @@ async function connectStream() {
             // FIXED: Correct payload structure for Clips API
             payload.presenter_id = config.presenterId;
             
-            // Try to get a driver for this presenter
-            try {
-                const driverId = await getPresenterDrivers(config.presenterId);
-                if (driverId) {
-                    payload.driver_id = driverId;
-                    console.log('Using driver ID:', driverId);
-                }
-            } catch (driverError) {
-                console.warn('Could not get driver for presenter:', driverError);
-                // Continue without driver - it's optional
-            }
+            // Use the recommended consistent driver for both idle and streaming
+currentDriverId = 'bank://lively/driver-06';
+if (config.serviceType === 'clips') {
+    payload.driver_id = currentDriverId;
+} else if (config.serviceType === 'talks') {
+    payload.driver_url = currentDriverId;
+}
+console.log('Using recommended consistent driver:', currentDriverId);
             
             streamUrl = 'https://api.d-id.com/clips/streams';
             console.log('Clips payload:', payload);
@@ -4034,11 +4058,12 @@ async function closeStreamConnection() {
         }
     }
     
-    // Clear stream variables and stop monitoring
+   // Clear stream variables and stop monitoring
 streamId = null;
 didSessionId = null;
 currentIdleVideoUrl = null;
-isStreamingContent = false;
+currentDriverId = null;      // Clear driver info
+currentPresenterConfig = null; // Clear presenter config
 
 if (statsIntervalId) {
     clearInterval(statsIntervalId);
@@ -4174,10 +4199,12 @@ console.log('Final voice configuration:', voiceConfig);
             session_id: didSessionId
         };
 
-        // Add driver URL only for talks service
-        if (config.serviceType === 'talks') {
-            scriptPayload.driver_url = 'bank://lively/';
-        }
+        // Use the recommended consistent driver for speech
+if (config.serviceType === 'talks') {
+    scriptPayload.driver_url = 'bank://lively/driver-06';
+    console.log('Using recommended driver for speech: bank://lively/driver-06');
+}
+// For clips, the driver was already set during stream connection
 
         console.log('Script payload:', scriptPayload);
 
@@ -4199,24 +4226,36 @@ console.log('Final voice configuration:', voiceConfig);
         }
 
         console.log('Talk stream sent successfully');
-        updateAvatarStatus('Speaking...', 'playing');
+updateAvatarStatus('Speaking...', 'playing');
+
+// Switch to streaming immediately and hold for minimum duration
+setVideoState(true);
+
+// Set a minimum speaking duration before allowing switch back to idle
+setTimeout(() => {
+    console.log('Minimum speaking duration reached, allowing automatic switching');
+}, 3000); // 3 second minimum before auto-switching back to idle
 
         // The video will automatically appear via the WebRTC stream
         // Monitor for video events to update status
         if (avatarVideo) {
-            const handleVideoPlay = () => {
-                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
-                avatarVideo.removeEventListener('play', handleVideoPlay);
-            };
-            
-            const handleVideoEnd = () => {
-                updateAvatarStatus('Avatar ready', 'info');
-                avatarVideo.removeEventListener('ended', handleVideoEnd);
-            };
-            
-            avatarVideo.addEventListener('play', handleVideoPlay);
-            avatarVideo.addEventListener('ended', handleVideoEnd);
-        }
+    const handleVideoPlay = () => {
+        console.log('Streaming video started playing');
+        updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
+        setVideoStateWithDelay(true, 2000); // Hold streaming for at least 2 seconds
+        avatarVideo.removeEventListener('play', handleVideoPlay);
+    };
+    
+    const handleVideoEnd = () => {
+        console.log('Streaming video ended');
+        updateAvatarStatus('Avatar ready', 'info');
+        setVideoState(false); // Return to idle immediately when speech ends
+        avatarVideo.removeEventListener('ended', handleVideoEnd);
+    };
+    
+    avatarVideo.addEventListener('play', handleVideoPlay);
+    avatarVideo.addEventListener('ended', handleVideoEnd);
+}
 
     } catch (error) {
         console.error('Avatar speech error:', error);
@@ -4264,29 +4303,38 @@ async function generateIdleVideo(forceRegenerate = false) {
                 voice_id: voiceSelection
             }
         };
+
         
-        // Prepare payload based on service type
-        let payload = {
-            script: idleScript,
-            config: {
-                fluent: true,
-                pad_audio: 0.0
-            }
-        };
+        // Verify driver consistency
+verifyDriverConsistency();
+
+// Prepare payload based on service type
+let payload = {
+    script: idleScript,
+    config: {
+        fluent: true,
+        pad_audio: 0.0,
+        auto_match: true,  // Match aspect ratio and framing
+        motion_factor: 0.2 // Subtle motion for idle state
+    }
+};
         
         let endpoint = '';
         
         if (config.serviceType === 'talks' && config.sourceUrl) {
-            payload.source_url = config.sourceUrl;
-            payload.driver_url = 'bank://lively/'; // Ensure consistent driver
-            endpoint = 'https://api.d-id.com/talks';
-            
-        } else if (config.serviceType === 'clips' && config.presenterId) {
-            payload.presenter_id = config.presenterId;
-            endpoint = 'https://api.d-id.com/clips';
-        } else {
-            throw new Error('Avatar configuration incomplete for idle video generation');
-        }
+    payload.source_url = config.sourceUrl;
+    payload.driver_url = 'bank://lively/driver-06'; // Use recommended driver
+    endpoint = 'https://api.d-id.com/talks';
+    console.log('Using recommended driver for idle talks video');
+    
+} else if (config.serviceType === 'clips' && config.presenterId) {
+    payload.presenter_id = config.presenterId;
+    payload.driver_id = 'bank://lively/driver-06'; // Use recommended driver
+    endpoint = 'https://api.d-id.com/clips';
+    console.log('Using recommended driver for idle clips video');
+} else {
+    throw new Error('Avatar configuration incomplete for idle video generation');
+}
         
         console.log('Creating idle video with payload:', payload);
         
@@ -4454,11 +4502,35 @@ function setVideoState(isStreaming) {
     }
 }
 
+        // Manual control for video state with timing
+function setVideoStateWithDelay(isStreaming, minDuration = 0) {
+    setVideoState(isStreaming);
+    
+    if (minDuration > 0) {
+        // Temporarily disable automatic switching
+        const originalMonitoring = statsIntervalId;
+        if (originalMonitoring) {
+            clearInterval(statsIntervalId);
+            statsIntervalId = null;
+        }
+        
+        setTimeout(() => {
+            // Re-enable automatic switching
+            if (originalMonitoring && !statsIntervalId) {
+                startStreamMonitoring();
+            }
+        }, minDuration);
+    }
+}
+
 // Monitor streaming data to automatically switch between idle and streaming
 function startStreamMonitoring() {
     if (!peerConnection || statsIntervalId) return;
     
     console.log('Starting stream monitoring for idle/streaming transitions');
+    let consecutiveStreamingCount = 0;
+    let consecutiveIdleCount = 0;
+    const requiredConsecutiveChecks = 3; // Require 3 consecutive checks before switching
     
     statsIntervalId = setInterval(async () => {
         try {
@@ -4471,11 +4543,27 @@ function startStreamMonitoring() {
                 }
             });
             
-            const isReceivingData = currentBytesReceived > lastBytesReceived;
+            const isReceivingNewData = currentBytesReceived > lastBytesReceived;
+            const significantDataIncrease = (currentBytesReceived - lastBytesReceived) > 1000; // Minimum 1KB increase
             
-            if (isReceivingData !== isStreamingContent) {
-                console.log('Stream state changed:', isReceivingData ? 'receiving data' : 'idle');
-                setVideoState(isReceivingData, isReceivingData ? avatarVideo.srcObject : null);
+            if (isReceivingNewData && significantDataIncrease) {
+                consecutiveStreamingCount++;
+                consecutiveIdleCount = 0;
+                
+                // Switch to streaming only after consistent data flow
+                if (consecutiveStreamingCount >= requiredConsecutiveChecks && !isStreamingContent) {
+                    console.log('Switching to streaming video - consistent data flow detected');
+                    setVideoState(true);
+                }
+            } else {
+                consecutiveIdleCount++;
+                consecutiveStreamingCount = 0;
+                
+                // Switch to idle only after data flow has stopped for a while
+                if (consecutiveIdleCount >= requiredConsecutiveChecks && isStreamingContent) {
+                    console.log('Switching to idle video - data flow stopped');
+                    setVideoState(false);
+                }
             }
             
             lastBytesReceived = currentBytesReceived;
@@ -4483,7 +4571,7 @@ function startStreamMonitoring() {
         } catch (error) {
             console.error('Stream monitoring error:', error);
         }
-    }, 500);
+    }, 1000); // Reduced frequency to 1 second
 }
         
         // NEW: Function to get available drivers for a presenter
@@ -4508,6 +4596,16 @@ async function getPresenterDrivers(presenterId) {
         console.error('Error fetching drivers:', error);
     }
     return null;
+}
+
+        // Verify driver consistency between idle and streaming
+function verifyDriverConsistency() {
+    console.log('=== Driver Consistency Check ===');
+    console.log('Current Driver ID:', currentDriverId);
+    console.log('Service Type:', document.getElementById('serviceType').value);
+    console.log('Has Idle Video:', !!currentIdleVideoUrl);
+    console.log('Stream Connected:', isStreamConnected);
+    console.log('=================================');
 }
         
         // Create a new talk using D-ID REST API
@@ -7505,6 +7603,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
