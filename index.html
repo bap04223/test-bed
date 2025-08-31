@@ -1748,6 +1748,37 @@ a:hover {
 .card-icon:hover {
     transform: scale(1.1) rotate(5deg);
 }  
+
+      /* Enhanced video container for idle/streaming transitions */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    background: var(--chat-background);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 450px;
+    height: calc(100vh - 300px);
+}
+
+.video-wrapper video {
+    border-radius: 12px;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Smooth transitions between idle and streaming video */
+.video-transition-idle {
+    opacity: 1 !important;
+}
+
+.video-transition-streaming {
+    opacity: 0 !important;
+}  
         
     </style>
 </head>
@@ -2279,12 +2310,13 @@ a:hover {
     </div>
 </div>
    
-   <video 
+   <!-- Main streaming video element -->
+<video 
     id="avatarVideo" 
     width="100%" 
     height="100%"
     autoplay 
-    controls
+    muted
     style="
 border-radius: 12px; 
 background-color: var(--chat-background); 
@@ -2294,6 +2326,39 @@ object-fit: contain;
 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 display: block;
 margin: 0 auto;
+position: absolute;
+top: 0;
+left: 0;
+opacity: 0;
+transition: opacity 0.5s ease-in-out;
+z-index: 2;
+"
+>
+</video>
+
+<!-- Idle video element -->
+<video 
+    id="idleVideo" 
+    width="100%" 
+    height="100%"
+    autoplay 
+    loop
+    muted
+    style="
+border-radius: 12px; 
+background-color: var(--chat-background); 
+width: 100%;
+height: 100%;
+object-fit: contain;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+display: block;
+margin: 0 auto;
+position: absolute;
+top: 0;
+left: 0;
+opacity: 1;
+transition: opacity 0.5s ease-in-out;
+z-index: 1;
 "
 >
 </video>
@@ -2389,9 +2454,14 @@ let peerConnection = null;        // WebRTC peer connection
 let streamId = null;              // D-ID stream ID
 let didSessionId = null;          // D-ID session ID (renamed to avoid conflict)
 let avatarVideo = null;           // Video element reference
+let idleVideo = null;             // Idle video element reference
 let isAvatarInitialized = false;  // Track initialization status
 let isStreamConnected = false;    // Track streaming connection status
 let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+let currentIdleVideoUrl = null;   // Store current idle video URL
+let isStreamingContent = false;   // Track if actively streaming content
+let statsIntervalId = null;       // Stats monitoring interval
+let lastBytesReceived = 0;        // Track streaming data
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -2481,8 +2551,17 @@ function getPresenterVoice(presenterId) {
             // Display session info
             displaySessionInfo();
             
-            // Initialize avatar video element reference
-            avatarVideo = document.getElementById('avatarVideo');
+            // Initialize video element references
+avatarVideo = document.getElementById('avatarVideo');
+idleVideo = document.getElementById('idleVideo');
+
+if (!avatarVideo) {
+    throw new Error('Avatar video element not found');
+}
+
+if (!idleVideo) {
+    throw new Error('Idle video element not found');
+}
             
 // D-ID Streaming API is ready
 updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
@@ -2499,7 +2578,7 @@ initializeDIDElements();
         };
         
         // ===== SESSION MANAGEMENT =====
-        // Generate and manage unique session IDs
+    
         
         function generateSessionId() {
             // Generate a unique session ID using timestamp and random string
@@ -3813,7 +3892,21 @@ function onSignalingStateChange() {
 function onTrack(event) {
     console.log('Received remote stream');
     const remoteStream = event.streams[0];
-    setVideoElement(remoteStream);
+    
+    // Set up video element with idle/streaming capability
+    if (avatarVideo) {
+        avatarVideo.srcObject = remoteStream;
+        setVideoState(false); // Start with idle video showing
+        
+        // Generate idle video if not already available
+        if (!currentIdleVideoUrl) {
+            generateIdleVideo().then(() => {
+                console.log('Idle video ready for transitions');
+            }).catch(error => {
+                console.error('Failed to generate idle video:', error);
+            });
+        }
+    }
 }
 
 function setVideoElement(stream) {
@@ -3927,9 +4020,25 @@ async function closeStreamConnection() {
         }
     }
     
-    // Clear stream variables
-    streamId = null;
-    didSessionId = null;
+    // Clear stream variables and stop monitoring
+streamId = null;
+didSessionId = null;
+currentIdleVideoUrl = null;
+isStreamingContent = false;
+
+if (statsIntervalId) {
+    clearInterval(statsIntervalId);
+    statsIntervalId = null;
+}
+
+// Reset video states
+if (avatarVideo) {
+    avatarVideo.style.opacity = '0';
+}
+if (idleVideo) {
+    idleVideo.style.opacity = '1';
+    idleVideo.src = '';
+}
     
     console.log('Stream cleanup completed');
 
@@ -3989,7 +4098,10 @@ async function speakWithAvatar(text) {
     }
 
     try {
-        console.log('Sending text to D-ID stream:', text);
+        // Switch to streaming mode when speaking starts
+setVideoState(true, avatarVideo.srcObject);
+
+console.log('Sending text to D-ID stream:', text);
         
         // FIXED: Get FRESH configuration for each speech request
         const config = getAvatarConfiguration();
@@ -4103,6 +4215,260 @@ console.log('Final voice configuration:', voiceConfig);
     }
 }
 
+// ===== IDLE VIDEO GENERATION AND MANAGEMENT =====
+// Generate idle video for smooth transitions
+
+async function generateIdleVideo(forceRegenerate = false) {
+    if (!isAvatarInitialized || !didApiKey) {
+        console.log('Avatar not initialized, skipping idle video generation');
+        return null;
+    }
+    
+    // Check if we already have an idle video for current configuration
+    if (currentIdleVideoUrl && !forceRegenerate) {
+        console.log('Using existing idle video:', currentIdleVideoUrl);
+        return currentIdleVideoUrl;
+    }
+    
+    try {
+        console.log('Generating idle video...');
+        updateAvatarStatus('Generating idle animation...', 'loading');
+        
+        // Get current avatar configuration
+        const config = getAvatarConfiguration();
+        
+        // Get current voice selection or use a default
+        const voiceSelection = document.getElementById('voiceSelection').value || 'en-US-AriaNeural';
+        
+        // Create idle script with SSML breaks for natural breathing/blinking
+        const idleScript = {
+            type: 'text',
+            ssml: true,
+            input: '<break time="2000ms"/><break time="2000ms"/><break time="2000ms"/>',
+            provider: {
+                type: 'microsoft',
+                voice_id: voiceSelection
+            }
+        };
+        
+        // Prepare payload based on service type
+        let payload = {
+            script: idleScript,
+            config: {
+                fluent: true,
+                pad_audio: 0.0
+            }
+        };
+        
+        let endpoint = '';
+        
+        if (config.serviceType === 'talks' && config.sourceUrl) {
+            payload.source_url = config.sourceUrl;
+            payload.driver_url = 'bank://lively/'; // Ensure consistent driver
+            endpoint = 'https://api.d-id.com/talks';
+            
+        } else if (config.serviceType === 'clips' && config.presenterId) {
+            payload.presenter_id = config.presenterId;
+            endpoint = 'https://api.d-id.com/clips';
+        } else {
+            throw new Error('Avatar configuration incomplete for idle video generation');
+        }
+        
+        console.log('Creating idle video with payload:', payload);
+        
+        // Create idle video
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Idle video creation failed: ${response.status} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        const videoId = result.id;
+        
+        console.log('Idle video creation started:', videoId);
+        
+        // Poll for completion
+        const idleVideoUrl = await waitForIdleVideoCompletion(videoId, endpoint);
+        
+        if (idleVideoUrl) {
+            currentIdleVideoUrl = idleVideoUrl;
+            await loadIdleVideo(idleVideoUrl);
+            console.log('Idle video ready:', idleVideoUrl);
+            return idleVideoUrl;
+        }
+        
+    } catch (error) {
+        console.error('Idle video generation error:', error);
+        updateAvatarStatus(`Idle video error: ${error.message}`, 'error');
+        return null;
+    }
+}
+
+// Wait for idle video completion
+async function waitForIdleVideoCompletion(videoId, endpoint) {
+    const maxAttempts = 30;
+    const pollInterval = 2000;
+    
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+            console.log(`Checking idle video status (${attempt + 1}/${maxAttempts})`);
+            
+            const response = await fetch(`${endpoint}/${videoId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Status check failed: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('Idle video status:', result.status);
+            
+            if (result.status === 'done' && result.result_url) {
+                console.log('Idle video generation completed:', result.result_url);
+                return result.result_url;
+            } else if (result.status === 'error') {
+                throw new Error('Idle video generation failed');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            
+        } catch (error) {
+            console.error(`Error checking idle video status (${attempt + 1}):`, error);
+            
+            if (attempt === maxAttempts - 1) {
+                throw new Error('Idle video generation timeout');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+        }
+    }
+    
+    throw new Error('Idle video generation timeout - maximum attempts reached');
+}
+
+// Load idle video into video element
+async function loadIdleVideo(videoUrl) {
+    if (!idleVideo || !videoUrl) return;
+    
+    try {
+        console.log('Loading idle video:', videoUrl);
+        
+        idleVideo.src = videoUrl;
+        idleVideo.muted = true;
+        idleVideo.loop = true;
+        idleVideo.load();
+        
+        return new Promise((resolve, reject) => {
+            idleVideo.onloadeddata = () => {
+                console.log('Idle video loaded successfully');
+                idleVideo.play().then(() => {
+                    console.log('Idle video playing');
+                    resolve();
+                }).catch(reject);
+            };
+            
+            idleVideo.onerror = (error) => {
+                console.error('Idle video load error:', error);
+                reject(error);
+            };
+            
+            setTimeout(() => reject(new Error('Idle video load timeout')), 10000);
+        });
+        
+    } catch (error) {
+        console.error('Error loading idle video:', error);
+        throw error;
+    }
+}
+
+// Toggle between idle and streaming video
+function setVideoState(isStreaming, streamObject = null) {
+    if (!avatarVideo || !idleVideo) return;
+    
+    console.log('Setting video state - isStreaming:', isStreaming);
+    
+    if (isStreaming && streamObject) {
+        // Switch to streaming video
+        avatarVideo.srcObject = streamObject;
+        avatarVideo.muted = false;
+        avatarVideo.volume = 0.8;
+        avatarVideo.style.opacity = '1';
+        idleVideo.style.opacity = '0';
+        
+        isStreamingContent = true;
+        
+        // Start monitoring stream data
+        if (statsIntervalId) {
+            clearInterval(statsIntervalId);
+        }
+        
+        startStreamMonitoring();
+        
+    } else {
+        // Switch to idle video
+        avatarVideo.style.opacity = '0';
+        idleVideo.style.opacity = '1';
+        
+        if (idleVideo.paused) {
+            idleVideo.play().catch(console.error);
+        }
+        
+        isStreamingContent = false;
+        
+        // Stop monitoring
+        if (statsIntervalId) {
+            clearInterval(statsIntervalId);
+            statsIntervalId = null;
+        }
+    }
+}
+
+// Monitor streaming data to automatically switch between idle and streaming
+function startStreamMonitoring() {
+    if (!peerConnection || statsIntervalId) return;
+    
+    console.log('Starting stream monitoring for idle/streaming transitions');
+    
+    statsIntervalId = setInterval(async () => {
+        try {
+            const stats = await peerConnection.getStats();
+            let currentBytesReceived = 0;
+            
+            stats.forEach((report) => {
+                if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                    currentBytesReceived = report.bytesReceived || 0;
+                }
+            });
+            
+            const isReceivingData = currentBytesReceived > lastBytesReceived;
+            
+            if (isReceivingData !== isStreamingContent) {
+                console.log('Stream state changed:', isReceivingData ? 'receiving data' : 'idle');
+                setVideoState(isReceivingData, isReceivingData ? avatarVideo.srcObject : null);
+            }
+            
+            lastBytesReceived = currentBytesReceived;
+            
+        } catch (error) {
+            console.error('Stream monitoring error:', error);
+        }
+    }, 500);
+}
+        
         // NEW: Function to get available drivers for a presenter
 async function getPresenterDrivers(presenterId) {
     try {
@@ -7122,6 +7488,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
