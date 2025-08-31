@@ -4020,10 +4020,10 @@ async function speakWithAvatar(text) {
     }
 
     try {
-        // Stop idle animation if playing
+      // Stop idle animation if playing
         if (isPlayingIdle) {
             console.log('Stopping idle animation for speech');
-            isPlayingIdle = false;
+            stopIdleAnimation();
         }
 
         console.log('Sending text to D-ID stream:', text);
@@ -4125,10 +4125,11 @@ console.log('Final voice configuration:', voiceConfig);
                 updateAvatarStatus('Avatar ready', 'info');
                 // Start idle animation after speech ends
                 setTimeout(() => {
-                    if (idleVideoUrl && !isPlayingIdle) {
+                    if (isStreamConnected && !isPlayingIdle) {
+                        console.log('Speech ended, restarting idle animation');
                         playIdleAnimation();
                     }
-                }, 1000);
+                }, 1500);
                 avatarVideo.removeEventListener('ended', handleVideoEnd);
             };
             
@@ -4147,18 +4148,53 @@ console.log('Final voice configuration:', voiceConfig);
     }
 }
 
-// Generate idle animation video
-async function generateIdleAnimation() {
-    if (!isStreamConnected || !streamId || !didSessionId || idleVideoUrl) {
-        return; // Skip if not connected or already have idle video
+// Start idle animation system
+function generateIdleAnimation() {
+    if (!isStreamConnected || !streamId || !didSessionId) {
+        return;
+    }
+    
+    console.log('Starting idle animation system...');
+    
+    // Start idle animation after a short delay
+    setTimeout(() => {
+        if (isStreamConnected && !isPlayingIdle) {
+            playIdleAnimation();
+        }
+    }, 2000);
+}
+        
+// Stop idle animation
+function stopIdleAnimation() {
+    console.log('Stopping idle animation');
+    isPlayingIdle = false;
+    updateAvatarStatus('Avatar ready', 'info');
+}
+        
+// Play idle animation with proper looping
+function playIdleAnimation() {
+    if (!isStreamConnected) {
+        return;
+    }
+    
+    console.log('Starting idle animation loop');
+    isPlayingIdle = true;
+    updateAvatarStatus('Avatar idle...', 'playing');
+    
+    // Generate and send idle animation immediately
+    generateIdleAnimationLoop();
+}
+
+// Continuous idle animation loop
+function generateIdleAnimationLoop() {
+    if (!isStreamConnected || !isPlayingIdle) {
+        return;
     }
     
     try {
-        console.log('Generating idle animation...');
-        
         const config = getAvatarConfiguration();
         
-        // Get voice configuration (same as speech)
+        // Get voice configuration
         let voiceConfig = {
             type: 'microsoft',
             voice_id: 'en-US-AriaNeural'
@@ -4172,12 +4208,12 @@ async function generateIdleAnimation() {
             voiceConfig.voice_id = optimalVoice;
         }
         
-        // Create idle animation payload with SSML breaks
+        // Create idle animation payload
         let idlePayload = {
             script: {
                 type: 'text',
                 ssml: true,
-                input: '<break time="5000ms"/><break time="5000ms"/><break time="5000ms"/>',
+                input: '<break time="3000ms"/><break time="3000ms"/><break time="3000ms"/>',
                 provider: voiceConfig
             },
             config: {
@@ -4187,70 +4223,38 @@ async function generateIdleAnimation() {
             session_id: didSessionId
         };
 
-        // Add driver URL only for talks service
+        // Add driver URL for talks service
         if (config.serviceType === 'talks') {
             idlePayload.driver_url = 'bank://lively/';
         }
 
-        console.log('Idle animation payload:', idlePayload);
-
         // Send idle animation request
         const idleUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
-        const idleResponse = await fetch(idleUrl, {
+        fetch(idleUrl, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(idlePayload),
-        });
-
-        if (!idleResponse.ok) {
-            const errorText = await idleResponse.text();
-            console.error('Idle animation error:', errorText);
-            throw new Error(`Idle animation failed: ${idleResponse.status} - ${errorText}`);
-        }
-
-        console.log('Idle animation generated successfully');
-        
-        // Start playing idle animation after a short delay
-        setTimeout(() => {
-            if (!isPlayingIdle) {
-                playIdleAnimation();
+        }).then(response => {
+            if (response.ok) {
+                console.log('Idle animation sent successfully');
+                // Schedule next idle animation
+                setTimeout(() => {
+                    if (isPlayingIdle && isStreamConnected) {
+                        generateIdleAnimationLoop();
+                    }
+                }, 8000); // Send next idle animation before current one ends
+            } else {
+                console.error('Idle animation failed:', response.status);
             }
-        }, 2000);
+        }).catch(error => {
+            console.error('Idle animation error:', error);
+        });
 
     } catch (error) {
         console.error('Idle animation generation error:', error);
-    }
-}
-
-// Play idle animation
-function playIdleAnimation() {
-    if (!isStreamConnected || isPlayingIdle) {
-        return;
-    }
-    
-    console.log('Starting idle animation');
-    isPlayingIdle = true;
-    updateAvatarStatus('Avatar idle...', 'playing');
-    
-    // The idle video will automatically appear via the WebRTC stream
-    // Set up a loop to continue idle animation
-    if (avatarVideo) {
-        const handleIdleEnd = () => {
-            if (isPlayingIdle && isStreamConnected) {
-                // Restart idle animation
-                setTimeout(() => {
-                    if (isPlayingIdle) {
-                        generateIdleAnimation();
-                    }
-                }, 500);
-            }
-            avatarVideo.removeEventListener('ended', handleIdleEnd);
-        };
-        
-        avatarVideo.addEventListener('ended', handleIdleEnd, { once: true });
     }
 }
 
@@ -7273,6 +7277,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
