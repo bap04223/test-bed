@@ -2624,9 +2624,13 @@ function newSession() {
         avatarVideo.load(); // Force video element reset
     }
     
-    // Reset idle animation state
+    // Reset idle animation state and clear timeouts
     idleVideoUrl = null;
     isPlayingIdle = false;
+    if (window.idleTimeout) {
+        clearTimeout(window.idleTimeout);
+        window.idleTimeout = null;
+    }
     
     // Reset D-ID session variables but PRESERVE API key and configuration
     const currentApiKey = document.getElementById('didApiKey').value;
@@ -3962,6 +3966,12 @@ async function closeStreamConnection() {
     idleVideoUrl = null;
     isPlayingIdle = false;
     
+    // Clear any pending idle timeouts
+    if (window.idleTimeout) {
+        clearTimeout(window.idleTimeout);
+        window.idleTimeout = null;
+    }
+    
     console.log('Stream cleanup completed');
 
 // Reset initialize button if avatar was initialized
@@ -4020,10 +4030,12 @@ async function speakWithAvatar(text) {
     }
 
     try {
-      // Stop idle animation if playing
+    // Stop idle animation immediately and completely
         if (isPlayingIdle) {
             console.log('Stopping idle animation for speech');
             stopIdleAnimation();
+            // Wait a moment to ensure idle stops before sending speech
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
 
         console.log('Sending text to D-ID stream:', text);
@@ -4122,14 +4134,17 @@ console.log('Final voice configuration:', voiceConfig);
             };
             
             const handleVideoEnd = () => {
+                console.log('Speech video ended');
                 updateAvatarStatus('Avatar ready', 'info');
-                // Start idle animation after speech ends
+                
+                // Start idle animation after speech ends with longer delay
                 setTimeout(() => {
                     if (isStreamConnected && !isPlayingIdle) {
-                        console.log('Speech ended, restarting idle animation');
+                        console.log('Speech fully ended, restarting idle animation');
                         playIdleAnimation();
                     }
-                }, 1500);
+                }, 2500); // Increased delay to ensure speech is completely finished
+                
                 avatarVideo.removeEventListener('ended', handleVideoEnd);
             };
             
@@ -4164,10 +4179,17 @@ function generateIdleAnimation() {
     }, 2000);
 }
         
-// Stop idle animation
+// Stop idle animation completely
 function stopIdleAnimation() {
-    console.log('Stopping idle animation');
+    console.log('Stopping idle animation - clearing all timers');
     isPlayingIdle = false;
+    
+    // Clear any pending idle animation timeouts
+    if (window.idleTimeout) {
+        clearTimeout(window.idleTimeout);
+        window.idleTimeout = null;
+    }
+    
     updateAvatarStatus('Avatar ready', 'info');
 }
         
@@ -4185,9 +4207,10 @@ function playIdleAnimation() {
     generateIdleAnimationLoop();
 }
 
-// Continuous idle animation loop
+// Continuous idle animation loop with proper timeout management
 function generateIdleAnimationLoop() {
     if (!isStreamConnected || !isPlayingIdle) {
+        console.log('Stopping idle loop - not connected or not playing idle');
         return;
     }
     
@@ -4213,7 +4236,7 @@ function generateIdleAnimationLoop() {
             script: {
                 type: 'text',
                 ssml: true,
-                input: '<break time="3000ms"/><break time="3000ms"/><break time="3000ms"/>',
+                input: '<break time="3000ms"/><break time="3000ms"/>',
                 provider: voiceConfig
             },
             config: {
@@ -4228,6 +4251,8 @@ function generateIdleAnimationLoop() {
             idlePayload.driver_url = 'bank://lively/';
         }
 
+        console.log('Sending idle animation...');
+
         // Send idle animation request
         const idleUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
         fetch(idleUrl, {
@@ -4238,19 +4263,31 @@ function generateIdleAnimationLoop() {
             },
             body: JSON.stringify(idlePayload),
         }).then(response => {
-            if (response.ok) {
+            if (response.ok && isPlayingIdle) {
                 console.log('Idle animation sent successfully');
-                // Schedule next idle animation
-                setTimeout(() => {
+                // Clear any existing timeout
+                if (window.idleTimeout) {
+                    clearTimeout(window.idleTimeout);
+                }
+                // Schedule next idle animation - reduced timing to prevent gaps
+                window.idleTimeout = setTimeout(() => {
                     if (isPlayingIdle && isStreamConnected) {
                         generateIdleAnimationLoop();
                     }
-                }, 8000); // Send next idle animation before current one ends
-            } else {
+                }, 5000); // Send next one after 5 seconds
+            } else if (!response.ok) {
                 console.error('Idle animation failed:', response.status);
             }
         }).catch(error => {
             console.error('Idle animation error:', error);
+            // Retry after a short delay if still in idle mode
+            if (isPlayingIdle) {
+                window.idleTimeout = setTimeout(() => {
+                    if (isPlayingIdle && isStreamConnected) {
+                        generateIdleAnimationLoop();
+                    }
+                }, 2000);
+            }
         });
 
     } catch (error) {
@@ -7277,6 +7314,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
