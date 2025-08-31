@@ -2310,33 +2310,7 @@ a:hover {
     </div>
 </div>
    
-   <!-- Main streaming video element -->
-<video 
-    id="avatarVideo" 
-    width="100%" 
-    height="100%"
-    autoplay 
-    muted
-    style="
-border-radius: 12px; 
-background-color: var(--chat-background); 
-width: 100%;
-height: 100%;
-object-fit: contain;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-display: block;
-margin: 0 auto;
-position: absolute;
-top: 0;
-left: 0;
-opacity: 0;
-transition: opacity 0.5s ease-in-out;
-z-index: 2;
-"
->
-</video>
-
-<!-- Idle video element -->
+   <!-- Idle video element (shows by default) -->
 <video 
     id="idleVideo" 
     width="100%" 
@@ -2359,6 +2333,32 @@ left: 0;
 opacity: 1;
 transition: opacity 0.5s ease-in-out;
 z-index: 1;
+"
+>
+</video>
+
+<!-- Streaming video element (hidden by default) -->
+<video 
+    id="avatarVideo" 
+    width="100%" 
+    height="100%"
+    autoplay 
+    muted
+    style="
+border-radius: 12px; 
+background-color: var(--chat-background); 
+width: 100%;
+height: 100%;
+object-fit: contain;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+display: block;
+margin: 0 auto;
+position: absolute;
+top: 0;
+left: 0;
+opacity: 0;
+transition: opacity 0.5s ease-in-out;
+z-index: 2;
 "
 >
 </video>
@@ -2800,6 +2800,16 @@ function initializeDIDElements() {
         setTimeout(addPresenterRefreshButton, 100);
     }
 }
+
+        console.log('D-ID elements initialization completed');
+
+// Initialize video elements
+setTimeout(() => {
+    if (avatarVideo && idleVideo) {
+        // Ensure idle video is visible by default
+        setVideoState(false);
+    }
+}, 100);
 
 // FIXED: Enhanced Service Type Update with Proper Cleanup
 function updateServiceFields() {
@@ -3763,7 +3773,17 @@ async function connectStream() {
         }
         
        console.log('SDP answer sent successfully');
-        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+
+// Generate idle video after successful connection
+setTimeout(() => {
+    generateIdleVideo().then(() => {
+        console.log('Idle video generated successfully');
+    }).catch(error => {
+        console.error('Failed to generate idle video:', error);
+        // Continue anyway - idle video is not critical
+    });
+}, 2000);
         
               
     } catch (error) {
@@ -3893,19 +3913,13 @@ function onTrack(event) {
     console.log('Received remote stream');
     const remoteStream = event.streams[0];
     
-    // Set up video element with idle/streaming capability
+    // Set up streaming video element
     if (avatarVideo) {
         avatarVideo.srcObject = remoteStream;
-        setVideoState(false); // Start with idle video showing
+        console.log('Streaming video source set');
         
-        // Generate idle video if not already available
-        if (!currentIdleVideoUrl) {
-            generateIdleVideo().then(() => {
-                console.log('Idle video ready for transitions');
-            }).catch(error => {
-                console.error('Failed to generate idle video:', error);
-            });
-        }
+        // Start with idle video visible, streaming video hidden
+        setVideoState(false);
     }
 }
 
@@ -4098,8 +4112,8 @@ async function speakWithAvatar(text) {
     }
 
     try {
-        // Switch to streaming mode when speaking starts
-setVideoState(true, avatarVideo.srcObject);
+       // Switch to streaming mode when speaking starts
+setVideoState(true);
 
 console.log('Sending text to D-ID stream:', text);
         
@@ -4396,26 +4410,25 @@ async function loadIdleVideo(videoUrl) {
 }
 
 // Toggle between idle and streaming video
-function setVideoState(isStreaming, streamObject = null) {
-    if (!avatarVideo || !idleVideo) return;
+function setVideoState(isStreaming) {
+    if (!avatarVideo || !idleVideo) {
+        console.log('Video elements not found:', { avatarVideo: !!avatarVideo, idleVideo: !!idleVideo });
+        return;
+    }
     
     console.log('Setting video state - isStreaming:', isStreaming);
     
-    if (isStreaming && streamObject) {
+    if (isStreaming) {
         // Switch to streaming video
-        avatarVideo.srcObject = streamObject;
         avatarVideo.muted = false;
         avatarVideo.volume = 0.8;
         avatarVideo.style.opacity = '1';
         idleVideo.style.opacity = '0';
         
         isStreamingContent = true;
+        console.log('Switched to streaming video');
         
         // Start monitoring stream data
-        if (statsIntervalId) {
-            clearInterval(statsIntervalId);
-        }
-        
         startStreamMonitoring();
         
     } else {
@@ -4423,11 +4436,15 @@ function setVideoState(isStreaming, streamObject = null) {
         avatarVideo.style.opacity = '0';
         idleVideo.style.opacity = '1';
         
-        if (idleVideo.paused) {
-            idleVideo.play().catch(console.error);
+        // Ensure idle video is playing
+        if (idleVideo.paused && idleVideo.src) {
+            idleVideo.play().catch(error => {
+                console.log('Idle video play failed:', error);
+            });
         }
         
         isStreamingContent = false;
+        console.log('Switched to idle video');
         
         // Stop monitoring
         if (statsIntervalId) {
@@ -7488,6 +7505,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
