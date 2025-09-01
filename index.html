@@ -4170,8 +4170,22 @@ let scriptPayload = {
 // Add driver URL for both service types
 scriptPayload.driver_url = 'bank://lively/';
 
-// Update activity time when speaking
+// Update activity time when speaking starts
 updateActivityTime();
+
+// Set up monitoring for when speech ends
+if (avatarVideo) {
+    const handleSpeechEnd = () => {
+        console.log('Avatar speech ended - updating activity time');
+        updateActivityTime();
+        avatarVideo.removeEventListener('ended', handleSpeechEnd);
+        avatarVideo.removeEventListener('pause', handleSpeechEnd);
+    };
+    
+    // Update activity time when speech actually ends
+    avatarVideo.addEventListener('ended', handleSpeechEnd);
+    avatarVideo.addEventListener('pause', handleSpeechEnd);
+}
 
         console.log('Script payload:', scriptPayload);
 
@@ -4224,6 +4238,24 @@ updateActivityTime();
 }
 
 // IDLE ANIMATION FUNCTIONS
+
+        // Add this function before your existing idle functions
+function isAvatarSpeaking() {
+    if (!avatarVideo) return false;
+    
+    // Check if video is playing and not paused
+    const isVideoActive = !avatarVideo.paused && 
+                         avatarVideo.currentTime > 0 && 
+                         !avatarVideo.ended && 
+                         avatarVideo.readyState > 2;
+    
+    // Check if there's an active WebRTC stream (indicates live avatar)
+    const hasActiveStream = avatarVideo.srcObject && 
+                           avatarVideo.srcObject.active &&
+                           avatarVideo.srcObject.getVideoTracks().some(track => track.enabled);
+    
+    return isVideoActive && hasActiveStream;
+}
 
 // Generate idle animation using D-ID Talks API
 async function generateIdleAnimation() {
@@ -4429,9 +4461,17 @@ function startIdleMonitoring() {
     lastActivityTime = Date.now();
     
     idleCheckInterval = setInterval(() => {
+        // Don't start idle if avatar is currently speaking
+        if (isAvatarSpeaking()) {
+            console.log('Avatar is speaking - postponing idle animation');
+            lastActivityTime = Date.now(); // Reset activity time
+            return;
+        }
+        
         const timeSinceActivity = Date.now() - lastActivityTime;
         
         if (timeSinceActivity > IDLE_DELAY && !isPlayingIdle && idleAnimationUrl && isStreamConnected) {
+            console.log('Starting idle animation after', timeSinceActivity, 'ms of inactivity');
             playIdleAnimation();
         }
     }, 1000);
@@ -4524,10 +4564,11 @@ function stopIdleAnimation() {
 // Update activity timestamp (call this when avatar speaks)
 function updateActivityTime() {
     lastActivityTime = Date.now();
+    console.log('Activity detected at', new Date(lastActivityTime).toLocaleTimeString());
     
     // Stop idle animation when avatar becomes active
     if (isPlayingIdle) {
-        console.log('Activity detected - stopping idle animation');
+        console.log('Stopping idle animation due to activity');
         stopIdleAnimation();
     }
 }
@@ -7586,6 +7627,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
