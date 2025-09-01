@@ -4462,27 +4462,35 @@ function playIdleAnimation() {
     console.log('Playing idle animation');
     isPlayingIdle = true;
     
-    // Store current stream source
+    // CRITICAL: Store current WebRTC stream for restoration
     const currentSrcObject = avatarVideo.srcObject;
     
-    // Switch to idle animation
-    avatarVideo.src = idleAnimationUrl;
-    avatarVideo.loop = true;
-    avatarVideo.muted = true; // Idle should be silent
+    // Clear any existing src to avoid conflicts
+    avatarVideo.src = '';
+    avatarVideo.srcObject = null;
     
-    avatarVideo.play().then(() => {
-        updateAvatarStatus('Playing idle animation...', 'info');
-    }).catch(error => {
-        console.error('Idle animation play error:', error);
-        isPlayingIdle = false;
-    });
+    // Wait a moment for cleanup, then set idle animation
+    setTimeout(() => {
+        avatarVideo.src = idleAnimationUrl;
+        avatarVideo.loop = true;
+        avatarVideo.muted = true; // Idle should be silent
+        
+        avatarVideo.play().then(() => {
+            console.log('Idle animation started successfully');
+            updateAvatarStatus('Playing idle animation...', 'info');
+        }).catch(error => {
+            console.error('Idle animation play error:', error);
+            isPlayingIdle = false;
+            // Restore WebRTC stream on error
+            if (currentSrcObject) {
+                avatarVideo.srcObject = currentSrcObject;
+                avatarVideo.src = '';
+            }
+        });
+    }, 100);
     
-    // Set up event to switch back to stream when activity resumes
-    avatarVideo.addEventListener('pause', () => {
-        if (isPlayingIdle) {
-            stopIdleAnimation();
-        }
-    }, { once: true });
+    // Store reference for restoration
+    avatarVideo._storedSrcObject = currentSrcObject;
 }
 
 // Stop idle animation and return to stream
@@ -4494,14 +4502,19 @@ function stopIdleAnimation() {
     
     if (avatarVideo) {
         avatarVideo.loop = false;
+        avatarVideo.pause();
         avatarVideo.src = '';
         
-        // Restore stream connection
-        if (peerConnection) {
-            const remoteStream = peerConnection.getRemoteStreams()[0];
-            if (remoteStream) {
-                setVideoElement(remoteStream);
-            }
+        // Restore WebRTC stream if available
+        const storedSrcObject = avatarVideo._storedSrcObject;
+        if (storedSrcObject) {
+            setTimeout(() => {
+                avatarVideo.srcObject = storedSrcObject;
+                avatarVideo.muted = false;
+                avatarVideo.volume = 0.8;
+                avatarVideo._storedSrcObject = null;
+                console.log('WebRTC stream restored after idle animation');
+            }, 100);
         }
     }
     
@@ -4512,7 +4525,9 @@ function stopIdleAnimation() {
 function updateActivityTime() {
     lastActivityTime = Date.now();
     
+    // Stop idle animation when avatar becomes active
     if (isPlayingIdle) {
+        console.log('Activity detected - stopping idle animation');
         stopIdleAnimation();
     }
 }
@@ -7571,6 +7586,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
