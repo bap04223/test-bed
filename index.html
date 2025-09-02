@@ -4190,7 +4190,7 @@ if (manualVoiceSelection) {
 
 console.log('Final voice configuration:', voiceConfig);
 
-        // Prepare the script payload
+        // Prepare the script payload with consistent framing
 let scriptPayload = {
     script: {
         type: 'text',
@@ -4199,13 +4199,25 @@ let scriptPayload = {
     },
     config: {
         stitch: true,
-        fluent: true  // Add fluent for better quality
+        fluent: true,
+        crop: {
+            type: "rectangle",
+            rectangle: {
+                top: 0,
+                left: 0,
+                width: 1,
+                height: 1
+            }
+        },
+        align: {
+            type: "no-align"
+        }
     },
     session_id: didSessionId
 };
 
 // Add driver URL for both service types
-scriptPayload.driver_url = "bank://lively/driver-06";
+scriptPayload.driver_url = 'bank://lively/';
 
 // Don't update activity time immediately - wait for actual playback
 // updateActivityTime(); // REMOVE THIS LINE
@@ -4357,21 +4369,35 @@ async function generateIdleAnimation() {
             voiceConfig.voice_id = optimalVoice;
         }
         
-        // Create idle animation payload
-        const idlePayload = {
-            source_url: sourceUrl,
-            driver_url: "bank://lively/driver-06",
-            script: {
-                type: "text",
-                ssml: true,
-                input: "<break time=\"5000ms\"/><break time=\"5000ms\"/><break time=\"5000ms\"/>",
-                provider: voiceConfig
-            },
-            config: {
-                fluent: true,
-                pad_audio: 0.0
+// Create idle animation payload with consistent framing
+const idlePayload = {
+    source_url: sourceUrl,
+    driver_url: "bank://lively/",
+    script: {
+        type: "text",
+        ssml: true,
+        input: "<break time=\"5000ms\"/><break time=\"5000ms\"/><break time=\"5000ms\"/>",
+        provider: voiceConfig
+    },
+    config: {
+        fluent: true,
+        pad_audio: 0.0,
+        stitch: true,
+        result_format: "mp4",
+        crop: {
+            type: "rectangle",
+            rectangle: {
+                top: 0,
+                left: 0,
+                width: 1,
+                height: 1
             }
-        };
+        },
+        align: {
+            type: "no-align"
+        }
+    }
+};
         
         // Create D-ID talk
         const response = await fetch('https://api.d-id.com/talks', {
@@ -7703,3 +7729,4 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
