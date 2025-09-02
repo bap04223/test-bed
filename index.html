@@ -2533,7 +2533,7 @@ let idleAnimationBlob = null;     // Cached idle animation as blob for download
 let isPlayingIdle = false;        // Track if idle animation is currently playing
 let idleCheckInterval = null;     // Interval for checking when to show idle
 let lastActivityTime = Date.now(); // Last time there was avatar activity
-const IDLE_DELAY = 3000;         // Show idle after 3 seconds of inactivity
+const IDLE_DELAY = 500;         // Show idle after 0.5 seconds of inactivity
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -7735,5 +7735,6 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
