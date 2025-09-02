@@ -3506,8 +3506,16 @@ if (isFinal) {
         overlay.style.display = 'none';
         overlay.classList.remove('active');
     }
-    
-    // Enable ALL buttons
+
+     // Show the overlay regardless of fullscreen status for now
+    const overlay = document.getElementById('reviewOverlay');
+    if (overlay) {
+        overlay.style.display = 'block';
+        overlay.classList.add('active');
+        console.log('Review overlay should be visible now');
+    }
+     
+     // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
     document.getElementById('editBtn').disabled = false;
     document.getElementById('deleteBtn').disabled = false;
@@ -3515,12 +3523,7 @@ if (isFinal) {
     document.getElementById('overlayEditBtn').disabled = false;
     document.getElementById('overlayDeleteBtn').disabled = false;
     
-     
-    // Debug
-    console.log('Review overlay should be visible now');
-    debugReviewOverlay();
-    
-    showStatus('Review your message above. Edit if needed, then click "Send Message" or press ENTER', 'info');
+    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
 }
 
      function sendReviewedMessage() {
@@ -4487,26 +4490,33 @@ function startIdleMonitoring() {
     lastActivityTime = Date.now();
     
     idleCheckInterval = setInterval(() => {
-        const timeSinceActivity = Date.now() - lastActivityTime;
-        
-        // Check if avatar is actively speaking via WebRTC
-        const isAvatarActive = avatarVideo && 
-                              avatarVideo.srcObject && 
-                              avatarVideo.srcObject.active &&
-                              avatarVideo.srcObject.getVideoTracks().some(track => 
-                                  track.enabled && track.readyState === 'live'
-                              );
-        
-        if (isAvatarActive) {
-            // Avatar is active - show avatar layer
+    const timeSinceActivity = Date.now() - lastActivityTime;
+    
+    // Check if avatar is actively speaking via WebRTC
+    const isAvatarActive = avatarVideo && 
+                          avatarVideo.srcObject && 
+                          avatarVideo.srcObject.active &&
+                          avatarVideo.srcObject.getVideoTracks().some(track => 
+                              track.enabled && track.readyState === 'live'
+                          );
+    
+    if (isAvatarActive) {
+        // Only update if not already showing avatar layer
+        if (avatarVideo.style.opacity !== '1') {
+            console.log('Avatar active - showing avatar layer');
             showAvatarLayer();
-            lastActivityTime = Date.now();
-        } else if (timeSinceActivity > IDLE_DELAY) {
-            // No activity - show idle layer
+        }
+        lastActivityTime = Date.now();
+    } else if (timeSinceActivity > IDLE_DELAY) {
+        // Only update if not already showing idle layer
+        const idleVideo = document.getElementById('idleVideo');
+        if (idleVideo && idleVideo.style.opacity !== '1') {
+            console.log('Showing idle layer after inactivity');
             showIdleLayer();
         }
-        
-    }, 500); // Check more frequently for smoother transitions
+    }
+    
+}, 1000); // Back to 1 second intervals
     
     console.log('Idle monitoring with overlay system started');
 }
@@ -4584,8 +4594,8 @@ function showAvatarLayer() {
     
     if (idleVideo && avatarVideo) {
         console.log('Showing avatar layer');
-        avatarVideo.style.opacity = '1';
-        idleVideo.style.opacity = '0.3'; // Keep idle slightly visible as fallback
+        avatarVideo.style.opacity = '1';        // Full opacity for avatar
+        idleVideo.style.opacity = '0';          // Hide idle completely
         updateAvatarStatus('Avatar speaking', 'playing');
     }
 }
@@ -4593,10 +4603,10 @@ function showAvatarLayer() {
 // Update activity timestamp (call this when avatar speaks)
 function updateActivityTime() {
     lastActivityTime = Date.now();
-    console.log('Activity detected - showing avatar layer');
+    console.log('Activity detected at', new Date().toLocaleTimeString());
     
-    // Show avatar layer immediately when activity detected
-    showAvatarLayer();
+    // Don't call showAvatarLayer here - let the interval handle it
+    // This prevents the infinite loop
 }
         
 
@@ -7653,6 +7663,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
