@@ -1125,11 +1125,6 @@ input:focus, select:focus, textarea:focus {
     height: calc(100vh - 300px);
 }
 
-/* Ensure video layers stack properly */
-.video-wrapper video {
-    transition: opacity 0.5s ease-in-out;
-}
-
 .video-wrapper video {
     width: 100%;
     height: 100%;
@@ -7616,14 +7611,6 @@ function resizeReviewOverlay() {
     console.log('Review overlay resized for fullscreen');
 }
 
-// Call resize function whenever overlay is shown
-const originalShowReviewSection = showReviewSection;
-showReviewSection = function(transcript) {
-    originalShowReviewSection.call(this, transcript);
-    // Delay to ensure DOM is updated
-    setTimeout(resizeReviewOverlay, 100);
-};
-
  
  // Force timer color changes and animations in fullscreen ONLY
 function forceTimerStyling() {
@@ -7663,6 +7650,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
