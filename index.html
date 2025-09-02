@@ -4198,22 +4198,25 @@ let scriptPayload = {
         provider: voiceConfig
     },
     config: {
-        stitch: true,
-        fluent: true,
-        crop: {
-            type: "rectangle",
-            rectangle: {
-                top: 0,
-                left: 0,
-                width: 1,
-                height: 1
-            }
-        },
-        align: {
-            type: "no-align"
+    stitch: true,
+    fluent: true,
+    crop: {
+        type: "rectangle",
+        rectangle: {
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1
         }
     },
-    session_id: didSessionId
+    align: {
+        type: "no-align"
+    },
+    background: {
+        color: "#16213e"
+    }
+},    
+session_id: didSessionId
 };
 
 // Add driver URL for both service types
@@ -4380,23 +4383,26 @@ const idlePayload = {
         provider: voiceConfig
     },
     config: {
-        fluent: true,
-        pad_audio: 0.0,
-        stitch: true,
-        result_format: "mp4",
-        crop: {
-            type: "rectangle",
-            rectangle: {
-                top: 0,
-                left: 0,
-                width: 1,
-                height: 1
-            }
-        },
-        align: {
-            type: "no-align"
+    fluent: true,
+    pad_audio: 0.0,
+    stitch: true,
+    result_format: "mp4",
+    crop: {
+        type: "rectangle",
+        rectangle: {
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1
         }
+    },
+    align: {
+        type: "no-align"
+    },
+    background: {
+        color: "#16213e"
     }
+}
 };
         
         // Create D-ID talk
@@ -7729,4 +7735,5 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
