@@ -2342,22 +2342,55 @@ a:hover {
     </div>
 </div>
    
-   <video 
+   <!-- Idle Animation Video (Background Layer) -->
+<video 
+    id="idleVideo" 
+    width="100%" 
+    height="100%"
+    autoplay 
+    loop
+    muted
+    style="
+        border-radius: 12px; 
+        background-color: var(--chat-background); 
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: block;
+        margin: 0 auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 1;
+        z-index: 1;
+        transition: opacity 0.5s ease-in-out;
+    "
+>
+</video>
+
+<!-- WebRTC Avatar Video (Foreground Layer) -->
+<video 
     id="avatarVideo" 
     width="100%" 
     height="100%"
     autoplay 
     controls
     style="
-border-radius: 12px; 
-background-color: var(--chat-background); 
-width: 100%;
-height: 100%;
-object-fit: contain;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-display: block;
-margin: 0 auto;
-"
+        border-radius: 12px; 
+        background-color: transparent; 
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        z-index: 2;
+        transition: opacity 0.5s ease-in-out;
+    "
 >
 </video>
 </div>
@@ -7627,6 +7660,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
