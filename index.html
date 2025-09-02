@@ -2322,26 +2322,7 @@ a:hover {
     ❌
 </button>
        
-       <!-- Review Overlay for Fullscreen -->
-<div id="reviewOverlay" class="review-overlay" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 999999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); padding: 20px;">
-    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center; font-size: 18px;">Live Transcription & Review</h3>
-    <textarea id="overlayReviewTranscript" placeholder="No message to review yet" style="height: 120px; font-size: 16px; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; width: 100%; box-sizing: border-box; margin: 10px 0; resize: none;"></textarea>
-    <div style="display: flex; gap: 15px; margin-top: 15px; justify-content: space-between;">
-        <button class="btn-info" id="overlayTalkButton" onclick="toggleRecording()" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
-            Start Recording
-        </button>
-        <button class="btn-success" onclick="sendOverlayMessage()" disabled id="overlaySendBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
-            Send Message
-        </button>
-        <button class="btn-warning" onclick="editOverlayTranscript()" disabled id="overlayEditBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
-            Edit
-        </button>
-        <button class="btn-danger" onclick="deleteOverlayTranscript()" disabled id="overlayDeleteBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
-            Delete & Retry
-        </button>
-    </div>
-</div>
-   
+  
       <!-- Idle Animation Video (Background Layer) -->
    <video 
     id="idleVideo" 
@@ -7650,6 +7631,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
