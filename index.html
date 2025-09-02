@@ -4208,14 +4208,21 @@ updateActivityTime();
 
 // Set up monitoring for when speech ends
 if (avatarVideo) {
-    const handleSpeechEnd = () => {
-        console.log('Avatar speech ended - updating activity time');
+    const handleSpeechStart = () => {
+        console.log('Avatar speech started');
         updateActivityTime();
+        avatarVideo.removeEventListener('playing', handleSpeechStart);
+    };
+    
+    const handleSpeechEnd = () => {
+        console.log('Avatar speech ended');
+        // Don't update activity time here - let the idle timer handle the transition
         avatarVideo.removeEventListener('ended', handleSpeechEnd);
         avatarVideo.removeEventListener('pause', handleSpeechEnd);
     };
     
-    // Update activity time when speech actually ends
+    // Update activity time when speech actually starts playing
+    avatarVideo.addEventListener('playing', handleSpeechStart);
     avatarVideo.addEventListener('ended', handleSpeechEnd);
     avatarVideo.addEventListener('pause', handleSpeechEnd);
 }
@@ -4522,7 +4529,7 @@ function showAvatarLayer() {
     if (idleVideo && avatarVideo) {
         console.log('Showing avatar layer');
         avatarVideo.style.opacity = '1';
-        idleVideo.style.opacity = '0.3'; // Keep idle slightly visible as fallback
+        idleVideo.style.opacity = '0'; // Completely hide idle when avatar is active
         updateAvatarStatus('Avatar speaking', 'playing');
     }
 }
@@ -4539,26 +4546,30 @@ function startIdleMonitoring() {
     lastActivityTime = Date.now();
     
     idleCheckInterval = setInterval(() => {
-        const timeSinceActivity = Date.now() - lastActivityTime;
-        
-        // Check if avatar is actively speaking via WebRTC
-        const isAvatarActive = avatarVideo && 
-                              avatarVideo.srcObject && 
-                              avatarVideo.srcObject.active &&
-                              avatarVideo.srcObject.getVideoTracks().some(track => 
-                                  track.enabled && track.readyState === 'live'
-                              );
-        
-        if (isAvatarActive) {
-            // Avatar is active - show avatar layer
-            showAvatarLayer();
-            lastActivityTime = Date.now();
-        } else if (timeSinceActivity > IDLE_DELAY) {
-            // No activity - show idle layer
-            showIdleLayer();
-        }
-        
-    }, 500); // Check more frequently for smoother transitions
+    const timeSinceActivity = Date.now() - lastActivityTime;
+    
+    // Check if avatar is actively speaking via WebRTC
+    const avatarVideo = document.getElementById('avatarVideo');
+    const isAvatarActive = avatarVideo && 
+                          avatarVideo.srcObject && 
+                          avatarVideo.srcObject.active &&
+                          avatarVideo.srcObject.getVideoTracks().some(track => 
+                              track.enabled && track.readyState === 'live'
+                          ) &&
+                          !avatarVideo.paused &&
+                          avatarVideo.currentTime > 0;
+    
+    if (isAvatarActive) {
+        // Avatar is active - show avatar layer
+        showAvatarLayer();
+        lastActivityTime = Date.now();
+    } else if (timeSinceActivity > IDLE_DELAY) {
+        // No activity for the delay period - show idle layer
+        console.log(`No activity for ${timeSinceActivity}ms, showing idle`);
+        showIdleLayer();
+    }
+    
+}, 500); // Check more frequently for smoother transitions
     
     console.log('Idle monitoring with overlay system started');
 }
@@ -7643,6 +7654,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
