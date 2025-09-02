@@ -2322,34 +2322,26 @@ a:hover {
     ❌
 </button>
        
-  
-      <!-- Idle Animation Video (Background Layer) -->
-   <video 
-    id="idleVideo" 
-    width="100%" 
-    height="100%"
-    autoplay 
-    loop
-    muted
-    style="
-        border-radius: 12px; 
-        background-color: var(--chat-background); 
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: block;
-        margin: 0 auto;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 1;
-        z-index: 1;
-    "
->
-</video>
-
-   <!-- WebRTC Avatar Video (Foreground Layer) -->
+       <!-- Review Overlay for Fullscreen -->
+<div id="reviewOverlay" class="review-overlay" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 999999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); padding: 20px;">
+    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center; font-size: 18px;">Live Transcription & Review</h3>
+    <textarea id="overlayReviewTranscript" placeholder="No message to review yet" style="height: 120px; font-size: 16px; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; width: 100%; box-sizing: border-box; margin: 10px 0; resize: none;"></textarea>
+    <div style="display: flex; gap: 15px; margin-top: 15px; justify-content: space-between;">
+        <button class="btn-info" id="overlayTalkButton" onclick="toggleRecording()" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Start Recording
+        </button>
+        <button class="btn-success" onclick="sendOverlayMessage()" disabled id="overlaySendBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Send Message
+        </button>
+        <button class="btn-warning" onclick="editOverlayTranscript()" disabled id="overlayEditBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Edit
+        </button>
+        <button class="btn-danger" onclick="deleteOverlayTranscript()" disabled id="overlayDeleteBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Delete & Retry
+        </button>
+    </div>
+</div>
+   
    <video 
     id="avatarVideo" 
     width="100%" 
@@ -2357,32 +2349,23 @@ a:hover {
     autoplay 
     controls
     style="
-        border-radius: 12px; 
-        background-color: transparent; 
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
-        margin: 0 auto;
-        position: absolute;
-        top: 0;
-        left: 0;
-        opacity: 0;
-        z-index: 2;
-        transition: opacity 0.5s ease-in-out;
-    "
+border-radius: 12px; 
+background-color: var(--chat-background); 
+width: 100%;
+height: 100%;
+object-fit: contain;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+display: block;
+margin: 0 auto;
+"
 >
 </video>
-
-       
 </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
 </div></div>
 
-                  <!-- Review Overlay (Top Layer) -->
-   <div id="reviewOverlay" class="review-overlay" style="z-index: 15;">
-     
+      
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
     <h3 style="margin: 0 0 0px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
@@ -2514,7 +2497,7 @@ let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // 
 let idleAnimationUrl = null;      // Cached idle animation video URL
 let isGeneratingIdle = false;     // Track idle generation status
 let idleAnimationBlob = null;     // Cached idle animation as blob for download
-let isPlayingIdle = false;        // Track if idle animation layer is visible
+let isPlayingIdle = false;        // Track if idle animation is currently playing
 let idleCheckInterval = null;     // Interval for checking when to show idle
 let lastActivityTime = Date.now(); // Last time there was avatar activity
 const IDLE_DELAY = 3000;         // Show idle after 3 seconds of inactivity
@@ -3482,16 +3465,8 @@ if (isFinal) {
         overlay.style.display = 'none';
         overlay.classList.remove('active');
     }
-
-     // Show the overlay regardless of fullscreen status for now
-    const overlay = document.getElementById('reviewOverlay');
-    if (overlay) {
-        overlay.style.display = 'block';
-        overlay.classList.add('active');
-        console.log('Review overlay should be visible now');
-    }
-     
-     // Enable ALL buttons
+    
+    // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
     document.getElementById('editBtn').disabled = false;
     document.getElementById('deleteBtn').disabled = false;
@@ -3499,7 +3474,12 @@ if (isFinal) {
     document.getElementById('overlayEditBtn').disabled = false;
     document.getElementById('overlayDeleteBtn').disabled = false;
     
-    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
+     
+    // Debug
+    console.log('Review overlay should be visible now');
+    debugReviewOverlay();
+    
+    showStatus('Review your message above. Edit if needed, then click "Send Message" or press ENTER', 'info');
 }
 
      function sendReviewedMessage() {
@@ -4190,9 +4170,8 @@ let scriptPayload = {
 // Add driver URL for both service types
 scriptPayload.driver_url = 'bank://lively/';
 
-// Show avatar layer when starting to speak
+// Update activity time when speaking starts
 updateActivityTime();
-showAvatarLayer();
 
 // Set up monitoring for when speech ends
 if (avatarVideo) {
@@ -4259,6 +4238,25 @@ if (avatarVideo) {
 }
 
 // IDLE ANIMATION FUNCTIONS
+
+        // Add this function before your existing idle functions
+function isAvatarSpeaking() {
+    if (!avatarVideo) return false;
+    
+    // Check if video is playing and not paused
+    const isVideoActive = !avatarVideo.paused && 
+                         avatarVideo.currentTime > 0 && 
+                         !avatarVideo.ended && 
+                         avatarVideo.readyState > 2;
+    
+    // Check if there's an active WebRTC stream (indicates live avatar)
+    const hasActiveStream = avatarVideo.srcObject && 
+                           avatarVideo.srcObject.active &&
+                           avatarVideo.srcObject.getVideoTracks().some(track => track.enabled);
+    
+    return isVideoActive && hasActiveStream;
+}
+
 // Generate idle animation using D-ID Talks API
 async function generateIdleAnimation() {
     if (!didApiKey) {
@@ -4460,41 +4458,25 @@ function startIdleMonitoring() {
         clearInterval(idleCheckInterval);
     }
     
-    // Start the idle animation running in background immediately
-    startIdleAnimation();
-    
     lastActivityTime = Date.now();
     
     idleCheckInterval = setInterval(() => {
-    const timeSinceActivity = Date.now() - lastActivityTime;
-    
-    // Check if avatar is actively speaking via WebRTC
-    const isAvatarActive = avatarVideo && 
-                          avatarVideo.srcObject && 
-                          avatarVideo.srcObject.active &&
-                          avatarVideo.srcObject.getVideoTracks().some(track => 
-                              track.enabled && track.readyState === 'live'
-                          );
-    
-    if (isAvatarActive) {
-        // Only update if not already showing avatar layer
-        if (avatarVideo.style.opacity !== '1') {
-            console.log('Avatar active - showing avatar layer');
-            showAvatarLayer();
+        // Don't start idle if avatar is currently speaking
+        if (isAvatarSpeaking()) {
+            console.log('Avatar is speaking - postponing idle animation');
+            lastActivityTime = Date.now(); // Reset activity time
+            return;
         }
-        lastActivityTime = Date.now();
-    } else if (timeSinceActivity > IDLE_DELAY) {
-        // Only update if not already showing idle layer
-        const idleVideo = document.getElementById('idleVideo');
-        if (idleVideo && idleVideo.style.opacity !== '1') {
-            console.log('Showing idle layer after inactivity');
-            showIdleLayer();
+        
+        const timeSinceActivity = Date.now() - lastActivityTime;
+        
+        if (timeSinceActivity > IDLE_DELAY && !isPlayingIdle && idleAnimationUrl && isStreamConnected) {
+            console.log('Starting idle animation after', timeSinceActivity, 'ms of inactivity');
+            playIdleAnimation();
         }
-    }
+    }, 1000);
     
-}, 1000); // Back to 1 second intervals
-    
-    console.log('Idle monitoring with overlay system started');
+    console.log('Idle monitoring started');
 }
 
 // Stop idle monitoring
@@ -4504,85 +4486,91 @@ function stopIdleMonitoring() {
         idleCheckInterval = null;
     }
     
-    const idleVideo = document.getElementById('idleVideo');
-    if (idleVideo) {
-        idleVideo.pause();
-        idleVideo.src = '';
+    if (isPlayingIdle) {
+        stopIdleAnimation();
     }
     
-    isPlayingIdle = false;
     console.log('Idle monitoring stopped');
 }
 
 // Play idle animation
-// Start idle animation (always running in background)
-function startIdleAnimation() {
-    if (!idleAnimationUrl || !idleAnimationBlob) {
-        console.log('No idle animation available');
+function playIdleAnimation() {
+    if (!avatarVideo || !idleAnimationUrl || isPlayingIdle) {
         return;
     }
     
-    const idleVideo = document.getElementById('idleVideo');
-    if (!idleVideo) {
-        console.error('Idle video element not found');
-        return;
-    }
+    console.log('Playing idle animation');
+    isPlayingIdle = true;
     
-    console.log('Starting background idle animation');
+    // CRITICAL: Store current WebRTC stream for restoration
+    const currentSrcObject = avatarVideo.srcObject;
     
-    // Set idle animation source
-    if (idleVideo.src !== idleAnimationUrl) {
-        idleVideo.src = idleAnimationUrl;
-    }
+    // Clear any existing src to avoid conflicts
+    avatarVideo.src = '';
+    avatarVideo.srcObject = null;
     
-    idleVideo.loop = true;
-    idleVideo.muted = true;
-    idleVideo.play().then(() => {
-        console.log('Background idle animation started');
-        isPlayingIdle = true;
+    // Wait a moment for cleanup, then set idle animation
+    setTimeout(() => {
+        avatarVideo.src = idleAnimationUrl;
+        avatarVideo.loop = true;
+        avatarVideo.muted = true; // Idle should be silent
         
-        // Show idle layer, hide avatar layer
-        showIdleLayer();
-        
-    }).catch(error => {
-        console.error('Idle animation play error:', error);
-    });
+        avatarVideo.play().then(() => {
+            console.log('Idle animation started successfully');
+            updateAvatarStatus('Playing idle animation...', 'info');
+        }).catch(error => {
+            console.error('Idle animation play error:', error);
+            isPlayingIdle = false;
+            // Restore WebRTC stream on error
+            if (currentSrcObject) {
+                avatarVideo.srcObject = currentSrcObject;
+                avatarVideo.src = '';
+            }
+        });
+    }, 100);
+    
+    // Store reference for restoration
+    avatarVideo._storedSrcObject = currentSrcObject;
 }
 
 // Stop idle animation and return to stream
-// Show idle layer (fade in idle, fade out avatar)
-function showIdleLayer() {
-    const idleVideo = document.getElementById('idleVideo');
-    const avatarVideo = document.getElementById('avatarVideo');
+function stopIdleAnimation() {
+    if (!isPlayingIdle) return;
     
-    if (idleVideo && avatarVideo) {
-        console.log('Showing idle layer');
-        idleVideo.style.opacity = '1';
-        avatarVideo.style.opacity = '0';
-        updateAvatarStatus('Showing idle animation', 'info');
-    }
-}
-
-// Show avatar layer (fade in avatar, fade out idle)
-function showAvatarLayer() {
-    const idleVideo = document.getElementById('idleVideo');
-    const avatarVideo = document.getElementById('avatarVideo');
+    console.log('Stopping idle animation');
+    isPlayingIdle = false;
     
-    if (idleVideo && avatarVideo) {
-        console.log('Showing avatar layer');
-        avatarVideo.style.opacity = '1';        // Full opacity for avatar
-        idleVideo.style.opacity = '0';          // Hide idle completely
-        updateAvatarStatus('Avatar speaking', 'playing');
+    if (avatarVideo) {
+        avatarVideo.loop = false;
+        avatarVideo.pause();
+        avatarVideo.src = '';
+        
+        // Restore WebRTC stream if available
+        const storedSrcObject = avatarVideo._storedSrcObject;
+        if (storedSrcObject) {
+            setTimeout(() => {
+                avatarVideo.srcObject = storedSrcObject;
+                avatarVideo.muted = false;
+                avatarVideo.volume = 0.8;
+                avatarVideo._storedSrcObject = null;
+                console.log('WebRTC stream restored after idle animation');
+            }, 100);
+        }
     }
+    
+    updateAvatarStatus('Avatar ready', 'info');
 }
 
 // Update activity timestamp (call this when avatar speaks)
 function updateActivityTime() {
     lastActivityTime = Date.now();
-    console.log('Activity detected at', new Date().toLocaleTimeString());
+    console.log('Activity detected at', new Date(lastActivityTime).toLocaleTimeString());
     
-    // Don't call showAvatarLayer here - let the interval handle it
-    // This prevents the infinite loop
+    // Stop idle animation when avatar becomes active
+    if (isPlayingIdle) {
+        console.log('Stopping idle animation due to activity');
+        stopIdleAnimation();
+    }
 }
         
 
@@ -7592,6 +7580,14 @@ function resizeReviewOverlay() {
     console.log('Review overlay resized for fullscreen');
 }
 
+// Call resize function whenever overlay is shown
+const originalShowReviewSection = showReviewSection;
+showReviewSection = function(transcript) {
+    originalShowReviewSection.call(this, transcript);
+    // Delay to ensure DOM is updated
+    setTimeout(resizeReviewOverlay, 100);
+};
+
  
  // Force timer color changes and animations in fullscreen ONLY
 function forceTimerStyling() {
@@ -7631,6 +7627,24 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
