@@ -4272,24 +4272,6 @@ if (avatarVideo) {
 
 // IDLE ANIMATION FUNCTIONS
 
-        // Add this function before your existing idle functions
-function isAvatarSpeaking() {
-    if (!avatarVideo) return false;
-    
-    // Check if video is playing and not paused
-    const isVideoActive = !avatarVideo.paused && 
-                         avatarVideo.currentTime > 0 && 
-                         !avatarVideo.ended && 
-                         avatarVideo.readyState > 2;
-    
-    // Check if there's an active WebRTC stream (indicates live avatar)
-    const hasActiveStream = avatarVideo.srcObject && 
-                           avatarVideo.srcObject.active &&
-                           avatarVideo.srcObject.getVideoTracks().some(track => track.enabled);
-    
-    return isVideoActive && hasActiveStream;
-}
-
 // Generate idle animation using D-ID Talks API
 async function generateIdleAnimation() {
     if (!didApiKey) {
@@ -4485,31 +4467,100 @@ function downloadIdleAnimation() {
     }
 }
 
-// Start monitoring for idle state
+// Start idle animation (always running in background)
+function startIdleAnimation() {
+    if (!idleAnimationUrl || !idleAnimationBlob) {
+        console.log('No idle animation available');
+        return;
+    }
+    
+    const idleVideo = document.getElementById('idleVideo');
+    if (!idleVideo) {
+        console.error('Idle video element not found');
+        return;
+    }
+    
+    console.log('Starting background idle animation');
+    
+    // Set idle animation source
+    if (idleVideo.src !== idleAnimationUrl) {
+        idleVideo.src = idleAnimationUrl;
+    }
+    
+    idleVideo.loop = true;
+    idleVideo.muted = true;
+    idleVideo.play().then(() => {
+        console.log('Background idle animation started');
+        isPlayingIdle = true;
+        
+        // Show idle layer, hide avatar layer
+        showIdleLayer();
+        
+    }).catch(error => {
+        console.error('Idle animation play error:', error);
+    });
+}
+
+// Show idle layer (fade in idle, fade out avatar)
+function showIdleLayer() {
+    const idleVideo = document.getElementById('idleVideo');
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (idleVideo && avatarVideo) {
+        console.log('Showing idle layer');
+        idleVideo.style.opacity = '1';
+        avatarVideo.style.opacity = '0';
+        updateAvatarStatus('Showing idle animation', 'info');
+    }
+}
+
+// Show avatar layer (fade in avatar, fade out idle)
+function showAvatarLayer() {
+    const idleVideo = document.getElementById('idleVideo');
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (idleVideo && avatarVideo) {
+        console.log('Showing avatar layer');
+        avatarVideo.style.opacity = '1';
+        idleVideo.style.opacity = '0.3'; // Keep idle slightly visible as fallback
+        updateAvatarStatus('Avatar speaking', 'playing');
+    }
+}
+
+// Start monitoring for idle state with overlay system
 function startIdleMonitoring() {
     if (idleCheckInterval) {
         clearInterval(idleCheckInterval);
     }
     
+    // Start the idle animation running in background immediately
+    startIdleAnimation();
+    
     lastActivityTime = Date.now();
     
     idleCheckInterval = setInterval(() => {
-        // Don't start idle if avatar is currently speaking
-        if (isAvatarSpeaking()) {
-            console.log('Avatar is speaking - postponing idle animation');
-            lastActivityTime = Date.now(); // Reset activity time
-            return;
-        }
-        
         const timeSinceActivity = Date.now() - lastActivityTime;
         
-        if (timeSinceActivity > IDLE_DELAY && !isPlayingIdle && idleAnimationUrl && isStreamConnected) {
-            console.log('Starting idle animation after', timeSinceActivity, 'ms of inactivity');
-            playIdleAnimation();
+        // Check if avatar is actively speaking via WebRTC
+        const isAvatarActive = avatarVideo && 
+                              avatarVideo.srcObject && 
+                              avatarVideo.srcObject.active &&
+                              avatarVideo.srcObject.getVideoTracks().some(track => 
+                                  track.enabled && track.readyState === 'live'
+                              );
+        
+        if (isAvatarActive) {
+            // Avatar is active - show avatar layer
+            showAvatarLayer();
+            lastActivityTime = Date.now();
+        } else if (timeSinceActivity > IDLE_DELAY) {
+            // No activity - show idle layer
+            showIdleLayer();
         }
-    }, 1000);
+        
+    }, 500); // Check more frequently for smoother transitions
     
-    console.log('Idle monitoring started');
+    console.log('Idle monitoring with overlay system started');
 }
 
 // Stop idle monitoring
@@ -4519,91 +4570,23 @@ function stopIdleMonitoring() {
         idleCheckInterval = null;
     }
     
-    if (isPlayingIdle) {
-        stopIdleAnimation();
+    const idleVideo = document.getElementById('idleVideo');
+    if (idleVideo) {
+        idleVideo.pause();
+        idleVideo.src = '';
     }
     
+    isPlayingIdle = false;
     console.log('Idle monitoring stopped');
 }
 
-// Play idle animation
-function playIdleAnimation() {
-    if (!avatarVideo || !idleAnimationUrl || isPlayingIdle) {
-        return;
-    }
-    
-    console.log('Playing idle animation');
-    isPlayingIdle = true;
-    
-    // CRITICAL: Store current WebRTC stream for restoration
-    const currentSrcObject = avatarVideo.srcObject;
-    
-    // Clear any existing src to avoid conflicts
-    avatarVideo.src = '';
-    avatarVideo.srcObject = null;
-    
-    // Wait a moment for cleanup, then set idle animation
-    setTimeout(() => {
-        avatarVideo.src = idleAnimationUrl;
-        avatarVideo.loop = true;
-        avatarVideo.muted = true; // Idle should be silent
-        
-        avatarVideo.play().then(() => {
-            console.log('Idle animation started successfully');
-            updateAvatarStatus('Playing idle animation...', 'info');
-        }).catch(error => {
-            console.error('Idle animation play error:', error);
-            isPlayingIdle = false;
-            // Restore WebRTC stream on error
-            if (currentSrcObject) {
-                avatarVideo.srcObject = currentSrcObject;
-                avatarVideo.src = '';
-            }
-        });
-    }, 100);
-    
-    // Store reference for restoration
-    avatarVideo._storedSrcObject = currentSrcObject;
-}
-
-// Stop idle animation and return to stream
-function stopIdleAnimation() {
-    if (!isPlayingIdle) return;
-    
-    console.log('Stopping idle animation');
-    isPlayingIdle = false;
-    
-    if (avatarVideo) {
-        avatarVideo.loop = false;
-        avatarVideo.pause();
-        avatarVideo.src = '';
-        
-        // Restore WebRTC stream if available
-        const storedSrcObject = avatarVideo._storedSrcObject;
-        if (storedSrcObject) {
-            setTimeout(() => {
-                avatarVideo.srcObject = storedSrcObject;
-                avatarVideo.muted = false;
-                avatarVideo.volume = 0.8;
-                avatarVideo._storedSrcObject = null;
-                console.log('WebRTC stream restored after idle animation');
-            }, 100);
-        }
-    }
-    
-    updateAvatarStatus('Avatar ready', 'info');
-}
-
-// Update activity timestamp (call this when avatar speaks)
+// Enhanced activity detection with opacity control
 function updateActivityTime() {
     lastActivityTime = Date.now();
-    console.log('Activity detected at', new Date(lastActivityTime).toLocaleTimeString());
+    console.log('Activity detected - showing avatar layer');
     
-    // Stop idle animation when avatar becomes active
-    if (isPlayingIdle) {
-        console.log('Stopping idle animation due to activity');
-        stopIdleAnimation();
-    }
+    // Show avatar layer immediately when activity detected
+    showAvatarLayer();
 }
         
 
@@ -7660,6 +7643,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
