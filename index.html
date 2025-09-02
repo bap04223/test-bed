@@ -4204,9 +4204,6 @@ let scriptPayload = {
     session_id: didSessionId
 };
 
-// Add driver URL for both service types
-scriptPayload.driver_url = "bank://lively/driver-06";
-
 // Don't update activity time immediately - wait for actual playback
 // updateActivityTime(); // REMOVE THIS LINE
 
@@ -4360,8 +4357,7 @@ async function generateIdleAnimation() {
         // Create idle animation payload
         const idlePayload = {
             source_url: sourceUrl,
-            driver_url: "bank://lively/driver-06",
-            script: {
+                script: {
                 type: "text",
                 ssml: true,
                 input: "<break time=\"5000ms\"/><break time=\"5000ms\"/><break time=\"5000ms\"/>",
@@ -7703,6 +7699,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
