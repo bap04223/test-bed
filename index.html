@@ -1347,48 +1347,70 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
 }
 
-/* Timer Display Styles - Overlay Version */
+/* Timer Display Styles - Circular Version */
 .timer-overlay {
     position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 160px; /* Position above the patient image button */
+    left: 20px; /* Align with patient image button */
     z-index: 10;
-    width: 200px;
+    width: 80px;
+    height: 80px;
     background: linear-gradient(135deg, #10b981, #059669);
     color: white;
-    padding: 8px 12px;
-    border-radius: 20px;
+    border-radius: 50%;
     text-align: center;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(5px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.2);
     flex-shrink: 0;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
 }
 
 .timer-text {
     font-weight: 600;
+    font-size: 10px;
+    margin-bottom: 2px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    line-height: 1;
+}
+
+.timer-value {
+    font-weight: 700;
     font-size: 13px;
-    margin-bottom: 6px;
+    line-height: 1;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.timer-bar {
-    background: rgba(255, 255, 255, 0.3);
-    height: 4px;
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
+/* Circular Progress Ring */
+.timer-progress-ring {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    width: 86px;
+    height: 86px;
+    transform: rotate(-90deg); /* Start from top */
 }
 
-.timer-progress {
-    background: white;
-    height: 100%;
-    width: 100%;
-    border-radius: 2px;
-    transition: width 0.1s linear;
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+.timer-progress-ring circle {
+    fill: none;
+    stroke-width: 4;
+}
+
+.timer-progress-ring .progress-bg {
+    stroke: rgba(255, 255, 255, 0.2);
+}
+
+.timer-progress-ring .progress-fill {
+    stroke: white;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.1s linear;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
 }
 
 /* Green state (default) - no animation */
@@ -1540,12 +1562,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Fullscreen timer positioning */
 .video-fullscreen-active .timer-overlay {
-    top: 20px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    bottom: 200px !important;
+    left: 40px !important;
     background: linear-gradient(135deg, #10b981, #059669) !important;
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    border: 3px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6) !important;
 }
 
 
@@ -2304,11 +2325,13 @@ a:hover {
 <div class="avatar-container" id="avatarContainer">
    <div class="video-wrapper">
    <!-- Timer Overlay -->
-   <div id="timerDisplay" class="timer-display timer-overlay timer-ready">
-    <div class="timer-text">Timer: <span id="timerValue">Ready</span></div>
-    <div class="timer-bar">
-        <div id="timerProgress" class="timer-progress"></div>
-    </div>
+<div id="timerDisplay" class="timer-display timer-overlay timer-ready">
+    <svg class="timer-progress-ring">
+        <circle class="progress-bg" cx="43" cy="43" r="38"></circle>
+        <circle class="progress-fill" cx="43" cy="43" r="38" id="timerProgressCircle"></circle>
+    </svg>
+    <div class="timer-text">Timer</div>
+    <div class="timer-value" id="timerValue">Ready</div>
 </div>
 
    <!-- Patient Image Button Overlay -->
@@ -7526,7 +7549,7 @@ function startResponseTimer() {
     // Get timer elements
     timerDisplay = document.getElementById('timerDisplay');
     const timerValue = document.getElementById('timerValue');
-    const timerProgress = document.getElementById('timerProgress');
+    const timerProgressCircle = document.getElementById('timerProgressCircle');
 
     // Reset beep tracking
     lastBeepSecond = -1;
@@ -7541,11 +7564,15 @@ function startResponseTimer() {
     if (timerValue) {
         timerValue.textContent = '2:00';
     }
-    if (timerProgress) {
-        timerProgress.style.width = '100%';
+    
+    // Set up circular progress
+    if (timerProgressCircle) {
+        const circumference = 2 * Math.PI * 38; // radius = 38
+        timerProgressCircle.style.strokeDasharray = circumference;
+        timerProgressCircle.style.strokeDashoffset = 0; // Full circle initially
     }
     
-    // Update timer every 100ms for smooth progress bar
+    // Update timer every 100ms for smooth progress
     responseTimer = setInterval(() => {
         const elapsed = Date.now() - timerStartTime;
         const remaining = Math.max(0, RESPONSE_TIMEOUT - elapsed);
@@ -7558,11 +7585,14 @@ function startResponseTimer() {
             timerValue.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
         
-        // Update progress bar
-        if (timerProgress) {
-            timerProgress.style.width = `${percentage}%`;
+        // Update circular progress
+        if (timerProgressCircle) {
+            const circumference = 2 * Math.PI * 38;
+            const offset = circumference * (1 - (percentage / 100));
+            timerProgressCircle.style.strokeDashoffset = offset;
         }
         
+          
 // Change appearance based on time remaining
         if (timerDisplay) {
             if (remaining <= 30000) { // Last 30 seconds - RED with pulsing
@@ -7624,13 +7654,14 @@ function hideResponseTimer() {
         // Return to ready state instead of hiding
         timerDisplay.className = 'timer-display timer-overlay timer-ready';
         const timerValue = document.getElementById('timerValue');
-        const timerProgress = document.getElementById('timerProgress');
+        const timerProgressCircle = document.getElementById('timerProgressCircle');
         
         if (timerValue) {
             timerValue.textContent = 'Ready';
         }
-        if (timerProgress) {
-            timerProgress.style.width = '0%';
+        if (timerProgressCircle) {
+            const circumference = 2 * Math.PI * 38;
+            timerProgressCircle.style.strokeDashoffset = circumference; // Empty circle
         }
     }
 }
@@ -7793,6 +7824,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
