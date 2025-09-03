@@ -1348,7 +1348,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Timer Display Styles - Overlay Version */
-.timer-overlay {
+. {
     position: absolute;
     top: 15px;
     left: 5%;
@@ -1392,18 +1392,18 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Green state (default) - no animation */
-.timer-overlay {
+. {
     background: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* Orange warning state */
-.timer-overlay.warning {
+..warning {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Red critical state with pulsing */
-.timer-overlay.critical {
+..critical {
     background: linear-gradient(135deg, #ef4444, #dc2626);
     border-color: rgba(255, 255, 255, 0.4);
     animation: timerCritical 0.8s infinite ease-in-out;
@@ -1433,31 +1433,31 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Force fullscreen animation to override all other styles */
-.video-fullscreen-active .timer-overlay.critical {
+.video-fullscreen-active ..critical {
     animation: timerCriticalFullscreen 0.8s infinite ease-in-out !important;
     animation-fill-mode: both !important;
 }
 
     /* Force timer animations in fullscreen */
-.video-fullscreen-active .timer-overlay.warning,
-:fullscreen .video-fullscreen-active .timer-overlay.warning,
-:-webkit-full-screen .video-fullscreen-active .timer-overlay.warning,
-:-moz-full-screen .video-fullscreen-active .timer-overlay.warning {
+.video-fullscreen-active ..warning,
+:fullscreen .video-fullscreen-active ..warning,
+:-webkit-full-screen .video-fullscreen-active ..warning,
+:-moz-full-screen .video-fullscreen-active ..warning {
     background: linear-gradient(135deg, #f59e0b, #d97706) !important;
     border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.video-fullscreen-active .timer-overlay.critical,
-:fullscreen .video-fullscreen-active .timer-overlay.critical,
-:-webkit-full-screen .video-fullscreen-active .timer-overlay.critical,
-:-moz-full-screen .video-fullscreen-active .timer-overlay.critical {
+.video-fullscreen-active ..critical,
+:fullscreen .video-fullscreen-active ..critical,
+:-webkit-full-screen .video-fullscreen-active ..critical,
+:-moz-full-screen .video-fullscreen-active ..critical {
     background: linear-gradient(135deg, #ef4444, #dc2626) !important;
     border-color: rgba(255, 255, 255, 0.4) !important;
     animation: timerCritical 0.8s infinite ease-in-out !important;
 }
 
 /* Ensure animation keyframes work in fullscreen */
-:fullscreen .video-fullscreen-active .timer-overlay.critical {
+:fullscreen .video-fullscreen-active ..critical {
     animation: timerCritical 0.8s infinite ease-in-out !important;
 }    
 
@@ -1557,8 +1557,8 @@ input:focus, select:focus, textarea:focus {
 .video-fullscreen-active .patient-image-btn-overlay {
     bottom: 120px !important;
     left: 30px !important;
-    width: 100px !important;
-    height: 100px !important;
+    width: 80px !important;
+    height: 80px !important;
     font-size: 24px !important;
     box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6) !important;
 }
@@ -7793,6 +7793,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
