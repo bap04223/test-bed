@@ -1349,9 +1349,11 @@ input:focus, select:focus, textarea:focus {
 
 /* Timer Display Styles - Circular Version */
 .timer-overlay {
-    position: absolute;
-    bottom: 160px; /* Position above the patient image button */
-    left: 20px; /* Align with patient image button */
+   position: absolute;
+    bottom: 160px !important; /* Position above the patient image button */
+    left: 20px !important; /* Align with patient image button */
+    top: auto !important; /* Override any top positioning */
+    transform: none !important; /* Remove any transforms */
     z-index: 10;
     width: 80px;
     height: 80px;
@@ -7824,6 +7826,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
