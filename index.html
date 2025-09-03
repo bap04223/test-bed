@@ -1347,6 +1347,17 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
 }
 
+        /* Force timer to bottom-left position */
+#timerDisplay {
+    position: absolute !important;
+    bottom: 160px !important;
+    left: 20px !important;
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+}
+
 /* Timer Display Styles - Circular Version */
 .timer-overlay {
    position: absolute;
@@ -1534,6 +1545,11 @@ input:focus, select:focus, textarea:focus {
 .timer-overlay.timer-ready {
     background: linear-gradient(135deg, #6b7280, #4b5563);
     border-color: rgba(255, 255, 255, 0.2);
+    position: absolute !important;
+    bottom: 160px !important;
+    left: 20px !important;
+    top: auto !important;
+    transform: none !important;
 }
 
 .timer-overlay.timer-ready .timer-progress {
@@ -7826,6 +7842,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
