@@ -1418,11 +1418,12 @@ function handleKeyPress(event) {
                         const row = data.values[i];
                         if (row.length >= 3 && row[0] && row[1] && row[2]) {
                             chatbotConfigurations.push({
-                                name: row[0].trim(),
-                                webhookUrl: row[1].trim(),
-                                submitWebhookUrl: row[2].trim(),
-                                description: row[3] ? row[3].trim() : ''
-                            });
+                            name: row[0].trim(),
+                            webhookUrl: row[1].trim(),
+                            submitWebhookUrl: row[2].trim(),
+                            feedbackWebhookUrl: row[3] ? row[3].trim() : '',
+                            description: row[4] ? row[4].trim() : ''
+                        });
                         }
                     }
                     
@@ -1467,21 +1468,24 @@ function handleKeyPress(event) {
         }
 
         function applyChatbotConfiguration() {
-            const selectElement = document.getElementById('chatbotSelect');
-            const selectedIndex = selectElement.value;
-            
-            if (selectedIndex === '' || !chatbotConfigurations[selectedIndex]) {
-                showStatus('Please select a chatbot configuration first', 'error');
-                return;
-            }
-            
-            const config = chatbotConfigurations[selectedIndex];
-            currentChatbotConfig = config;
-            
-            document.getElementById('webhookUrl').value = config.webhookUrl;
-            document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
-            
-            saveConfig();
+    const selectElement = document.getElementById('chatbotSelect');
+    const selectedIndex = selectElement.value;
+    
+    if (selectedIndex === '' || !chatbotConfigurations[selectedIndex]) {
+        showStatus('Please select a chatbot configuration first', 'error');
+        return;
+    }
+    
+    const config = chatbotConfigurations[selectedIndex];
+    currentChatbotConfig = config;
+    
+    document.getElementById('webhookUrl').value = config.webhookUrl;
+    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+    
+    // Set feedback webhook URL from configuration
+    feedbackWebhookUrl = config.feedbackWebhookUrl || '';
+    
+    saveConfig();
             
             showStatus(`✅ Applied configuration: ${config.name}`, 'success');
             
@@ -2700,14 +2704,15 @@ if (!text.includes('spinner')) {
         // ===== FEEDBACK MODAL FUNCTIONS =====
         
         function showFeedbackModal() {
-            const modal = document.getElementById('feedbackModal');
-            modal.classList.add('show');
-            
-            // Set default feedback webhook URL if not already set
-            if (!feedbackWebhookUrl) {
-                // You can set a default feedback webhook URL here
-                feedbackWebhookUrl = 'https://your-n8n-instance.com/webhook/feedback';
-            }
+    const modal = document.getElementById('feedbackModal');
+    modal.classList.add('show');
+    
+    // Check if feedback webhook URL is configured
+    if (!feedbackWebhookUrl) {
+        showStatus('No feedback webhook configured for selected chatbot', 'error');
+        closeFeedbackModal();
+        return;
+    }
             
             // Focus on the first input
             setTimeout(() => {
@@ -2768,9 +2773,12 @@ if (!text.includes('spinner')) {
                 
                 console.log('Submitting feedback:', feedbackData);
                 
-                // For now, we'll use a configurable webhook URL
-                // You should replace this with your actual n8n webhook URL
-                const webhookUrl = feedbackWebhookUrl || 'https://your-n8n-instance.com/webhook/feedback';
+                // Use the feedback webhook URL from chatbot configuration
+const webhookUrl = feedbackWebhookUrl;
+
+if (!webhookUrl) {
+    throw new Error('No feedback webhook URL configured for selected chatbot');
+}
                 
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
@@ -2827,21 +2835,11 @@ if (!text.includes('spinner')) {
                     closeFeedbackModal();
                 }
             }
-        });
-        
-        // ===== FEEDBACK WEBHOOK CONFIGURATION =====
-        
-        function setFeedbackWebhookUrl(url) {
-            feedbackWebhookUrl = url;
-            console.log('Feedback webhook URL set to:', url);
-        }
-        
-        // You can call this function to set your feedback webhook URL
-        // setFeedbackWebhookUrl('https://your-n8n-instance.com/webhook/feedback');
-        
+        });        
     </script>
 </body>
 </html>
+
 
 
 
