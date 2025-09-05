@@ -379,9 +379,9 @@ select option {
 
 .feedback-modal-content {
     position: relative;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
+    width: 95%;
+    max-width: 800px;
+    max-height: 95vh;
     background: var(--card-background);
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -452,10 +452,10 @@ select option {
 .feedback-form select,
 .feedback-form textarea {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 16px;
     background: var(--input-background);
     color: var(--text-primary);
     transition: all 0.3s ease;
@@ -563,7 +563,7 @@ select option {
     font-weight: 500;
     color: var(--text-primary);
     line-height: 1.4;
-    font-size: 0.95em;
+    font-size: 1.1em;
 }
 
 .rating-scale {
@@ -574,7 +574,7 @@ select option {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    font-size: 0.85em;
+    font-size: 0.95em;
     color: var(--text-secondary);
     font-weight: 500;
 }
@@ -594,13 +594,13 @@ select option {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border: 2px solid var(--border-color);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: 600;
     color: var(--text-secondary);
     background: var(--card-background);
@@ -623,17 +623,22 @@ select option {
 /* Mobile responsiveness for rating scales */
 @media (max-width: 768px) {
     .scale-numbers label {
-        width: 30px;
-        height: 30px;
-        font-size: 0.8em;
+        width: 35px;
+        height: 35px;
+        font-size: 0.9em;
     }
     
     .scale-labels {
-        font-size: 0.8em;
+        font-size: 0.9em;
     }
     
     .rating-group label {
-        font-size: 0.9em;
+        font-size: 1em;
+    }
+    
+    .feedback-modal-content {
+        width: 98%;
+        max-width: none;
     }
 }    
 
@@ -3136,6 +3141,7 @@ function getRadioValue(name) {
     </script>
 </body>
 </html>
+
 
 
 
