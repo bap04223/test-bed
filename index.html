@@ -3077,6 +3077,12 @@ const feedbackData = {
         messageCount: conversationHistory.length
     }
 };
+
+        // Create CSV formatted data
+const csvData = formatFeedbackAsCSV(feedbackData);
+
+// Add CSV data to the payload
+feedbackData.csvFormatted = csvData;        
                 
                 console.log('Submitting feedback:', feedbackData);
                 
@@ -3139,6 +3145,55 @@ function getRadioValue(name) {
     const radio = document.querySelector(`input[name="${name}"]:checked`);
     return radio ? parseInt(radio.value) : null;
 }
+
+        // Helper function to format feedback data as CSV
+function formatFeedbackAsCSV(data) {
+    const headers = [
+        'Timestamp',
+        'Session ID',
+        'Name',
+        'Email',
+        'Scenario Name',
+        'Chatbot Config',
+        'Realistic Responses (1-10)',
+        'User Friendly Interface (1-10)',
+        'Appropriate Responses (1-10)',
+        'Communication Skills Practice (1-10)',
+        'Pharmaceutical Knowledge Application (1-10)',
+        'Confidence Building (1-10)',
+        'Learning Value (1-10)',
+        'Would Recommend (1-10)',
+        'Additional Comments',
+        'Message Count',
+        'User Agent'
+    ];
+    
+    const values = [
+        data.timestamp,
+        data.sessionId,
+        `"${data.name || ''}"`,
+        `"${data.email || ''}"`,
+        `"${data.currentScenario ? data.currentScenario.name : ''}"`,
+        `"${data.systemInfo.chatbotConfig}"`,
+        data.ratings.realistic_responses || '',
+        data.ratings.user_friendly || '',
+        data.ratings.appropriate_responses || '',
+        data.ratings.communication_skills || '',
+        data.ratings.pharma_knowledge || '',
+        data.ratings.confidence || '',
+        data.ratings.learning_value || '',
+        data.ratings.recommend || '',
+        `"${data.additional_comments.replace(/"/g, '""')}"`, // Escape quotes in comments
+        data.systemInfo.messageCount,
+        `"${data.userAgent}"`
+    ];
+    
+    return {
+        headers: headers.join(','),
+        row: values.join(','),
+        fullCSV: headers.join(',') + '\n' + values.join(',')
+    };
+}
         
         // Add keyboard support for feedback modal
         document.addEventListener('keydown', function(event) {
@@ -3152,6 +3207,7 @@ function getRadioValue(name) {
     </script>
 </body>
 </html>
+
 
 
 
