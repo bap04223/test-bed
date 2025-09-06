@@ -361,6 +361,49 @@ select option {
     transform: translateY(0);
 }
 
+        .feedback-btn:active {
+    transform: translateY(0);
+}
+
+/* Help Button */
+.help-btn {
+    position: absolute;
+    top: 90px;
+    left: 0;
+    z-index: 10;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #10b981, #047857); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    min-width: 120px;
+    height: 36px;
+    justify-content: center;
+}
+
+.help-btn:hover {
+    background: linear-gradient(135deg, #047857, #065f46); 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.help-btn:active {
+    transform: translateY(0);
+}
+
 /* Feedback Modal Styles */
 .feedback-modal {
     display: none;
@@ -660,6 +703,23 @@ select option {
         font-size: 13px;
         min-width: 120px;
         height: 36px;
+    }
+    
+    .help-btn {
+        top: 105px;
+        padding: 10px 16px;
+        font-size: 13px;
+        min-width: 120px;
+        height: 36px;
+    }
+    
+    .help-modal-content {
+        width: 98%;
+        max-width: none;
+    }
+    
+    .help-modal-body {
+        font-size: 14px;
     }
 }
         
@@ -1054,7 +1114,128 @@ select option {
             }
         }
 
+@keyframes slideIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.8) translateY(-20px);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 
+/* Help Modal Styles */
+.help-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.help-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-modal-content {
+    position: relative;
+    width: 95%;
+    max-width: 900px;
+    max-height: 95vh;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid var(--border-color);
+}
+
+.help-modal-header {
+    background: var(--success-color);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.help-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.help-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.help-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.help-modal-body {
+    padding: 20px;
+    max-height: calc(95vh - 120px);
+    overflow-y: auto;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.help-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--input-background);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.help-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--success-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.help-section ol,
+.help-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.help-section li {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.help-section strong {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.help-section p {
+    margin: 0;
+    color: var(--text-primary);
+}
+        
         .card-icon {
     width: 80px;
     height: 80px;
@@ -1093,8 +1274,11 @@ select option {
                     ← Back to Hub
                 </a>
                 <button class="feedback-btn" onclick="showFeedbackModal()" title="Submit Feedback">
-                    💬 Feedback
-                </button>
+    💬 Feedback
+</button>
+<button class="help-btn" onclick="showHelpModal()" title="How to Use">
+    ❓ Help
+</button>
             </div>
         </div>
                
@@ -1498,6 +1682,76 @@ select option {
         </button>
     </div>
 </form>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+<!-- Help Modal -->
+<div class="help-modal" id="helpModal" onclick="closeHelpModal(event)">
+    <div class="help-modal-content" onclick="event.stopPropagation()">
+        <div class="help-modal-header">
+            <h3>❓ How to Use the Training System</h3>
+            <button class="help-modal-close" onclick="closeHelpModal()">&times;</button>
+        </div>
+        <div class="help-modal-body">
+            <div class="help-section">
+                <h4>🚀 Getting Started</h4>
+                <ol>
+                    <li><strong>Load Configurations:</strong> Enter your Chatbot ID and Scenario Sets ID, then click the load buttons to populate the dropdown menus.</li>
+                    <li><strong>Select Chatbot:</strong> Choose the AI chatbot configuration you want to practice with from the dropdown.</li>
+                    <li><strong>Select Scenario Set:</strong> Choose the collection of patient scenarios you want to use.</li>
+                    <li><strong>Choose Sheet:</strong> Select the specific sheet containing your scenarios.</li>
+                    <li><strong>Pick a Scenario:</strong> Either select a specific patient scenario or use "Random Scenario" for surprise practice.</li>
+                </ol>
+            </div>
+            
+            <div class="help-section">
+                <h4>💬 During the Consultation</h4>
+                <ol>
+                    <li><strong>Start Conversing:</strong> Type your opening message in the text box and click "Send Message" or press Enter.</li>
+                    <li><strong>Professional Communication:</strong> Communicate as you would with a real patient - introduce yourself, ask appropriate questions, provide advice.</li>
+                    <li><strong>View Patient Image:</strong> If available, click the patient image button to see visual information about your patient.</li>
+                    <li><strong>Continue Dialogue:</strong> The AI patient will respond realistically - continue the consultation until you've addressed their needs.</li>
+                </ol>
+            </div>
+            
+            <div class="help-section">
+                <h4>📊 Managing Your Session</h4>
+                <ul>
+                    <li><strong>Clear Chat:</strong> Remove all messages to start fresh with the same scenario</li>
+                    <li><strong>New Session:</strong> Start completely over with a new session ID</li>
+                    <li><strong>Export Chat:</strong> Download your conversation as a text file for review</li>
+                    <li><strong>Submit for Evaluation:</strong> Send your consultation to your instructor for feedback</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>🎯 Best Practices</h4>
+                <ul>
+                    <li><strong>Be Professional:</strong> Practice real-world communication skills</li>
+                    <li><strong>Ask Questions:</strong> Gather information about symptoms, medications, allergies</li>
+                    <li><strong>Provide Clear Advice:</strong> Give specific, actionable recommendations</li>
+                    <li><strong>Show Empathy:</strong> Acknowledge patient concerns and feelings</li>
+                    <li><strong>Follow Up:</strong> Ask if the patient has any other questions</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>🔧 Troubleshooting</h4>
+                <ul>
+                    <li><strong>No Response from AI:</strong> Check that you've selected a chatbot configuration and scenario</li>
+                    <li><strong>Can't Load Scenarios:</strong> Verify your Google Sheet IDs are correct and sheets are publicly accessible</li>
+                    <li><strong>Image Won't Load:</strong> Ensure the image URL is set to "Anyone with link can view"</li>
+                    <li><strong>Submission Failed:</strong> Check your internet connection and try again</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>💡 Need More Help?</h4>
+                <p>If you encounter issues or have suggestions for improvement, click the <strong>Feedback</strong> button above to submit a report. Include details about what you were trying to do and what went wrong.</p>
+            </div>
         </div>
     </div>
 </div>
@@ -2407,12 +2661,24 @@ function updateNavigationButtons() {
             modal.classList.remove('show');
         }
         
-        // Add keyboard support for modal
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeImageModal();
-            }
-        });
+        // Add keyboard support for modals
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+        
+        // Close help modal if open
+        const helpModal = document.getElementById('helpModal');
+        if (helpModal && helpModal.classList.contains('show')) {
+            closeHelpModal();
+        }
+        
+        // Close feedback modal if open
+        const feedbackModal = document.getElementById('feedbackModal');
+        if (feedbackModal && feedbackModal.classList.contains('show')) {
+            closeFeedbackModal();
+        }
+    }
+});
         
         // Select a random scenario
         function selectRandomScenario() {
@@ -3203,10 +3469,30 @@ function formatFeedbackAsCSV(data) {
                     closeFeedbackModal();
                 }
             }
-        });        
+        });  
+
+        // setFeedbackWebhookUrl('https://your-n8n-instance.com/webhook/feedback');
+
+// ===== HELP MODAL FUNCTIONS =====
+
+function showHelpModal() {
+    const modal = document.getElementById('helpModal');
+    modal.classList.add('show');
+}
+
+function closeHelpModal(event) {
+    // If event is passed and it's not the backdrop click, ignore
+    if (event && event.target !== event.currentTarget && event.type === 'click') {
+        return;
+    }
+    
+    const modal = document.getElementById('helpModal');
+    modal.classList.remove('show');
+}
     </script>
 </body>
 </html>
+
 
 
 
