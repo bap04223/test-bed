@@ -3989,8 +3989,6 @@ function displayAvatar() {
                        'Patient';
     
 // Use the specific avatar image from column T
-    const avatarUrl = convertGoogleDriveUrl(currentScenario['Avatar URL']);
-    
     const avatarUrl = convertGoogleDriveUrl(avatarImageData);
     
     // Create new image to test loading
@@ -4064,16 +4062,12 @@ function displayPlaceholderAvatar() {
     avatarPlaceholderName.textContent = patientName;
 }
         
-        // Show patient image modal with gallery functionality
-        function showPatientImage() {
-        
-        // Show patient image modal with gallery functionality
+         // Show patient image modal with gallery functionality
         function showPatientImage() {
             if (!currentScenario || patientImages.length === 0) {
                 showStatus('No scenario selected or no images available', 'error');
                 return;
             }
-            
             // Reset to first image
             currentImageIndex = 0;
             
@@ -5537,6 +5531,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
