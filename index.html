@@ -1724,6 +1724,42 @@ a:hover {
 .card-icon:hover {
     transform: scale(1.1) rotate(5deg);
 }
+
+        /* Speaker Indicator Styles */
+.speaker-indicator {
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1500;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--accent-glow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transform: translateX(20px);
+}
+
+.speaker-indicator.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+@media (max-width: 768px) {
+    .speaker-indicator {
+        top: 160px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+}
              
   </style>
        
@@ -2396,9 +2432,11 @@ Random Scenario
                 <h4>🎯 Best Practices</h4>
                 <ul>
                     <li><strong>Be Professional:</strong> Practice real-world communication skills with proper pharmacy consultation techniques</li>
+                    <li><strong>Team Consultations:</strong> When multiple healthcare professionals respond, listen to each voice and role carefully</li>
                     <li><strong>Ask Questions:</strong> Gather information about symptoms, medications, allergies, and medical history</li>
                     <li><strong>Provide Clear Advice:</strong> Give specific, actionable recommendations with proper explanations</li>
                     <li><strong>Show Empathy:</strong> Acknowledge patient concerns and demonstrate caring communication</li>
+                    <li><strong>Multidisciplinary Care:</strong> Practice coordinating with different healthcare roles (pharmacists, doctors, nurses)</li>
                     <li><strong>Follow Up:</strong> Ask if the patient has any other questions or concerns</li>
                 </ul>
             </div>
@@ -2446,6 +2484,11 @@ Random Scenario
         let deepgramApiKey = ''; // Deepgram API key
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
+
+        // ===== TEAM MEMBER VARIABLES =====
+        let teamMembers = {};            // Store team member configurations
+        let currentSpeaker = 'member1';  // Track who should speak next
+        let originalVoiceSettings = {}; // Store original voice settings for restoration
 
                 // ===== CHATBOT CONFIGURATION VARIABLES =====
         let chatbotConfigurations = [];     // Store loaded chatbot configurations
@@ -3836,7 +3879,9 @@ function setButtonPending(buttonId, pendingText = null) {
                 currentScenario[header] = row[index];
             });
 
-                    // ADD THIS NEW CODE BLOCK:
+            // Load team member configurations first
+            loadTeamMemberVoices();
+            
             // Apply scenario-specific voice settings
             applyScenarioVoiceSettings();
             
@@ -3903,6 +3948,50 @@ function applyScenarioVoiceSettings() {
     
     // Save the updated configuration
     saveConfig();
+}
+
+        // Load team member configurations from scenario data
+function loadTeamMemberVoices() {
+    if (!currentScenario) {
+        teamMembers = {};
+        return;
+    }
+    
+    // Store original voice settings
+    originalVoiceSettings = {
+        browserVoice: document.getElementById('voiceSelect').value,
+        elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
+        ttsProvider: currentTtsProvider
+    };
+    
+    // Define team members from scenario data
+    teamMembers = {
+        member1: {
+            role: currentScenario['Team Member 1 Role'] || currentScenario['Role 1'] || 'Pharmacist',
+            voice: currentScenario['Team Member 1 Voice'] || currentScenario['Voice 1'] || '',
+            name: currentScenario['Team Member 1 Name'] || currentScenario['Name 1'] || 'Healthcare Professional',
+            provider: currentScenario['Team Member 1 Provider'] || currentScenario['Provider 1'] || 'browser'
+        },
+        member2: {
+            role: currentScenario['Team Member 2 Role'] || currentScenario['Role 2'] || 'Doctor',
+            voice: currentScenario['Team Member 2 Voice'] || currentScenario['Voice 2'] || '',
+            name: currentScenario['Team Member 2 Name'] || currentScenario['Name 2'] || 'Specialist',
+            provider: currentScenario['Team Member 2 Provider'] || currentScenario['Provider 2'] || 'browser'
+        }
+    };
+    
+    // Check if this is a team scenario
+    const isTeamScenario = (teamMembers.member1.role !== 'Pharmacist' || teamMembers.member2.role !== 'Doctor') ||
+                          (teamMembers.member1.voice !== '' || teamMembers.member2.voice !== '') ||
+                          (teamMembers.member1.name !== 'Healthcare Professional' || teamMembers.member2.name !== 'Specialist');
+    
+    if (isTeamScenario) {
+        console.log('Team scenario detected:', teamMembers);
+        showStatus(`Team scenario loaded: ${teamMembers.member1.name} (${teamMembers.member1.role}) + ${teamMembers.member2.name} (${teamMembers.member2.role})`, 'info');
+    } else {
+        console.log('Single character scenario');
+        teamMembers = {}; // Clear team members for single character
+    }
 }
         
 // Update patient image button state based on scenario
@@ -4649,11 +4738,12 @@ if (!webhookUrl) {
             addMessage('<div class="spinner"></div>', 'ai');
             
             try {
-                // Prepare data to send
+              // Prepare data to send
                 const payload = {
                     sessionId: sessionId,  // Include unique session ID
                     message: message,
                     scenario: currentScenario,
+                    teamComposition: teamMembers, // Add team member information
                     timestamp: new Date().toISOString(),
                     conversationHistory: conversationHistory,
                     studentInfo: {
@@ -4722,10 +4812,18 @@ if (!webhookUrl) {
                 }
                 
                 if (aiResponse) {
-                    addMessage(aiResponse, 'ai');
-                    
-                    // Speak the response using selected TTS provider
-                    speakText(aiResponse);
+                    // Check if this is a multi-speaker response
+                    if (Array.isArray(data) && data.length > 0 && data[0].speaker) {
+                        // Handle multi-speaker responses
+                        handleMultiSpeakerResponse(data);
+                    } else if (data.responses && Array.isArray(data.responses)) {
+                        // Alternative format for multi-speaker
+                        handleMultiSpeakerResponse(data.responses);
+                    } else {
+                        // Single speaker response (existing logic)
+                        addMessage(aiResponse, 'ai');
+                        speakText(aiResponse);
+                    }
                 } else {
                     console.error('Could not find response in data:', data);
                     showStatus('Unexpected response format from webhook', 'error');
@@ -4746,6 +4844,163 @@ if (!webhookUrl) {
                 }
             }
         }
+
+        // Handle multi-speaker responses
+async function handleMultiSpeakerResponse(responses) {
+    if (!Array.isArray(responses)) {
+        console.error('Invalid multi-speaker response format');
+        return;
+    }
+    
+    for (const response of responses) {
+        if (response.speaker && response.text) {
+            await handleTeamMemberResponse(response);
+        }
+    }
+}
+
+// Handle individual team member response
+async function handleTeamMemberResponse(response) {
+    const { speaker, text, speakerRole } = response;
+    
+    // Add message with speaker identification
+    addMessage(`<strong style="color: var(--primary-color);">${speaker}:</strong> ${text}`, 'ai');
+    
+    // Speak with appropriate voice
+    await speakAsTeamMember(text, speakerRole || speaker);
+    
+    // Brief pause between speakers
+    await new Promise(resolve => setTimeout(resolve, 1000));
+}
+
+// Speak text as specific team member
+async function speakAsTeamMember(text, roleOrName) {
+    // Find the team member by role or name
+    const member = Object.values(teamMembers).find(m => 
+        m.role.toLowerCase() === roleOrName.toLowerCase() || 
+        m.name.toLowerCase() === roleOrName.toLowerCase()
+    );
+    
+    if (!member || Object.keys(teamMembers).length === 0) {
+        // Fallback to default voice for single character scenarios
+        speakText(text);
+        return;
+    }
+    
+    console.log(`Speaking as ${member.name} (${member.role}) with provider: ${member.provider}`);
+    
+    // Show visual indicator of who's speaking
+    showSpeakerIndicator(member.name, member.role);
+    
+    // Apply team member's voice settings temporarily
+    if (member.provider === 'browser' && member.voice) {
+        await speakWithTeamMemberBrowserVoice(text, member.voice);
+    } else if (member.provider === 'elevenlabs' && member.voice) {
+        await speakWithTeamMemberElevenLabsVoice(text, member.voice);
+    } else {
+        // Use current provider with original settings
+        speakText(text);
+    }
+}
+
+// Helper function to speak with specific browser voice
+async function speakWithTeamMemberBrowserVoice(text, voiceName) {
+    // Store current voice setting
+    const currentVoiceIndex = document.getElementById('voiceSelect').value;
+    
+    // Find and set the team member's voice
+    const voices = synthesis.getVoices();
+    let voiceIndex = null;
+    
+    for (let i = 0; i < voices.length; i++) {
+        if (voices[i].name.toLowerCase().includes(voiceName.toLowerCase()) ||
+            voiceName.toLowerCase().includes(voices[i].name.toLowerCase())) {
+            voiceIndex = i;
+            break;
+        }
+    }
+    
+    if (voiceIndex !== null) {
+        document.getElementById('voiceSelect').value = voiceIndex;
+    }
+    
+    // Speak with the selected voice
+    speakWithBrowser(text);
+    
+    // Wait for speech to complete before restoring
+    synthesis.addEventListener('voiceschanged', function restoreVoice() {
+        document.getElementById('voiceSelect').value = currentVoiceIndex;
+        synthesis.removeEventListener('voiceschanged', restoreVoice);
+    });
+    
+    // Fallback timeout restoration
+    setTimeout(() => {
+        document.getElementById('voiceSelect').value = currentVoiceIndex;
+    }, text.length * 100 + 2000);
+}
+
+// Helper function to speak with specific ElevenLabs voice
+async function speakWithTeamMemberElevenLabsVoice(text, voiceNameOrId) {
+    // Store current voice setting
+    const currentVoiceId = document.getElementById('elevenlabsVoice').value;
+    
+    // Find the voice by name or use ID directly
+    let targetVoiceId = voiceNameOrId;
+    
+    if (elevenlabsVoices.length > 0) {
+        const foundVoice = elevenlabsVoices.find(voice => 
+            voice.name.toLowerCase().includes(voiceNameOrId.toLowerCase()) ||
+            voice.voice_id === voiceNameOrId
+        );
+        
+        if (foundVoice) {
+            targetVoiceId = foundVoice.voice_id;
+        }
+    }
+    
+    // Temporarily set the voice
+    document.getElementById('elevenlabsVoice').value = targetVoiceId;
+    
+    try {
+        // Speak with ElevenLabs
+        await speakWithElevenLabs(text);
+    } finally {
+        // Restore original voice
+        setTimeout(() => {
+            document.getElementById('elevenlabsVoice').value = currentVoiceId;
+        }, 500);
+    }
+}
+
+        // Show visual indicator of who's speaking
+function showSpeakerIndicator(memberName, role) {
+    // Remove existing indicator
+    const existingIndicator = document.getElementById('speakerIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    // Create new indicator
+    const indicator = document.createElement('div');
+    indicator.id = 'speakerIndicator';
+    indicator.className = 'speaker-indicator active';
+    indicator.textContent = `${memberName} (${role}) speaking...`;
+    
+    // Add to body
+    document.body.appendChild(indicator);
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        if (indicator && indicator.parentNode) {
+            indicator.classList.remove('active');
+            setTimeout(() => {
+                if (indicator && indicator.parentNode) {
+                    indicator.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
 
         // ===== SUBMIT CONVERSATION FUNCTION =====
         // Function to submit conversation history to a separate webhook
@@ -5598,9 +5853,3 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
