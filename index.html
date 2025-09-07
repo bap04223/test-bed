@@ -14,7 +14,7 @@
             box-sizing: border-box;
         }
 
-        .patient-image-btn {
+        
         /* CSS Variables for easy color scheme changes */
         :root {
     --primary-color: #6366f1;
@@ -1128,111 +1128,21 @@ select option {
         }
         
         /* Patient Image Button Styling */
-
-.patient-image-btn {
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 500;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-            
-/* Avatar Display Styles */
-.avatar-container {
-    width: 100%;
-    margin-top: 15px;
-    padding: 15px;
-    background: var(--input-background);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    text-align: center;
-    display: none;
-}
-
-.avatar-container.show {
-    display: block;
-}
-
-.avatar-image {
-    width: 95%;
-    height: auto;
-    min-height: 200px;
-    max-height: 350px;
-    border-radius: 8px;
-    object-fit: contain;
-    border: 2px solid var(--primary-color);
-    margin: 0 auto 15px auto;
-    display: block;
-    transition: all 0.3s ease;
-    background: var(--card-background);
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.avatar-image:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    border-color: var(--primary-hover);
-}
-
-.avatar-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 10px 0 5px 0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.avatar-error {
-    width: 95%;
-    height: 200px;
-    border-radius: 8px;
-    background: var(--border-color);
-    border: 2px solid var(--danger-color);
-    margin: 0 auto 15px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    color: var(--text-secondary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.avatar-loading {
-    width: 95%;
-    height: 200px;
-    border-radius: 8px;
-    background: var(--border-color);
-    border: 2px solid var(--primary-color);
-    margin: 0 auto 15px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.avatar-loading .spinner {
-    width: 30px;
-    height: 30px;
-    border-width: 3px;
-}
-
-.avatar-subtitle {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-top: 5px;
-    font-style: italic;
-}
+        .patient-image-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
         
         .patient-image-btn.available {
             background-color: var(--success-color);
@@ -1254,6 +1164,48 @@ select option {
             color: white;
             cursor: not-allowed;
         }
+
+        /* Avatar Image Styles */
+.avatar-container {
+    margin-top: 15px;
+    width: 100%;
+    display: none; /* Hidden by default */
+}
+
+.avatar-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    display: block;
+    object-fit: contain; /* Preserves aspect ratio without cropping */
+    max-height: 300px; /* Reasonable max height for the card */
+}
+
+.avatar-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border-color: var(--primary-color);
+}
+
+.avatar-loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.avatar-error {
+    text-align: center;
+    padding: 15px;
+    color: var(--danger-color);
+    font-size: 0.9em;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 6px;
+    border: 1px solid var(--danger-color);
+}
 
 /* Status Button States - Add after existing button styles */
 .btn-status-pending {
@@ -1998,22 +1950,20 @@ Load Scenario Sets
 Random Scenario
 </button>
 
-        <!-- Patient Image Button -->
-<button 
-    class="patient-image-btn disabled" 
-    id="patientImageBtn"
-    onclick="showPatientImage()"
-    disabled
->
-    📷 No Scenario Selected
-</button>
-
-<!-- Avatar Display Container -->
-<div class="avatar-container" id="avatarContainer">
-    <div id="avatarContent">
-        <!-- Avatar will be populated here -->
-    </div>
-</div>  
+      <!-- Patient Image Button -->
+        <button 
+            class="patient-image-btn disabled" 
+            id="patientImageBtn"
+            onclick="showPatientImage()"
+            disabled
+        >
+            📷 No Scenario Selected
+        </button>
+        
+        <!-- Avatar Image Container -->
+        <div class="avatar-container" id="avatarContainer">
+            <div class="avatar-loading" id="avatarLoading">Loading avatar...</div>
+        </div>
     </div>
 </div>
 </div>
@@ -3817,33 +3767,31 @@ function setButtonPending(buttonId, pendingText = null) {
         
         // Handle scenario selection
         function selectScenario(rowIndex) {
-    const headers = sheetData[0];
-    const row = sheetData[rowIndex];
-    
-    // Create scenario object
-    currentScenario = {};
-    headers.forEach((header, index) => {
-        currentScenario[header] = row[index];
-    });
+            const headers = sheetData[0];
+            const row = sheetData[rowIndex];
+            
+            // Create scenario object
+            currentScenario = {};
+            headers.forEach((header, index) => {
+                currentScenario[header] = row[index];
+            });
 
-    // Apply scenario-specific voice settings
-    applyScenarioVoiceSettings();
-    
-    console.log('Selected scenario:', currentScenario);
-    showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-    
-    // Update patient image button based on image availability
-    updatePatientImageButton();
-    
-    // Update avatar display
-    updateAvatarDisplay();
-    
-    // Clear previous conversation
-    clearChat();
-    
-    // Add initial message
-    addMessage('Scenario loaded. Press and hold the talk button to start the consultation.', 'ai');
-}
+                    // ADD THIS NEW CODE BLOCK:
+            // Apply scenario-specific voice settings
+            applyScenarioVoiceSettings();
+            
+            console.log('Selected scenario:', currentScenario);
+            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+            
+            // Update patient image button based on image availability
+            updatePatientImageButton();
+            
+            // Clear previous conversation
+            clearChat();
+            
+            // Add initial message
+            addMessage('Scenario loaded. Press and hold the talk button to start the consultation.', 'ai');
+        }
             
         // Apply voice settings from scenario data
 function applyScenarioVoiceSettings() {
@@ -3897,7 +3845,7 @@ function applyScenarioVoiceSettings() {
     saveConfig();
 }
         
-        // Update patient image button state based on scenario
+// Update patient image button state based on scenario
 function updatePatientImageButton() {
     const button = document.getElementById('patientImageBtn');
     
@@ -3906,19 +3854,18 @@ function updatePatientImageButton() {
         button.className = 'patient-image-btn disabled';
         button.textContent = '📷 No Scenario Selected';
         button.disabled = true;
+        hideAvatar();
         return;
     }
     
-    // Check for image URL in various possible column names (including avatar as fallback)
-const imageData = currentScenario['Patient Image'] || 
-                 currentScenario['Image URL'] || 
-                 currentScenario['Photo URL'] || 
-                 currentScenario['Image'] || 
-                 currentScenario['Photo'] ||
-                 currentScenario['Picture URL'] ||
-                 currentScenario['Picture'] ||
-                 currentScenario['Avatar URL'] ||
-                 currentScenario['Avatar Image'];
+    // Check for image URL in various possible column names
+    const imageData = currentScenario['Patient Image'] || 
+                     currentScenario['Image URL'] || 
+                     currentScenario['Photo URL'] || 
+                     currentScenario['Image'] || 
+                     currentScenario['Photo'] ||
+                     currentScenario['Picture URL'] ||
+                     currentScenario['Picture'];
     
     if (imageData && imageData.trim() !== '') {
         // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
@@ -3949,98 +3896,10 @@ const imageData = currentScenario['Patient Image'] ||
         button.innerHTML = '❌ No Patient Image';
         button.disabled = true;
     }
+    
+    // Load avatar image
+    loadAvatarImage();
 }
-
-      // Update avatar display based on scenario
-function updateAvatarDisplay() {
-    const avatarContainer = document.getElementById('avatarContainer');
-    const avatarContent = document.getElementById('avatarContent');
-    
-    if (!currentScenario) {
-        // No scenario selected - hide avatar
-        avatarContainer.classList.remove('show');
-        return;
-    }
-    
-    // Check for avatar URL in various possible column names
-    const avatarUrl = currentScenario['Avatar URL'] || 
-                     currentScenario['Avatar Image'] || 
-                     currentScenario['Patient Avatar'] || 
-                     currentScenario['Profile Image'] ||
-                     currentScenario['Profile Picture'] ||
-                     currentScenario['Character Image'] ||
-                     currentScenario['Character Avatar'];
-    
-    const patientName = currentScenario['Patient Name'] || 
-                       currentScenario['Character Name'] || 
-                       currentScenario['Name'] || 
-                       'Patient';
-    
-    if (avatarUrl && avatarUrl.trim() !== '') {
-        // Convert Google Drive URLs if needed
-        const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-        
-        // Show avatar container
-        avatarContainer.classList.add('show');
-        
-        // Create avatar content with loading state
-avatarContent.innerHTML = `
-    <div class="avatar-loading">
-        <div class="spinner"></div>
-        <div style="color: var(--text-secondary); font-size: 14px;">Loading...</div>
-    </div>
-    <div class="avatar-name">${patientName}</div>
-`;
-        
-        // Load the avatar image
-        const img = new Image();
-        
-        img.onload = function() {
-    // Image loaded successfully
-    avatarContent.innerHTML = `
-        <img src="${convertedUrl}" alt="${patientName}" class="avatar-image" title="Click to view larger image" onclick="showPatientImage()">
-        <div class="avatar-name">${patientName}</div>
-        <div class="avatar-subtitle">Click image to view larger</div>
-    `;
-};
-        
-        img.onerror = function() {
-            // Image failed to load - try alternative format for Google Drive
-            if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                console.log('Avatar failed to load, trying alternative format...');
-                img.hasTriedAlternative = true;
-                
-                const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (fileIdMatch && fileIdMatch[1]) {
-                    const fileId = fileIdMatch[1];
-                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                    img.src = alternativeUrl;
-                    return;
-                }
-            }
-            
-            // Complete failure - show error state
-avatarContent.innerHTML = `
-    <div class="avatar-error">❌</div>
-    <div class="avatar-name">${patientName}</div>
-    <div class="avatar-subtitle">Avatar failed to load</div>
-`;
-            console.warn('Failed to load avatar:', avatarUrl);
-        };
-        
-        // Start loading
-        img.src = convertedUrl;
-        
-    } else {
-        // No avatar URL - show patient name only
-avatarContainer.classList.add('show');
-avatarContent.innerHTML = `
-    <div class="avatar-error">👤</div>
-    <div class="avatar-name">${patientName}</div>
-    <div class="avatar-subtitle">No avatar available</div>
-`;
-    }
-}  
 
         // Show patient image modal with gallery functionality
         function showPatientImage() {
@@ -4103,6 +3962,81 @@ avatarContent.innerHTML = `
                 showStatus('No image URL available for this patient', 'error');
                 return;
             }
+
+
+// Load and display avatar image
+        function loadAvatarImage() {
+            const avatarContainer = document.getElementById('avatarContainer');
+            
+            if (!currentScenario) {
+                hideAvatar();
+                return;
+            }
+            
+            // Check for avatar URL in column T (Avatar URL)
+            const avatarUrl = currentScenario['Avatar URL'] || 
+                             currentScenario['Avatar'] ||
+                             currentScenario['Avatar Image'] ||
+                             currentScenario['Patient Avatar'];
+            
+            if (!avatarUrl || avatarUrl.trim() === '') {
+                hideAvatar();
+                return;
+            }
+            
+            // Show container and loading state
+            avatarContainer.style.display = 'block';
+            avatarContainer.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
+            
+            // Convert Google Drive URLs if needed
+            const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                avatarContainer.innerHTML = `<img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">`;
+                console.log('Avatar loaded successfully:', convertedUrl);
+            };
+            
+            img.onerror = function() {
+                // Try alternative Google Drive format if applicable
+                if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First avatar format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative avatar URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
+                
+                // Image failed to load completely
+                avatarContainer.innerHTML = `
+                    <div class="avatar-error">
+                        Avatar image could not be loaded.<br>
+                        <small>Check URL: ${avatarUrl}</small>
+                    </div>
+                `;
+                console.error('Avatar failed to load:', avatarUrl);
+            };
+            
+            // Start loading the image
+            img.src = convertedUrl;
+        }
+        
+        // Hide avatar container
+        function hideAvatar() {
+            const avatarContainer = document.getElementById('avatarContainer');
+            avatarContainer.style.display = 'none';
+            avatarContainer.innerHTML = '';
+        }
+            
             
             // Convert Google Drive share links to direct image URLs
             const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
@@ -5084,16 +5018,13 @@ if (!submitWebhookUrl) {
             synthesis.cancel();
             
            // Reset patient image button and avatar if no scenario is selected
-if (!currentScenario) {
-    const button = document.getElementById('patientImageBtn');
-    button.className = 'patient-image-btn disabled';
-    button.textContent = '📷 No Scenario Selected';
-    button.disabled = true;
-    
-    // Hide avatar container
-    const avatarContainer = document.getElementById('avatarContainer');
-    avatarContainer.classList.remove('show');
-}
+            if (!currentScenario) {
+                const button = document.getElementById('patientImageBtn');
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+                hideAvatar();
+            }
         }
         
         // ===== UTILITY FUNCTIONS =====
@@ -5512,6 +5443,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
