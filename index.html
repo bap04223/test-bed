@@ -1237,6 +1237,33 @@ select option {
     box-shadow: none;
 }
 
+.avatar-placeholder {
+    width: 100%;
+    min-height: 400px;
+    max-height: 500px;
+    border-radius: 8px;
+    border: 2px dashed var(--border-color);
+    background: var(--input-background);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.avatar-placeholder:hover {
+    border-color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.avatar-placeholder-icon {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
 /* Status Button States - Add after existing button styles */
 .btn-status-pending {
     background-color: var(--danger-color) !important;
@@ -1990,9 +2017,12 @@ Random Scenario
             📷 No Scenario Selected
         </button>
         
-        <!-- Avatar Image Container -->
-        <div class="avatar-container" id="avatarContainer">
-            <div class="avatar-loading" id="avatarLoading">Loading avatar...</div>
+       <!-- Avatar Image Container -->
+        <div class="avatar-container" id="avatarContainer" style="display: block;">
+            <div class="avatar-placeholder">
+                <div class="avatar-placeholder-icon">👤</div>
+                <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
+            </div>
         </div>
     </div>
 </div>
@@ -4340,11 +4370,16 @@ function updatePatientImageButton() {
             img.src = convertedUrl;
         }
         
-        // Hide avatar container
+        // Reset avatar container to placeholder state
         function hideAvatar() {
     const avatarContainer = document.getElementById('avatarContainer');
-    avatarContainer.style.display = 'none';
-    avatarContainer.innerHTML = '';
+    avatarContainer.style.display = 'block';
+    avatarContainer.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
+        </div>
+    `;
 }
         
         
@@ -5141,6 +5176,9 @@ if (!submitWebhookUrl) {
                 button.textContent = '📷 No Scenario Selected';
                 button.disabled = true;
                 hideAvatar();
+            } else {
+                // If scenario is selected, just reset to placeholder until avatar loads
+                hideAvatar();
             }
         }
         
@@ -5560,6 +5598,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
