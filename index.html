@@ -3957,86 +3957,11 @@ function updatePatientImageButton() {
             currentImageIndex = index;
             const imageUrl = patientImages[index];
             
-            // Check for image URL - if somehow empty, skip
+           // Check for image URL - if somehow empty, skip
             if (!imageUrl || imageUrl.trim() === '') {
                 showStatus('No image URL available for this patient', 'error');
                 return;
             }
-
-
-// Load and display avatar image
-        function loadAvatarImage() {
-            const avatarContainer = document.getElementById('avatarContainer');
-            
-            if (!currentScenario) {
-                hideAvatar();
-                return;
-            }
-            
-            // Check for avatar URL in column T (Avatar URL)
-            const avatarUrl = currentScenario['Avatar URL'] || 
-                             currentScenario['Avatar'] ||
-                             currentScenario['Avatar Image'] ||
-                             currentScenario['Patient Avatar'];
-            
-            if (!avatarUrl || avatarUrl.trim() === '') {
-                hideAvatar();
-                return;
-            }
-            
-            // Show container and loading state
-            avatarContainer.style.display = 'block';
-            avatarContainer.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
-            
-            // Convert Google Drive URLs if needed
-            const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-            
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                avatarContainer.innerHTML = `<img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">`;
-                console.log('Avatar loaded successfully:', convertedUrl);
-            };
-            
-            img.onerror = function() {
-                // Try alternative Google Drive format if applicable
-                if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First avatar format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative avatar URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely
-                avatarContainer.innerHTML = `
-                    <div class="avatar-error">
-                        Avatar image could not be loaded.<br>
-                        <small>Check URL: ${avatarUrl}</small>
-                    </div>
-                `;
-                console.error('Avatar failed to load:', avatarUrl);
-            };
-            
-            // Start loading the image
-            img.src = convertedUrl;
-        }
-        
-        // Hide avatar container
-        function hideAvatar() {
-            const avatarContainer = document.getElementById('avatarContainer');
-            avatarContainer.style.display = 'none';
-            avatarContainer.innerHTML = '';
-        }
-            
             
             // Convert Google Drive share links to direct image URLs
             const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
@@ -4230,6 +4155,92 @@ function updatePatientImageButton() {
             const modal = document.getElementById('imageModal');
             modal.classList.remove('show');
         }
+
+
+// Close patient image modal
+        function closeImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+        }
+        
+        // Load and display avatar image
+        function loadAvatarImage() {
+            const avatarContainer = document.getElementById('avatarContainer');
+            
+            if (!currentScenario) {
+                hideAvatar();
+                return;
+            }
+            
+            // Check for avatar URL in column T (Avatar URL)
+            const avatarUrl = currentScenario['Avatar URL'] || 
+                             currentScenario['Avatar'] ||
+                             currentScenario['Avatar Image'] ||
+                             currentScenario['Patient Avatar'];
+            
+            if (!avatarUrl || avatarUrl.trim() === '') {
+                hideAvatar();
+                return;
+            }
+            
+            // Show container and loading state
+            avatarContainer.style.display = 'block';
+            avatarContainer.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
+            
+            // Convert Google Drive URLs if needed
+            const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                avatarContainer.innerHTML = `<img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">`;
+                console.log('Avatar loaded successfully:', convertedUrl);
+            };
+            
+            img.onerror = function() {
+                // Try alternative Google Drive format if applicable
+                if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First avatar format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative avatar URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
+                
+                // Image failed to load completely
+                avatarContainer.innerHTML = `
+                    <div class="avatar-error">
+                        Avatar image could not be loaded.<br>
+                        <small>Check URL: ${avatarUrl}</small>
+                    </div>
+                `;
+                console.error('Avatar failed to load:', avatarUrl);
+            };
+            
+            // Start loading the image
+            img.src = convertedUrl;
+        }
+        
+        // Hide avatar container
+        function hideAvatar() {
+            const avatarContainer = document.getElementById('avatarContainer');
+            avatarContainer.style.display = 'none';
+            avatarContainer.innerHTML = '';
+        }
+        
         
         // Add keyboard support for modal and shortcuts
 document.addEventListener('keydown', function(event) {
@@ -5443,6 +5454,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
