@@ -161,6 +161,8 @@
     overflow-y: auto;
     min-height: 0;
     max-height: none;
+    display: flex;
+    flex-direction: column;
 }
         
         /* Form input styling */
@@ -1170,6 +1172,8 @@ select option {
     margin-top: 15px;
     width: 100%;
     display: none; /* Hidden by default */
+    flex: 1; /* Take up remaining space in the card */
+    min-height: 400px; /* Ensure substantial height */
 }
 
 .avatar-image {
@@ -1180,8 +1184,9 @@ select option {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     display: block;
-    object-fit: contain; /* Preserves aspect ratio without cropping */
-    max-height: 300px; /* Reasonable max height for the card */
+    object-fit: cover; /* This will crop to fill space and eliminate letterboxing */
+    min-height: 400px; /* Minimum height to ensure substantial size */
+    max-height: 500px; /* Increased max height */
 }
 
 .avatar-image:hover {
@@ -5454,6 +5459,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
