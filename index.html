@@ -1212,6 +1212,27 @@ select option {
     border: 1px solid var(--danger-color);
 }
 
+        .avatar-name {
+    text-align: center;
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--input-background);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-name.no-avatar {
+    color: var(--text-secondary);
+    font-style: italic;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
 /* Status Button States - Add after existing button styles */
 .btn-status-pending {
     background-color: var(--danger-color) !important;
@@ -4204,10 +4225,14 @@ function updatePatientImageButton() {
             const img = new Image();
             
             img.onload = function() {
-                // Image loaded successfully
-                avatarContainer.innerHTML = `<img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">`;
-                console.log('Avatar loaded successfully:', convertedUrl);
-            };
+    // Image loaded successfully
+    const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
+    avatarContainer.innerHTML = `
+        <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
+        <div class="avatar-name">${patientName}</div>
+    `;
+    console.log('Avatar loaded successfully:', convertedUrl);
+};
             
             img.onerror = function() {
                 // Try alternative Google Drive format if applicable
@@ -4226,12 +4251,14 @@ function updatePatientImageButton() {
                 }
                 
                 // Image failed to load completely
-                avatarContainer.innerHTML = `
-                    <div class="avatar-error">
-                        Avatar image could not be loaded.<br>
-                        <small>Check URL: ${avatarUrl}</small>
-                    </div>
-                `;
+const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
+avatarContainer.innerHTML = `
+    <div class="avatar-error">
+        Avatar image could not be loaded.<br>
+        <small>Check URL: ${avatarUrl}</small>
+    </div>
+    <div class="avatar-name">${patientName}</div>
+`;
                 console.error('Avatar failed to load:', avatarUrl);
             };
             
@@ -4241,10 +4268,10 @@ function updatePatientImageButton() {
         
         // Hide avatar container
         function hideAvatar() {
-            const avatarContainer = document.getElementById('avatarContainer');
-            avatarContainer.style.display = 'none';
-            avatarContainer.innerHTML = '';
-        }
+    const avatarContainer = document.getElementById('avatarContainer');
+    avatarContainer.style.display = 'none';
+    avatarContainer.innerHTML = '';
+}
         
         
         // Add keyboard support for modal and shortcuts
@@ -5459,6 +5486,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
