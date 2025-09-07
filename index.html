@@ -1128,11 +1128,11 @@ select option {
         }
         
         /* Patient Image Button Styling */
-        /* Avatar Display Styles */
+/* Avatar Display Styles */
 .avatar-container {
     width: 100%;
     margin-top: 15px;
-    padding: 10px;
+    padding: 15px;
     background: var(--input-background);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -1145,39 +1145,79 @@ select option {
 }
 
 .avatar-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--primary-color);
-    margin: 0 auto 10px auto;
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    min-height: 150px;
+    max-height: 250px;
+    border-radius: 8px;
+    object-fit: contain;
+    border: 2px solid var(--primary-color);
+    margin: 0 auto 15px auto;
     display: block;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    background: var(--card-background);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .avatar-image:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border-color: var(--primary-hover);
 }
 
 .avatar-name {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--text-primary);
-    margin: 5px 0;
+    margin: 10px 0 5px 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .avatar-error {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+    width: 100%;
+    max-width: 200px;
+    height: 150px;
+    border-radius: 8px;
     background: var(--border-color);
-    border: 3px solid var(--danger-color);
-    margin: 0 auto 10px auto;
+    border: 2px solid var(--danger-color);
+    margin: 0 auto 15px auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 48px;
     color: var(--text-secondary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-loading {
+    width: 100%;
+    max-width: 200px;
+    height: 150px;
+    border-radius: 8px;
+    background: var(--border-color);
+    border: 2px solid var(--primary-color);
+    margin: 0 auto 15px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-loading .spinner {
+    width: 30px;
+    height: 30px;
+    border-width: 3px;
+}
+
+.avatar-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+    font-style: italic;
 }
         
         .patient-image-btn.available {
@@ -3930,23 +3970,25 @@ function updateAvatarDisplay() {
         avatarContainer.classList.add('show');
         
         // Create avatar content with loading state
-        avatarContent.innerHTML = `
-            <div class="avatar-image" style="background: var(--border-color); display: flex; align-items: center; justify-content: center;">
-                <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
-            </div>
-            <div class="avatar-name">Loading ${patientName}...</div>
-        `;
+avatarContent.innerHTML = `
+    <div class="avatar-loading">
+        <div class="spinner"></div>
+        <div style="color: var(--text-secondary); font-size: 14px;">Loading...</div>
+    </div>
+    <div class="avatar-name">${patientName}</div>
+`;
         
         // Load the avatar image
         const img = new Image();
         
         img.onload = function() {
-            // Image loaded successfully
-            avatarContent.innerHTML = `
-                <img src="${convertedUrl}" alt="${patientName}" class="avatar-image" title="Click to view larger image" onclick="showPatientImage()">
-                <div class="avatar-name">${patientName}</div>
-            `;
-        };
+    // Image loaded successfully
+    avatarContent.innerHTML = `
+        <img src="${convertedUrl}" alt="${patientName}" class="avatar-image" title="Click to view larger image" onclick="showPatientImage()">
+        <div class="avatar-name">${patientName}</div>
+        <div class="avatar-subtitle">Click image to view larger</div>
+    `;
+};
         
         img.onerror = function() {
             // Image failed to load - try alternative format for Google Drive
@@ -3964,13 +4006,11 @@ function updateAvatarDisplay() {
             }
             
             // Complete failure - show error state
-            avatarContent.innerHTML = `
-                <div class="avatar-error">❌</div>
-                <div class="avatar-name">${patientName}</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
-                    Avatar failed to load
-                </div>
-            `;
+avatarContent.innerHTML = `
+    <div class="avatar-error">❌</div>
+    <div class="avatar-name">${patientName}</div>
+    <div class="avatar-subtitle">Avatar failed to load</div>
+`;
             console.warn('Failed to load avatar:', avatarUrl);
         };
         
@@ -3979,14 +4019,12 @@ function updateAvatarDisplay() {
         
     } else {
         // No avatar URL - show patient name only
-        avatarContainer.classList.add('show');
-        avatarContent.innerHTML = `
-            <div class="avatar-error">👤</div>
-            <div class="avatar-name">${patientName}</div>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 5px;">
-                No avatar available
-            </div>
-        `;
+avatarContainer.classList.add('show');
+avatarContent.innerHTML = `
+    <div class="avatar-error">👤</div>
+    <div class="avatar-name">${patientName}</div>
+    <div class="avatar-subtitle">No avatar available</div>
+`;
     }
 }  
 
@@ -5460,6 +5498,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
