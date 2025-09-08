@@ -4400,7 +4400,7 @@ function updatePatientImageButton() {
     if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
         loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, true, 'avatarContainer', teamMember1Name);
     } else {
-        } else {
+       } else {
     // Show placeholder if no team member 1 animation
     hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
 }
@@ -4531,6 +4531,10 @@ function hideAvatarContainer(container, placeholderText) {
     `;
 }
 
+        
+
+
+
 // Helper function to hide specific avatar container
 function hideAvatarContainer(container, placeholderText) {
     container.style.display = 'block';
@@ -4542,53 +4546,6 @@ function hideAvatarContainer(container, placeholderText) {
     `;
 }
         
-        // Helper function to load static avatar image
-        function loadStaticAvatar(avatarUrl, patientName) {
-            const avatarContainer = document.getElementById('avatarContainer');
-            const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-            
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                avatarContainer.innerHTML = `
-                    <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
-                    <div class="avatar-name">${patientName}</div>
-                `;
-                console.log('Avatar image loaded successfully:', convertedUrl);
-            };
-            
-            img.onerror = function() {
-                // Try alternative Google Drive format if applicable
-                if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First avatar format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative avatar URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely
-                avatarContainer.innerHTML = `
-                    <div class="avatar-error">
-                        Avatar could not be loaded.<br>
-                        <small>Check URL: ${avatarUrl}</small>
-                    </div>
-                    <div class="avatar-name">${patientName}</div>
-                `;
-                console.error('Avatar failed to load:', avatarUrl);
-            };
-            
-            // Start loading the image
-            img.src = convertedUrl;
-        }
         
         // Reset avatar container to placeholder state
       function hideAvatar() {
@@ -6079,6 +6036,55 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
