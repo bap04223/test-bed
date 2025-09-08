@@ -1901,13 +1901,17 @@ Load Scenario Sets
                 </select>
             </div>
 
-            <!-- Scenario selection dropdown -->
+          <!-- Scenario selection dropdown -->
             <div class="form-group" style="margin-top: 20px;">
                 <label for="scenarioSelect">Select Scenario:</label>
                 <select id="scenarioSelect" disabled>
                     <option value="">Load sheet data first...</option>
                 </select>
             </div>
+
+            <button class="btn-info" onclick="selectRandomScenario()" style="width: 100%; margin-top: 10px;">
+                Random Scenario
+            </button>
             
             <!-- Browser TTS Settings -->
             <div id="browserTtsSettings" class="tts-settings">
@@ -2041,9 +2045,6 @@ Load Scenario Sets
     <!-- Hidden field - automatically populated from scenario set selection -->
     <input type="hidden" id="sheetId">
 
-<button class="btn-info" onclick="selectRandomScenario()" style="width: 100%; margin-top: 10px;">
-Random Scenario
-</button>
 
       <!-- Patient Image Button -->
         <button 
@@ -5988,6 +5989,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
