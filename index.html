@@ -4014,8 +4014,7 @@ function setButtonPending(buttonId, pendingText = null) {
             // Update patient image button based on image availability
             updatePatientImageButton();
 
-            // Update patient document button
-updatePatientDocButton();
+          
             
             // Clear previous state and conversation
 
@@ -6406,35 +6405,6 @@ function debugScenarioData() {
     console.log('===================');
 }
 
-// Update patient document button based on scenario
-function updatePatientDocButton() {
-    const button = document.getElementById('patientDocBtn');
-    
-    if (!currentScenario) {
-        button.className = 'patient-image-btn disabled';
-        button.textContent = '📄 No Scenario Selected';
-        button.disabled = true;
-        return;
-    }
-    
-    // Check for document URL in various column names
-    const docData = currentScenario['Patient Document'] || 
-                   currentScenario['Document URL'] || 
-                   currentScenario['Google Doc'] || 
-                   currentScenario['Doc URL'] ||
-                   currentScenario['Patient Doc'];
-    
-    if (docData && docData.trim() !== '') {
-        button.className = 'patient-image-btn available';
-        button.innerHTML = '📄 View Patient Document';
-        button.disabled = false;
-    } else {
-        button.className = 'patient-image-btn unavailable';
-        button.innerHTML = '❌ No Document Available';
-        button.disabled = true;
-    }
-}
-
 // Show patient document in a new tab/window
 function showPatientDoc() {
     if (!currentScenario) {
@@ -6474,6 +6444,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
