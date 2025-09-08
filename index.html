@@ -4396,14 +4396,13 @@ function updatePatientImageButton() {
                            currentScenario['Name 2'] || 
                            'Team Member 2';
     
-    // Load Team Member 1 in top container
+   // Load Team Member 1 in top container
     if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
         loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, true, 'avatarContainer', teamMember1Name);
     } else {
-       } else {
-    // Show placeholder if no team member 1 animation
-    hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
-}
+        // Show placeholder if no team member 1 animation
+        hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
+    }
     
     // Load Team Member 2 in bottom container
     if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
@@ -6036,6 +6035,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
