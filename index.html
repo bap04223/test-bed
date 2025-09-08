@@ -1876,6 +1876,37 @@ Load Scenario Sets
                         ElevenLabs
                     </button>
                 </div>
+           </div>
+
+            <!-- Chatbot and Scenario Selection -->
+            <div class="form-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                <label for="chatbotSelect">Select Chatbot:</label>
+                <select id="chatbotSelect" disabled style="font-size: 14px;">
+                    <option value="">Load configurations first...</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="scenarioSetSelect">Select Scenario Set:</label>
+                <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+                    <option value="">Load scenario sets first...</option>
+                </select>
+            </div>
+
+            <!-- Google Sheets configuration -->
+            <div class="form-group">
+                <label for="sheetName">Sheet Name:</label>
+                <select id="sheetName" disabled>
+                    <option value="">Select scenario set first</option>
+                </select>
+            </div>
+
+            <!-- Scenario selection dropdown -->
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="scenarioSelect">Select Scenario:</label>
+                <select id="scenarioSelect" disabled>
+                    <option value="">Load sheet data first...</option>
+                </select>
             </div>
             
             <!-- Browser TTS Settings -->
@@ -2007,40 +2038,8 @@ Load Scenario Sets
 <div class="card-content">
     <div class="scrollable-section">
 
-    <div class="form-group" style="margin-top: 15px;">
-    <label for="chatbotSelect">Select Chatbot:</label>
-    <select id="chatbotSelect" disabled style="font-size: 14px;">
-        <option value="">Load configurations first...</option>
-    </select>
-</div>
-
-    
-         <div class="form-group" style="margin-top: 15px;">
-        <label for="scenarioSetSelect">Select Scenario Set:</label>
-        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
-            <option value="">Load scenario sets first...</option>
-        </select>
-    </div>
-    
     <!-- Hidden field - automatically populated from scenario set selection -->
     <input type="hidden" id="sheetId">
-
-
-<!-- Google Sheets configuration - MODIFIED -->
-<div class="form-group">
-    <label for="sheetName">Sheet Name:</label>
-    <select id="sheetName" disabled>
-        <option value="">Select scenario set first</option>
-    </select>
-</div>
-
-<!-- Scenario selection dropdown -->
-<div class="form-group" style="margin-top: 20px;">
-    <label for="scenarioSelect">Select Scenario:</label>
-    <select id="scenarioSelect" disabled>
-        <option value="">Load sheet data first...</option>
-    </select>
-</div>
 
 <button class="btn-info" onclick="selectRandomScenario()" style="width: 100%; margin-top: 10px;">
 Random Scenario
@@ -5989,6 +5988,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
