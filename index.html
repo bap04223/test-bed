@@ -4413,12 +4413,11 @@ function updatePatientImageButton() {
         
         const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
         const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
-        const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
         
         if (mediaUrl && mediaUrl.trim() !== '') {
-            loadAvatarInContainer(avatarContainer, mediaUrl, isVideo, 'avatarContainer', patientName);
+            loadAvatarInContainer(avatarContainer, mediaUrl, isVideo, 'avatarContainer', teamMember1Name);
         } else {
-            hideAvatarContainer(avatarContainer, 'Select a scenario to load patient avatar');
+            hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
         }
     }
     
@@ -6205,6 +6204,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
