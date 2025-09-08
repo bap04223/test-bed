@@ -4906,8 +4906,7 @@ async function handleMultiSpeakerResponse(responses) {
     for (const response of responses) {
         if (response.speaker && response.text) {
             await handleTeamMemberResponse(response);
-            // Add a longer pause between speakers to ensure first speaker finishes
-            await new Promise(resolve => setTimeout(resolve, 2000));
+          
         }
     }
 }
@@ -5987,5 +5986,6 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
