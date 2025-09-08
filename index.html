@@ -3406,6 +3406,53 @@ function hideReviewSection() {
     document.getElementById('talkButton').disabled = false;
 }
 
+        function hideReviewSection() {
+    // ... existing code ...
+}
+
+// Show keyboard shortcuts hint
+function showKeyboardHints() {
+    // Remove existing hints
+    const existingHints = document.querySelector('.keyboard-hints');
+    if (existingHints) {
+        existingHints.remove();
+    }
+    
+    // Create hints element
+    const hintsDiv = document.createElement('div');
+    hintsDiv.className = 'keyboard-hints';
+    hintsDiv.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--card-background);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px 15px;
+        font-size: 12px;
+        color: var(--text-secondary);
+        z-index: 1000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    `;
+    hintsDiv.innerHTML = `
+        <strong>Keyboard Shortcuts:</strong><br>
+        Enter: Send Message<br>
+        Escape: Cancel Review
+    `;
+    
+    document.body.appendChild(hintsDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (hintsDiv && hintsDiv.parentNode) {
+            hintsDiv.remove();
+        }
+    }, 5000);
+}
+
+        // ===== GOOGLE SHEETS INTEGRATION =====
+        // Load sheet names from Google Sheets
+
         // ===== GOOGLE SHEETS INTEGRATION =====
         // Load sheet names from Google Sheets
         // ===== CHATBOT CONFIGURATION MANAGEMENT =====
@@ -4792,10 +4839,16 @@ if (!webhookUrl) {
                 // Remove loading spinner
                 removeLastMessage();
                 
-                // Check various possible response formats
+               // Check for multi-character response first
+                if (data.responseType === 'multi-character' && data.responses) {
+                    // Handle multi-speaker responses
+                    handleMultiSpeakerResponse(data.responses);
+                    return; // Exit early for multi-character
+                }
+                
+                // Check various possible response formats for single character
                 let aiResponse = null;
                 
-                // Common n8n response formats
                 if (data.response) {
                     aiResponse = data.response;
                 } else if (data.message) {
@@ -4806,9 +4859,6 @@ if (!webhookUrl) {
                     aiResponse = data.output;
                 } else if (typeof data === 'string') {
                     aiResponse = data;
-                } else if (Array.isArray(data) && data.length > 0) {
-                    // Sometimes n8n returns an array
-                    aiResponse = data[0].response || data[0].message || data[0];
                 }
                 
                 if (aiResponse) {
@@ -5853,3 +5903,4 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
