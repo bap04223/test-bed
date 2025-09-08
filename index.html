@@ -4001,7 +4001,7 @@ function setButtonPending(buttonId, pendingText = null) {
             updatePatientImageButton();
             
             // Clear previous state and conversation
-clearScenarioState();
+
 clearChat();
             
             // Add initial message
@@ -4765,9 +4765,7 @@ function clearScenarioState() {
         }
     });
     
-    console.log('Cleared scenario state');
-}
-
+ 
 // Helper function to load static avatar image in specific container
 function loadStaticAvatarInContainer(container, avatarUrl, characterName) {
     const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
@@ -6394,6 +6392,7 @@ function debugScenarioData() {
     </script>
 </body>
 </html>
+
 
 
 
