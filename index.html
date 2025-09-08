@@ -4375,7 +4375,7 @@ function updatePatientImageButton() {
             modal.classList.remove('show');
         }
         // Load and display avatar video or image
-      function loadAvatarImage() {
+  function loadAvatarImage() {
     const avatarContainer = document.getElementById('avatarContainer');
     const avatarContainer2 = document.getElementById('avatarContainer2');
     
@@ -4384,48 +4384,168 @@ function updatePatientImageButton() {
         return;
     }
     
-    // Check for idle animation URL first (column AA)
-    const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
-                           currentScenario['Idle Animation'] ||
-                           currentScenario['Animation URL'] ||
-                           currentScenario['Video URL'];
+    // Check for team member idle animations first (columns AD and AE)
+    const teamMember1IdleAnimation = currentScenario['Team Member 1 Idle Animation'];
+    const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
     
-    // Check for static avatar URL as fallback
-    const avatarUrl = currentScenario['Avatar URL'] || 
-                     currentScenario['Avatar'] ||
-                     currentScenario['Avatar Image'] ||
-                     currentScenario['Patient Avatar'];
+    // Get team member names for labels
+    const teamMember1Name = currentScenario['Team Member 1 Name'] || 
+                           currentScenario['Name 1'] || 
+                           'Team Member 1';
+    const teamMember2Name = currentScenario['Team Member 2 Name'] || 
+                           currentScenario['Name 2'] || 
+                           'Team Member 2';
     
-    // Check for second avatar URLs
-    const idleAnimationUrl2 = currentScenario['Idle Animation URL 2'] || 
-                             currentScenario['Idle Animation 2'] ||
-                             currentScenario['Animation URL 2'] ||
-                             currentScenario['Video URL 2'];
-    
-    const avatarUrl2 = currentScenario['Avatar URL 2'] || 
-                      currentScenario['Avatar 2'] ||
-                      currentScenario['Avatar Image 2'] ||
-                      currentScenario['Patient Avatar 2'];
-    
-    // Load first avatar
-    const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
-    const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
-    
-    if (mediaUrl && mediaUrl.trim() !== '') {
-        loadAvatarInContainer(avatarContainer, mediaUrl, isVideo, 'avatarContainer');
+    // Load Team Member 1 in top container
+    if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
+        loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, true, 'avatarContainer', teamMember1Name);
     } else {
-        hideAvatarContainer(avatarContainer, 'Select a scenario to load patient avatar');
+        // Fallback to original patient avatar logic for top container
+        const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
+                               currentScenario['Idle Animation'] ||
+                               currentScenario['Animation URL'] ||
+                               currentScenario['Video URL'];
+        
+        const avatarUrl = currentScenario['Avatar URL'] || 
+                         currentScenario['Avatar'] ||
+                         currentScenario['Avatar Image'] ||
+                         currentScenario['Patient Avatar'];
+        
+        const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
+        const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
+        const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
+        
+        if (mediaUrl && mediaUrl.trim() !== '') {
+            loadAvatarInContainer(avatarContainer, mediaUrl, isVideo, 'avatarContainer', patientName);
+        } else {
+            hideAvatarContainer(avatarContainer, 'Select a scenario to load patient avatar');
+        }
     }
     
-    // Load second avatar
-    const mediaUrl2 = idleAnimationUrl2 && idleAnimationUrl2.trim() !== '' ? idleAnimationUrl2 : avatarUrl2;
-    const isVideo2 = idleAnimationUrl2 && idleAnimationUrl2.trim() !== '';
-    
-    if (mediaUrl2 && mediaUrl2.trim() !== '') {
-        loadAvatarInContainer(avatarContainer2, mediaUrl2, isVideo2, 'avatarContainer2');
+    // Load Team Member 2 in bottom container
+    if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
+        loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, true, 'avatarContainer2', teamMember2Name);
     } else {
-        hideAvatarContainer(avatarContainer2, 'Select a scenario to load second avatar');
+        // Show placeholder if no team member 2 animation
+        hideAvatarContainer(avatarContainer2, 'No Team Member 2 animation available');
     }
+}
+
+        // Helper function to load avatar in specific container
+function loadAvatarInContainer(container, mediaUrl, isVideo, containerId, characterName) {
+    // Show container and loading state
+    container.style.display = 'block';
+    container.innerHTML = `<div class="avatar-loading" id="avatarLoading">Loading ${characterName} avatar...</div>`;
+    
+    // Convert Google Drive URLs if needed
+    const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
+    
+    if (isVideo) {
+        // Create video element for idle animation
+        const video = document.createElement('video');
+        
+        video.oncanplaythrough = function() {
+            // Video loaded successfully
+            container.innerHTML = `
+                <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
+                    Your browser does not support the video tag.
+                </video>
+                <div class="avatar-name">${characterName}</div>
+            `;
+            console.log(`${characterName} avatar video loaded successfully:`, convertedUrl);
+        };
+        
+        video.onerror = function() {
+            // Try alternative Google Drive format if applicable
+            if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
+                console.log(`First ${characterName} video format failed, trying alternative...`);
+                video.hasTriedAlternative = true;
+                
+                const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    console.log(`Trying alternative ${characterName} video URL:`, alternativeUrl);
+                    video.src = alternativeUrl;
+                    return;
+                }
+            }
+            
+            // Video failed to load
+            container.innerHTML = `
+                <div class="avatar-error">
+                    ${characterName} avatar video could not be loaded.<br>
+                    <small>Check URL: ${mediaUrl}</small>
+                </div>
+                <div class="avatar-name">${characterName}</div>
+            `;
+            console.error(`${characterName} avatar video failed to load:`, mediaUrl);
+        };
+        
+        // Start loading the video
+        video.src = convertedUrl;
+    } else {
+        // Load static image
+        loadStaticAvatarInContainer(container, mediaUrl, characterName);
+    }
+}
+
+// Helper function to load static avatar image in specific container
+function loadStaticAvatarInContainer(container, avatarUrl, characterName) {
+    const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        container.innerHTML = `
+            <img src="${convertedUrl}" alt="${characterName} Avatar" class="avatar-image">
+            <div class="avatar-name">${characterName}</div>
+        `;
+        console.log(`${characterName} avatar image loaded successfully:`, convertedUrl);
+    };
+    
+    img.onerror = function() {
+        // Try alternative Google Drive format if applicable
+        if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            console.log(`First ${characterName} avatar format failed, trying alternative...`);
+            img.hasTriedAlternative = true;
+            
+            const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log(`Trying alternative ${characterName} avatar URL:`, alternativeUrl);
+                img.src = alternativeUrl;
+                return;
+            }
+        }
+        
+        // Image failed to load completely
+        container.innerHTML = `
+            <div class="avatar-error">
+                ${characterName} avatar could not be loaded.<br>
+                <small>Check URL: ${avatarUrl}</small>
+            </div>
+            <div class="avatar-name">${characterName}</div>
+        `;
+        console.error(`${characterName} avatar failed to load:`, avatarUrl);
+    };
+    
+    // Start loading the image
+    img.src = convertedUrl;
+}
+
+// Helper function to hide specific avatar container
+function hideAvatarContainer(container, placeholderText) {
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">${placeholderText}</div>
+        </div>
+    `;
 }
 
         // Helper function to load avatar in specific container
@@ -4597,13 +4717,13 @@ function hideAvatarContainer(container, placeholderText) {
         }
         
         // Reset avatar container to placeholder state
-        function hideAvatar() {
+      function hideAvatar() {
     const avatarContainer = document.getElementById('avatarContainer');
     avatarContainer.style.display = 'block';
     avatarContainer.innerHTML = `
         <div class="avatar-placeholder">
             <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
+            <div class="avatar-name no-avatar">Select a scenario to load team member 1</div>
         </div>
     `;
     
@@ -4612,7 +4732,7 @@ function hideAvatarContainer(container, placeholderText) {
     avatarContainer2.innerHTML = `
         <div class="avatar-placeholder">
             <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">Select a scenario to load second avatar</div>
+            <div class="avatar-name no-avatar">Select a scenario to load team member 2</div>
         </div>
     `;
 }
@@ -6085,6 +6205,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
