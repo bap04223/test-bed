@@ -1167,13 +1167,17 @@ select option {
             cursor: not-allowed;
         }
 
-        /* Avatar Image Styles */
+    /* Avatar Image Styles */
 .avatar-container {
     margin-top: 15px;
     width: 100%;
     display: none; /* Hidden by default */
     flex: 1; /* Take up remaining space in the card */
     min-height: 400px; /* Ensure substantial height */
+}
+
+.avatar-container.dual-mode {
+    min-height: 180px; /* Even smaller when both are visible */
 }
 
 .avatar-image, .avatar-video {
@@ -2056,15 +2060,22 @@ Load Scenario Sets
             📷 No Scenario Selected
         </button>
         
-       <!-- Avatar Image Container -->
+      <!-- Avatar Image Container -->
         <div class="avatar-container" id="avatarContainer" style="display: block;">
             <div class="avatar-placeholder">
                 <div class="avatar-placeholder-icon">👤</div>
                 <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
             </div>
         </div>
+        
+        <!-- Second Avatar Image Container -->
+        <div class="avatar-container" id="avatarContainer2" style="display: block;">
+            <div class="avatar-placeholder">
+                <div class="avatar-placeholder-icon">👤</div>
+                <div class="avatar-name no-avatar">Secondary avatar placeholder</div>
+            </div>
+        </div>
     </div>
-</div>
 </div>
             
             <!-- Chat display area -->
@@ -4369,6 +4380,7 @@ function updatePatientImageButton() {
         // Load and display avatar video or image
         function loadAvatarImage() {
             const avatarContainer = document.getElementById('avatarContainer');
+            const avatarContainer2 = document.getElementById('avatarContainer2');
             
             if (!currentScenario) {
                 hideAvatar();
@@ -4409,15 +4421,22 @@ function updatePatientImageButton() {
                 // Create video element for idle animation
                 const video = document.createElement('video');
                 
-                video.oncanplaythrough = function() {
-                    // Video loaded successfully
+               video.oncanplaythrough = function() {
+                    // Video loaded successfully - load in both containers
                     avatarContainer.innerHTML = `
                         <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
                             Your browser does not support the video tag.
                         </video>
                         <div class="avatar-name">${patientName}</div>
                     `;
-                    console.log('Avatar video loaded successfully:', convertedUrl);
+                    
+                    avatarContainer2.innerHTML = `
+                        <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="avatar-name">${patientName}</div>
+                    `;
+                    console.log('Avatar video loaded successfully in both containers:', convertedUrl);
                 };
                 
                 video.onerror = function() {
@@ -4461,21 +4480,27 @@ function updatePatientImageButton() {
             }
         }
         
-        // Helper function to load static avatar image
+       // Helper function to load static avatar image
         function loadStaticAvatar(avatarUrl, patientName) {
             const avatarContainer = document.getElementById('avatarContainer');
+            const avatarContainer2 = document.getElementById('avatarContainer2');
             const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
             
             // Create image element
             const img = new Image();
             
             img.onload = function() {
-                // Image loaded successfully
+                // Image loaded successfully in both containers
                 avatarContainer.innerHTML = `
                     <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
                     <div class="avatar-name">${patientName}</div>
                 `;
-                console.log('Avatar image loaded successfully:', convertedUrl);
+                
+                avatarContainer2.innerHTML = `
+                    <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
+                    <div class="avatar-name">${patientName}</div>
+                `;
+                console.log('Avatar image loaded successfully in both containers:', convertedUrl);
             };
             
             img.onerror = function() {
@@ -4509,14 +4534,24 @@ function updatePatientImageButton() {
             img.src = convertedUrl;
         }
         
-        // Reset avatar container to placeholder state
+       // Reset avatar container to placeholder state
         function hideAvatar() {
     const avatarContainer = document.getElementById('avatarContainer');
+    const avatarContainer2 = document.getElementById('avatarContainer2');
+    
     avatarContainer.style.display = 'block';
     avatarContainer.innerHTML = `
         <div class="avatar-placeholder">
             <div class="avatar-placeholder-icon">👤</div>
             <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
+        </div>
+    `;
+    
+    avatarContainer2.style.display = 'block';
+    avatarContainer2.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">Secondary avatar placeholder</div>
         </div>
     `;
 }
@@ -5989,6 +6024,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
