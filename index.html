@@ -1145,6 +1145,17 @@ select option {
             justify-content: center;
             gap: 8px;
         }
+
+        <!-- Add this right after the existing patient image button -->
+<button 
+    class="patient-image-btn disabled" 
+    id="patientDocBtn"
+    onclick="showPatientDoc()"
+    disabled
+    style="margin-top: 10px;"
+>
+    📄 No Document Available
+</button>
         
         .patient-image-btn.available {
             background-color: var(--success-color);
@@ -3999,6 +4010,9 @@ function setButtonPending(buttonId, pendingText = null) {
             
             // Update patient image button based on image availability
             updatePatientImageButton();
+
+            // Update patient document button
+updatePatientDocButton();
             
             // Clear previous state and conversation
 
@@ -6388,10 +6402,76 @@ function debugScenarioData() {
     console.log('window.patientDocs array:', window.patientDocs);
     console.log('===================');
 }
+
+// Update patient document button based on scenario
+function updatePatientDocButton() {
+    const button = document.getElementById('patientDocBtn');
+    
+    if (!currentScenario) {
+        button.className = 'patient-image-btn disabled';
+        button.textContent = '📄 No Scenario Selected';
+        button.disabled = true;
+        return;
+    }
+    
+    // Check for document URL in various column names
+    const docData = currentScenario['Patient Document'] || 
+                   currentScenario['Document URL'] || 
+                   currentScenario['Google Doc'] || 
+                   currentScenario['Doc URL'] ||
+                   currentScenario['Patient Doc'];
+    
+    if (docData && docData.trim() !== '') {
+        button.className = 'patient-image-btn available';
+        button.innerHTML = '📄 View Patient Document';
+        button.disabled = false;
+    } else {
+        button.className = 'patient-image-btn unavailable';
+        button.innerHTML = '❌ No Document Available';
+        button.disabled = true;
+    }
+}
+
+// Show patient document in a new tab/window
+function showPatientDoc() {
+    if (!currentScenario) {
+        showStatus('No scenario selected', 'error');
+        return;
+    }
+    
+    const docData = currentScenario['Patient Document'] || 
+                   currentScenario['Document URL'] || 
+                   currentScenario['Google Doc'] || 
+                   currentScenario['Doc URL'] ||
+                   currentScenario['Patient Doc'];
+    
+    if (!docData || docData.trim() === '') {
+        showStatus('No document available for this scenario', 'error');
+        return;
+    }
+    
+    // Convert to viewable format if it's a Google Doc
+    let viewableUrl = docData.trim();
+    
+    if (viewableUrl.includes('docs.google.com/document')) {
+        // Convert edit links to preview links
+        viewableUrl = viewableUrl.replace('/edit', '/preview');
+        // Remove extra parameters that might cause issues
+        if (viewableUrl.includes('?')) {
+            const baseUrl = viewableUrl.split('?')[0];
+            viewableUrl = baseUrl + '/preview';
+        }
+    }
+    
+    // Open in new tab
+    window.open(viewableUrl, '_blank');
+    showStatus('Document opened in new tab', 'success');
+}
         
     </script>
 </body>
 </html>
+
 
 
 
