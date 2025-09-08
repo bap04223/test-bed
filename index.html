@@ -4128,6 +4128,15 @@ const imageData = currentScenario['Patient Image'] ||
                  currentScenario['Picture URL'] ||
                  currentScenario['Picture'];
 
+    console.log('=== DEBUGGING IMAGE DETECTION ===');
+console.log('imageData:', imageData);
+console.log('docData:', docData);
+console.log('Image URL field value:', currentScenario['Image URL']);
+console.log('===================================');
+
+    console.log('imageData value:', imageData);
+console.log('Image URL field specifically:', currentScenario['Image URL']);
+
 // Check for Google Doc URL - ALSO check the Patient Image field for docs
 const docData = currentScenario['Patient Document'] || 
                currentScenario['Document URL'] || 
@@ -4146,6 +4155,8 @@ if (imageData && imageData.trim() !== '') {
 } else {
     patientImages = [];
 }
+
+    console.log('Processed patientImages:', patientImages);
 
 // Parse document URLs
 let hasDocs = false;
@@ -6382,6 +6393,7 @@ function debugScenarioData() {
     </script>
 </body>
 </html>
+
 
 
 
