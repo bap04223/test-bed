@@ -1779,6 +1779,33 @@ a:hover {
         box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
     }
 }
+
+        /* Document-specific gallery styles */
+.gallery-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.gallery-dot:hover {
+    border-color: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.gallery-dot.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
              
   </style>
        
@@ -4085,74 +4112,100 @@ function updatePatientImageButton() {
     }
     
     // Check for image URL in various possible column names
-    const imageData = currentScenario['Patient Image'] || 
-                     currentScenario['Image URL'] || 
-                     currentScenario['Photo URL'] || 
-                     currentScenario['Image'] || 
-                     currentScenario['Photo'] ||
-                     currentScenario['Picture URL'] ||
-                     currentScenario['Picture'];
+const imageData = currentScenario['Patient Image'] || 
+                 currentScenario['Image URL'] || 
+                 currentScenario['Photo URL'] || 
+                 currentScenario['Image'] || 
+                 currentScenario['Photo'] ||
+                 currentScenario['Picture URL'] ||
+                 currentScenario['Picture'];
+
+// Check for Google Doc URL
+const docData = currentScenario['Patient Document'] || 
+               currentScenario['Document URL'] || 
+               currentScenario['Google Doc'] || 
+               currentScenario['Doc URL'] ||
+               currentScenario['Patient Doc'];
     
-    if (imageData && imageData.trim() !== '') {
-        // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
-        patientImages = imageData
-            .split(/[,;\n\r]+/)
-            .map(url => url.trim())
-            .filter(url => url !== '');
-        
-        if (patientImages.length > 0) {
-            // Images available
-            button.className = 'patient-image-btn available';
-            if (patientImages.length === 1) {
-                button.innerHTML = '👁️ View Patient Image';
-            } else {
-                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
-            }
-            button.disabled = false;
-        } else {
-            // No valid images
-            button.className = 'patient-image-btn unavailable';
-            button.innerHTML = '❌ No Patient Image';
-            button.disabled = true;
-        }
-    } else {
-        // No image data
-        patientImages = [];
-        button.className = 'patient-image-btn unavailable';
-        button.innerHTML = '❌ No Patient Image';
-        button.disabled = true;
+    // Parse image URLs
+let hasImages = false;
+if (imageData && imageData.trim() !== '') {
+    patientImages = imageData
+        .split(/[,;\n\r]+/)
+        .map(url => url.trim())
+        .filter(url => url !== '');
+    hasImages = patientImages.length > 0;
+} else {
+    patientImages = [];
+}
+
+// Parse document URLs
+let hasDocs = false;
+let patientDocs = [];
+if (docData && docData.trim() !== '') {
+    patientDocs = docData
+        .split(/[,;\n\r]+/)
+        .map(url => url.trim())
+        .filter(url => url !== '');
+    hasDocs = patientDocs.length > 0;
+}
+
+// Store docs globally for access in modal
+window.patientDocs = patientDocs;
+
+// Update button based on available content
+if (hasImages || hasDocs) {
+    button.className = 'patient-image-btn available';
+    let buttonText = '👁️ View Patient ';
+    let items = [];
+    
+    if (hasImages) {
+        items.push(patientImages.length === 1 ? 'Image' : `Images (${patientImages.length})`);
     }
+    if (hasDocs) {
+        items.push(patientDocs.length === 1 ? 'Document' : `Documents (${patientDocs.length})`);
+    }
+    
+    button.innerHTML = buttonText + items.join(' & ');
+    button.disabled = false;
+} else {
+    button.className = 'patient-image-btn unavailable';
+    button.innerHTML = '❌ No Patient Media';
+    button.disabled = true;
+}
     
     // Load avatar image
     loadAvatarImage();
 }
 
         // Show patient image modal with gallery functionality
-        function showPatientImage() {
-            if (!currentScenario || patientImages.length === 0) {
-                showStatus('No scenario selected or no images available', 'error');
-                return;
-            }
-            
-            // Reset to first image
-            currentImageIndex = 0;
-            
-            // Set modal title
-            const patientName = currentScenario['Patient Name'] || 'Patient';
-            const titleElement = document.getElementById('imageModalTitle');
-            if (patientImages.length === 1) {
-                titleElement.textContent = `${patientName} - Patient Image`;
-            } else {
-                titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
-            }
-            
-            // Show modal
-            const modal = document.getElementById('imageModal');
-            modal.classList.add('show');
-            
-            // Load the first image
-            loadImageAtIndex(0);
-        }
+       function showPatientImage() {
+    if (!currentScenario || (patientImages.length === 0 && (!window.patientDocs || window.patientDocs.length === 0))) {
+        showStatus('No scenario selected or no media available', 'error');
+        return;
+    }
+    
+    // Reset to first item
+    currentImageIndex = 0;
+    
+    // Set modal title
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    const titleElement = document.getElementById('imageModalTitle');
+    
+    let totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
+    if (totalItems === 1) {
+        titleElement.textContent = `${patientName} - Patient Media`;
+    } else {
+        titleElement.textContent = `${patientName} - Item 1 of ${totalItems}`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('imageModal');
+    modal.classList.add('show');
+    
+    // Load the first item
+    loadMediaAtIndex(0);
+}
         
         // Helper function to convert Google Drive share links to direct image URLs
         function convertGoogleDriveUrl(url) {
@@ -4177,137 +4230,245 @@ function updatePatientImageButton() {
         }
         
         // Load image at specific index
-        function loadImageAtIndex(index) {
-            if (index < 0 || index >= patientImages.length) return;
-            
-            currentImageIndex = index;
-            const imageUrl = patientImages[index];
-            
-           // Check for image URL - if somehow empty, skip
-            if (!imageUrl || imageUrl.trim() === '') {
-                showStatus('No image URL available for this patient', 'error');
+       function loadMediaAtIndex(index) {
+    const totalImages = patientImages.length;
+    const totalDocs = window.patientDocs ? window.patientDocs.length : 0;
+    const totalItems = totalImages + totalDocs;
+    
+    if (index < 0 || index >= totalItems) return;
+    
+    currentImageIndex = index;
+    
+    // Update modal title with current item number
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    const titleElement = document.getElementById('imageModalTitle');
+    if (totalItems > 1) {
+        titleElement.textContent = `${patientName} - Item ${index + 1} of ${totalItems}`;
+    }
+    
+    const modal = document.getElementById('imageModal');
+    const modalBody = document.getElementById('imageModalBody');
+    
+    // Determine if this is an image or document
+    if (index < totalImages) {
+        // Load image
+        const imageUrl = patientImages[index];
+        loadImageContent(imageUrl, index, totalItems, modalBody);
+    } else {
+        // Load document
+        const docIndex = index - totalImages;
+        const docUrl = window.patientDocs[docIndex];
+        loadDocumentContent(docUrl, index, totalItems, modalBody);
+    }
+}
+
+function loadImageContent(imageUrl, currentIndex, totalItems, modalBody) {
+    // Show loading state
+    modalBody.innerHTML = `
+        <div class="image-loading">
+            <div class="spinner"></div>
+            Loading image ${currentIndex + 1} of ${totalItems}...
+        </div>
+    `;
+    
+    // Convert Google Drive URLs if needed
+    const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        const galleryHTML = createGalleryHTML(convertedImageUrl, 'Patient Image', true);
+        modalBody.innerHTML = galleryHTML;
+        updateNavigationButtons();
+    };
+    
+    img.onerror = function() {
+        // Handle image load errors (keep your existing error handling)
+        if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            img.hasTriedAlternative = true;
+            const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                img.src = alternativeUrl;
                 return;
             }
-            
-            // Convert Google Drive share links to direct image URLs
-            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
-            
-            // Log URL conversion for debugging
-            if (convertedImageUrl !== imageUrl.trim()) {
-                console.log('Original URL:', imageUrl.trim());
-                console.log('Converted URL:', convertedImageUrl);
-            }
-            
-            // Update modal title with current image number
-            const patientName = currentScenario['Patient Name'] || 'Patient';
-            const titleElement = document.getElementById('imageModalTitle');
-            if (patientImages.length > 1) {
-                titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
-            }
-            
-            // Show modal
-            const modal = document.getElementById('imageModal');
-            const modalBody = document.getElementById('imageModalBody');
-            
-            // Show loading state
-            modalBody.innerHTML = `
-                <div class="image-loading">
-                    <div class="spinner"></div>
-                    Loading image ${index + 1} of ${patientImages.length}...
-                </div>
-            `;
-            
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
-                modalBody.innerHTML = galleryHTML;
-                updateNavigationButtons();
-            };
-            
-            img.onerror = function() {
-                // Image failed to load - try alternative Google Drive formats
-                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                    console.log('First Google Drive format failed, trying alternative...');
-                    img.hasTriedAlternative = true;
-                    
-                    // Extract file ID and try different format
-                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                    if (fileIdMatch && fileIdMatch[1]) {
-                        const fileId = fileIdMatch[1];
-                        // Try the uc format as backup
-                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log('Trying alternative URL:', alternativeUrl);
-                        img.src = alternativeUrl;
-                        return;
-                    }
-                }
-                
-                // Image failed to load completely - preserve ALL your error handling
-                modalBody.innerHTML = `
-                    <div class="image-gallery">
-                        ${patientImages.length > 1 ? `
-                            <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
-                                ❮ Previous
-                            </button>
-                        ` : ''}
-                        
-                        <div class="image-error">
-                            <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
-                            <p>The image could not be loaded. This might be due to:</p>
-                            <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                                <li>The image is not set to "Anyone with the link can view"</li>
-                                <li>Google Drive is blocking the image embedding</li>
-                                <li>The file is not an image format</li>
-                                <li>The URL is incorrect or the file was deleted</li>
-                            </ul>
-                            
-                            <p><strong>Attempted URL:</strong></p>
-                            <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
-                            
-                            ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
-                            
-                            <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
-                                <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
-                                <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
-                                <ol style="margin: 5px 0 10px 20px; color: #92400e;">
-                                    <li>Right-click the image → "Get link"</li>
-                                    <li>Change to "Anyone with the link"</li>
-                                    <li>Use a direct image hosting service instead</li>
-                                </ol>
-                                <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
-                            </div>
-                            
-                            <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                🔗 Open Original Link
-                            </button>
-                        </div>
-                        
-                        ${patientImages.length > 1 ? `
-                            <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
-                                Next ❯
-                            </button>
-                        ` : ''}
-                    </div>
-                    
-                    ${patientImages.length > 1 ? `
-                        <div class="gallery-indicators">
-                            ${patientImages.map((_, index) => `
-                                <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
-                                        onclick="loadImageAtIndex(${index})">
-                                </button>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                `;
-                updateNavigationButtons();
-            };
-            
-            // Start loading the image
-            img.src = convertedImageUrl;
         }
+        
+        // Show error message
+        modalBody.innerHTML = createErrorHTML('Image', imageUrl, convertedImageUrl, totalItems);
+        updateNavigationButtons();
+    };
+    
+    img.src = convertedImageUrl;
+}
+
+function loadDocumentContent(docUrl, currentIndex, totalItems, modalBody) {
+    // Show loading state
+    modalBody.innerHTML = `
+        <div class="image-loading">
+            <div class="spinner"></div>
+            Loading document ${currentIndex + 1} of ${totalItems}...
+        </div>
+    `;
+    
+    // Convert Google Drive/Docs URL to embeddable format
+    const embedUrl = convertGoogleDocUrl(docUrl.trim());
+    
+    if (embedUrl) {
+        // Create iframe for Google Doc
+        const galleryHTML = createDocumentGalleryHTML(embedUrl, docUrl);
+        modalBody.innerHTML = galleryHTML;
+        updateNavigationButtons();
+    } else {
+        // Show error for unsupported document
+        modalBody.innerHTML = createDocumentErrorHTML(docUrl, totalItems);
+        updateNavigationButtons();
+    }
+}
+
+        // Convert Google Docs URL to embeddable format
+function convertGoogleDocUrl(url) {
+    if (!url || typeof url !== 'string') {
+        return null;
+    }
+    
+    // Handle various Google Docs URL formats
+    if (url.includes('docs.google.com/document/d/')) {
+        const docIdMatch = url.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
+        if (docIdMatch && docIdMatch[1]) {
+            const docId = docIdMatch[1];
+            return `https://docs.google.com/document/d/${docId}/preview`;
+        }
+    }
+    
+    // Handle Google Drive file URLs for documents
+    if (url.includes('drive.google.com/file/d/')) {
+        const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+            const fileId = fileIdMatch[1];
+            return `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+    }
+    
+    // Return original URL if it's already in a usable format
+    if (url.includes('/preview') || url.includes('/embed')) {
+        return url;
+    }
+    
+    return null;
+}
+
+// Create HTML for document display
+function createDocumentGalleryHTML(embedUrl, originalUrl) {
+    const showNavigation = (patientImages.length + (window.patientDocs ? window.patientDocs.length : 0)) > 1;
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousMedia()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
+            
+            <div style="width: 100%; height: 70vh; min-height: 500px; border-radius: 8px; overflow: hidden;">
+                <iframe 
+                    src="${embedUrl}" 
+                    style="width: 100%; height: 100%; border: none;" 
+                    frameborder="0"
+                    title="Patient Document">
+                </iframe>
+            </div>
+            
+            <div style="text-align: center; margin-top: 10px;">
+                <button onclick="window.open('${originalUrl}', '_blank')" 
+                        style="padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🔗 Open in New Tab
+                </button>
+            </div>
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextMedia()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${createIndicatorDots()}
+            </div>
+        ` : ''}
+    `;
+}
+
+// Create error HTML for documents
+function createDocumentErrorHTML(docUrl, totalItems) {
+    const showNavigation = totalItems > 1;
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousMedia()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
+            
+            <div class="image-error">
+                <h4>Cannot Load Document</h4>
+                <p>The document could not be embedded. This might be due to:</p>
+                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                    <li>The document is not set to "Anyone with the link can view"</li>
+                    <li>The document type is not supported for embedding</li>
+                    <li>The URL format is not recognized</li>
+                </ul>
+                
+                <p><strong>Document URL:</strong></p>
+                <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${docUrl}</p>
+                
+                <button onclick="window.open('${docUrl}', '_blank')" 
+                        style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    🔗 Open Original Link
+                </button>
+            </div>
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextMedia()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${createIndicatorDots()}
+            </div>
+        ` : ''}
+    `;
+}
+
+// Create indicator dots for mixed media
+function createIndicatorDots() {
+    const totalImages = patientImages.length;
+    const totalDocs = window.patientDocs ? window.patientDocs.length : 0;
+    const totalItems = totalImages + totalDocs;
+    
+    let dotsHTML = '';
+    for (let i = 0; i < totalItems; i++) {
+        const isActive = i === currentImageIndex ? 'active' : '';
+        const mediaType = i < totalImages ? '🖼️' : '📄';
+        dotsHTML += `
+            <button class="gallery-dot ${isActive}" 
+                    onclick="loadMediaAtIndex(${i})"
+                    title="${i < totalImages ? 'Image' : 'Document'} ${i + 1}">
+                ${mediaType}
+            </button>
+        `;
+    }
+    return dotsHTML;
+}
 
         // Create gallery HTML with navigation
         function createGalleryHTML(imageUrl, patientName) {
@@ -4342,16 +4503,27 @@ function updatePatientImageButton() {
             `;
         }
 
-        // Navigation functions
-        function nextImage() {
-            const nextIndex = (currentImageIndex + 1) % patientImages.length;
-            loadImageAtIndex(nextIndex);
-        }
+        // Navigation functions for mixed media
+function nextMedia() {
+    const totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
+    const nextIndex = (currentImageIndex + 1) % totalItems;
+    loadMediaAtIndex(nextIndex);
+}
 
-        function previousImage() {
-            const prevIndex = (currentImageIndex - 1 + patientImages.length) % patientImages.length;
-            loadImageAtIndex(prevIndex);
-        }
+function previousMedia() {
+    const totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
+    const prevIndex = (currentImageIndex - 1 + totalItems) % totalItems;
+    loadMediaAtIndex(prevIndex);
+}
+
+// Keep these for backward compatibility
+function nextImage() {
+    nextMedia();
+}
+
+function previousImage() {
+    previousMedia();
+}
 
         // Update navigation button states
         function updateNavigationButtons() {
@@ -6115,6 +6287,7 @@ function removeAvatarHighlights() {
     </script>
 </body>
 </html>
+
 
 
 
