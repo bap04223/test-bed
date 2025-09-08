@@ -4128,12 +4128,7 @@ const imageData = currentScenario['Patient Image'] ||
                  currentScenario['Picture URL'] ||
                  currentScenario['Picture'];
 
-    console.log('=== DEBUGGING IMAGE DETECTION ===');
-console.log('imageData:', imageData);
-console.log('docData:', docData);
-console.log('Image URL field value:', currentScenario['Image URL']);
-console.log('===================================');
-
+  
     console.log('imageData value:', imageData);
 console.log('Image URL field specifically:', currentScenario['Image URL']);
 
@@ -4143,6 +4138,12 @@ const docData = currentScenario['Patient Document'] ||
                currentScenario['Google Doc'] || 
                currentScenario['Doc URL'] ||
                currentScenario['Patient Doc'];
+
+    console.log('=== DEBUGGING IMAGE DETECTION ===');
+console.log('imageData:', imageData);
+console.log('docData:', docData);
+console.log('Image URL field value:', currentScenario['Image URL']);
+console.log('===================================');
     
     // Parse image URLs
 let hasImages = false;
@@ -6393,6 +6394,7 @@ function debugScenarioData() {
     </script>
 </body>
 </html>
+
 
 
 
