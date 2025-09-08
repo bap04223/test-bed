@@ -4626,25 +4626,26 @@ function loadAvatarImage() {
         return;
     }
     
-    // Clear any existing loading states
-    avatarContainer.innerHTML = '';
-    avatarContainer2.innerHTML = '';
+    // Clear both containers completely first
+    if (avatarContainer) {
+        avatarContainer.innerHTML = '';
+        avatarContainer.style.display = 'block';
+    }
+    if (avatarContainer2) {
+        avatarContainer2.innerHTML = '';
+        avatarContainer2.style.display = 'block';
+    }
     
-    // Check for team member idle animations
+    // Get team member data
     const teamMember1IdleAnimation = currentScenario['Team Member 1 Idle Animation'];
     const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
     
-    // Get team member names for labels
     const teamMember1Name = (teamMembers.member1 && teamMembers.member1.name !== 'Healthcare Professional') 
                            ? teamMembers.member1.name 
-                           : (currentScenario['Team Member 1 Name'] || 
-                              currentScenario['Name 1'] || 
-                              'Team Member 1');
+                           : (currentScenario['Team Member 1 Name'] || 'Team Member 1');
     const teamMember2Name = (teamMembers.member2 && teamMembers.member2.name !== 'Specialist') 
                            ? teamMembers.member2.name 
-                           : (currentScenario['Team Member 2 Name'] || 
-                              currentScenario['Name 2'] || 
-                              'Team Member 2');
+                           : (currentScenario['Team Member 2 Name'] || 'Team Member 2');
     
     console.log('Loading avatars:', {
         member1: teamMember1Name,
@@ -4653,109 +4654,91 @@ function loadAvatarImage() {
         animation2: teamMember2IdleAnimation
     });
     
-    // Load Team Member 1 in top container
+    // Load first avatar immediately
     if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
-        loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, true, 'avatarContainer', teamMember1Name);
+        loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, teamMember1Name);
     } else {
-        hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
+        hideAvatarContainer(avatarContainer, `No animation for ${teamMember1Name}`);
     }
     
-    // Load Team Member 2 in bottom container with a small delay to prevent conflicts
+    // Load second avatar with delay to prevent conflicts
     setTimeout(() => {
         if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
-            loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, true, 'avatarContainer2', teamMember2Name);
+            loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, teamMember2Name);
         } else {
-            hideAvatarContainer(avatarContainer2, `No animation available for ${teamMember2Name}`);
+            hideAvatarContainer(avatarContainer2, `No animation for ${teamMember2Name}`);
         }
-    }, 100);
+    }, 500); // 500ms delay between loads
 }
 
         // Helper function to load avatar in specific container
-function loadAvatarInContainer(container, mediaUrl, isVideo, containerId, characterName) {
-    // Show container and loading state
-    container.style.display = 'block';
-    container.innerHTML = `<div class="avatar-loading">Loading ${characterName} avatar...</div>`;
-    
-    // Validate URL
-    if (!mediaUrl || mediaUrl.trim() === '') {
-        hideAvatarContainer(container, `No animation URL for ${characterName}`);
+function loadAvatarInContainer(container, mediaUrl, characterName) {
+    if (!container || !mediaUrl || mediaUrl.trim() === '') {
+        if (container) hideAvatarContainer(container, `No URL for ${characterName}`);
         return;
     }
     
-    // Convert Google Drive URLs if needed
-    const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
+    // Show loading state
+    container.innerHTML = `<div class="avatar-loading">Loading ${characterName}...</div>`;
     
-    console.log(`Loading ${characterName} avatar:`, {
-        original: mediaUrl,
-        converted: convertedUrl
-    });
+    console.log(`Loading ${characterName}:`, mediaUrl);
     
-    if (isVideo) {
-        // Create video element for idle animation
-        const video = document.createElement('video');
-        
-        // Set a timeout to prevent infinite loading
-        const loadTimeout = setTimeout(() => {
-            console.warn(`${characterName} video load timeout`);
+    // Create video element with unique ID
+    const videoId = `video_${characterName.replace(/\s+/g, '_')}_${Date.now()}`;
+    const video = document.createElement('video');
+    video.id = videoId;
+    video.muted = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    
+    // Set up event handlers
+    const cleanup = () => {
+        video.removeEventListener('loadeddata', successHandler);
+        video.removeEventListener('error', errorHandler);
+        video.removeEventListener('canplay', successHandler);
+    };
+    
+    const successHandler = () => {
+        cleanup();
+        if (container && container.parentNode) {
+            container.innerHTML = `
+                <video src="${mediaUrl}" class="avatar-video" autoplay loop muted playsinline>
+                </video>
+                <div class="avatar-name">${characterName}</div>
+            `;
+            console.log(`${characterName} loaded successfully`);
+        }
+    };
+    
+    const errorHandler = () => {
+        cleanup();
+        if (container && container.parentNode) {
             container.innerHTML = `
                 <div class="avatar-error">
-                    ${characterName} avatar load timeout.<br>
-                    <small>Check URL: ${mediaUrl}</small>
+                    ${characterName} failed to load
                 </div>
                 <div class="avatar-name">${characterName}</div>
             `;
-        }, 10000);
-        
-        video.oncanplaythrough = function() {
-            clearTimeout(loadTimeout);
-            // Verify the container still exists and hasn't been replaced
-            if (container && container.parentNode) {
-                container.innerHTML = `
-                    <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="avatar-name">${characterName}</div>
-                `;
-                console.log(`${characterName} avatar video loaded successfully`);
-            }
-        };
-        
-        video.onerror = function() {
-            clearTimeout(loadTimeout);
-            
-            // Try alternative Google Drive format if applicable
-            if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
-                console.log(`Trying alternative format for ${characterName}...`);
-                video.hasTriedAlternative = true;
-                
-                const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (fileIdMatch && fileIdMatch[1]) {
-                    const fileId = fileIdMatch[1];
-                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                    video.src = alternativeUrl;
-                    return;
-                }
-            }
-            
-            // Video failed to load
-            if (container && container.parentNode) {
-                container.innerHTML = `
-                    <div class="avatar-error">
-                        ${characterName} avatar could not be loaded.<br>
-                        <small>Check URL: ${mediaUrl}</small>
-                    </div>
-                    <div class="avatar-name">${characterName}</div>
-                `;
-            }
-            console.error(`${characterName} avatar video failed to load:`, mediaUrl);
-        };
-        
-        // Start loading the video
-        video.src = convertedUrl;
-    } else {
-        // Load static image
-        loadStaticAvatarInContainer(container, mediaUrl, characterName);
-    }
+            console.error(`${characterName} failed:`, mediaUrl);
+        }
+    };
+    
+    video.addEventListener('loadeddata', successHandler);
+    video.addEventListener('canplay', successHandler);
+    video.addEventListener('error', errorHandler);
+    
+    // Set timeout for cleanup
+    setTimeout(() => {
+        if (container && container.innerHTML.includes('Loading')) {
+            cleanup();
+            errorHandler();
+        }
+    }, 10000);
+    
+    // Start loading
+    video.src = mediaUrl;
 }
 
         // Clear all global state when switching scenarios
@@ -6444,6 +6427,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
