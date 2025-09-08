@@ -4896,6 +4896,7 @@ if (!webhookUrl) {
         }
 
         // Handle multi-speaker responses
+// Handle multi-speaker responses
 async function handleMultiSpeakerResponse(responses) {
     if (!Array.isArray(responses)) {
         console.error('Invalid multi-speaker response format');
@@ -4905,6 +4906,8 @@ async function handleMultiSpeakerResponse(responses) {
     for (const response of responses) {
         if (response.speaker && response.text) {
             await handleTeamMemberResponse(response);
+            // Add a longer pause between speakers to ensure first speaker finishes
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
     }
 }
@@ -4916,11 +4919,25 @@ async function handleTeamMemberResponse(response) {
     // Add message with speaker identification
     addMessage(`<strong style="color: var(--primary-color);">${speaker}:</strong> ${text}`, 'ai');
     
+    // Wait for previous audio to finish before starting new speaker
+    await waitForCurrentAudioToFinish();
+    
     // Speak with appropriate voice
     await speakAsTeamMember(text, speakerRole || speaker);
-    
-    // Brief pause between speakers
-    await new Promise(resolve => setTimeout(resolve, 1000));
+}
+        // Helper function to wait for current audio to finish
+function waitForCurrentAudioToFinish() {
+    return new Promise((resolve) => {
+        // Stop any currently playing audio first
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        synthesis.cancel();
+        
+        // Small delay to ensure audio systems are clear
+        setTimeout(resolve, 500);
+    });
 }
 
 // Speak text as specific team member
@@ -4942,7 +4959,7 @@ async function speakAsTeamMember(text, roleOrName) {
     // Show visual indicator of who's speaking
     showSpeakerIndicator(member.name, member.role);
     
-    // Apply team member's voice settings temporarily
+    // Apply team member's voice settings and wait for completion
     if (member.provider === 'browser' && member.voice) {
         await speakWithTeamMemberBrowserVoice(text, member.voice);
     } else if (member.provider === 'elevenlabs' && member.voice) {
@@ -5012,14 +5029,81 @@ async function speakWithTeamMemberElevenLabsVoice(text, voiceNameOrId) {
     document.getElementById('elevenlabsVoice').value = targetVoiceId;
     
     try {
-        // Speak with ElevenLabs
-        await speakWithElevenLabs(text);
+        // Speak with ElevenLabs and wait for completion
+        await speakWithElevenLabsAndWait(text);
     } finally {
         // Restore original voice
         setTimeout(() => {
             document.getElementById('elevenlabsVoice').value = currentVoiceId;
         }, 500);
     }
+}
+
+// Modified ElevenLabs function that returns a Promise
+async function speakWithElevenLabsAndWait(text) {
+    return new Promise(async (resolve, reject) => {
+        const apiKey = document.getElementById('elevenlabsApiKey').value;
+        const voiceId = document.getElementById('elevenlabsVoice').value;
+        
+        if (!apiKey || !voiceId) {
+            console.error('ElevenLabs API key or voice not available');
+            resolve();
+            return;
+        }
+        
+        try {
+            const stability = parseFloat(document.getElementById('elevenlabsStability').value);
+            const clarity = parseFloat(document.getElementById('elevenlabsClarity').value);
+            
+            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'audio/mpeg',
+                    'Content-Type': 'application/json',
+                    'xi-api-key': apiKey
+                },
+                body: JSON.stringify({
+                    text: text,
+                    model_id: 'eleven_monolingual_v1',
+                    voice_settings: {
+                        stability: stability,
+                        similarity_boost: clarity,
+                        style: 0.0,
+                        use_speaker_boost: true
+                    }
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`ElevenLabs API error: ${response.status}`);
+            }
+            
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.onended = function() {
+                console.log('ElevenLabs audio finished playing');
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+                resolve(); // Resolve when audio finishes
+            };
+            
+            currentAudio.onerror = function(error) {
+                console.error('ElevenLabs audio playback error:', error);
+                URL.revokeObjectURL(audioUrl);
+                currentAudio = null;
+                resolve(); // Resolve even on error to continue
+            };
+            
+            await currentAudio.play();
+            
+        } catch (error) {
+            console.error('ElevenLabs TTS error:', error);
+            resolve(); // Resolve on error to continue
+        }
+    });
 }
 
         // Show visual indicator of who's speaking
@@ -5903,4 +5987,5 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
