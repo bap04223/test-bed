@@ -2115,6 +2115,16 @@ Load Scenario Sets
     >
         📷 No Images
     </button>
+    
+    <button 
+        class="patient-image-btn disabled" 
+        id="patientDocBtn"
+        onclick="showPatientDoc()"
+        disabled
+        style="flex: 1; margin-top: 0;"
+    >
+        📄 No Document
+    </button>
 </div>
         
        <!-- Avatar Image Container -->
@@ -4673,58 +4683,91 @@ function loadAvatarImage() {
 }
 
         // Helper function to load avatar in specific container
-function loadAvatarInContainer(container, mediaUrl, characterName) {
+function loadAvatarInContainer(container, mediaUrl, isVideo, containerId, characterName) {
+    // Show container and loading state
+    container.style.display = 'block';
+    container.innerHTML = `<div class="avatar-loading">Loading ${characterName} avatar...</div>`;
+    
+    // Validate URL
     if (!mediaUrl || mediaUrl.trim() === '') {
-        hideAvatarContainer(container, `No URL for ${characterName}`);
+        hideAvatarContainer(container, `No animation URL for ${characterName}`);
         return;
     }
     
-    // Clear container and show loading
-    container.innerHTML = `<div class="avatar-loading">Loading ${characterName}...</div>`;
+    // Convert Google Drive URLs if needed
+    const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
     
-    // Create a unique video element
-    const videoElement = document.createElement('video');
-    videoElement.src = mediaUrl;
-    videoElement.muted = true;
-    videoElement.loop = true;
-    videoElement.autoplay = true;
-    videoElement.playsInline = true;
-    videoElement.controls = false;
+    console.log(`Loading ${characterName} avatar:`, {
+        original: mediaUrl,
+        converted: convertedUrl
+    });
     
-    // Set up success handler
-    const handleSuccess = () => {
-        if (container && container.parentNode) {
-            container.innerHTML = `
-                <video src="${mediaUrl}" class="avatar-video" autoplay loop muted playsinline controls="false">
-                </video>
-                <div class="avatar-name">${characterName}</div>
-            `;
-        }
-    };
-    
-    // Set up error handler
-    const handleError = () => {
-        if (container && container.parentNode) {
+    if (isVideo) {
+        // Create video element for idle animation
+        const video = document.createElement('video');
+        
+        // Set a timeout to prevent infinite loading
+        const loadTimeout = setTimeout(() => {
+            console.warn(`${characterName} video load timeout`);
             container.innerHTML = `
                 <div class="avatar-error">
-                    ${characterName} video unavailable
+                    ${characterName} avatar load timeout.<br>
+                    <small>Check URL: ${mediaUrl}</small>
                 </div>
                 <div class="avatar-name">${characterName}</div>
             `;
-        }
-    };
-    
-    // Use multiple event listeners for better reliability
-    videoElement.addEventListener('loadeddata', handleSuccess);
-    videoElement.addEventListener('canplay', handleSuccess);
-    videoElement.addEventListener('error', handleError);
-    
-    // Set a reasonable timeout
-    setTimeout(() => {
-        if (container.innerHTML.includes('Loading')) {
-            handleError();
-        }
-    }, 8000);
+        }, 10000);
+        
+        video.oncanplaythrough = function() {
+            clearTimeout(loadTimeout);
+            // Verify the container still exists and hasn't been replaced
+            if (container && container.parentNode) {
+                container.innerHTML = `
+                    <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="avatar-name">${characterName}</div>
+                `;
+                console.log(`${characterName} avatar video loaded successfully`);
+            }
+        };
+        
+        video.onerror = function() {
+            clearTimeout(loadTimeout);
+            
+            // Try alternative Google Drive format if applicable
+            if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
+                console.log(`Trying alternative format for ${characterName}...`);
+                video.hasTriedAlternative = true;
+                
+                const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    video.src = alternativeUrl;
+                    return;
+                }
+            }
+            
+            // Video failed to load
+            if (container && container.parentNode) {
+                container.innerHTML = `
+                    <div class="avatar-error">
+                        ${characterName} avatar could not be loaded.<br>
+                        <small>Check URL: ${mediaUrl}</small>
+                    </div>
+                    <div class="avatar-name">${characterName}</div>
+                `;
+            }
+            console.error(`${characterName} avatar video failed to load:`, mediaUrl);
+        };
+        
+        // Start loading the video
+        video.src = convertedUrl;
+    } else {
+        // Load static image
+        loadStaticAvatarInContainer(container, mediaUrl, characterName);
+    }
 }
 
         // Clear all global state when switching scenarios
@@ -4800,28 +4843,24 @@ function loadStaticAvatarInContainer(container, avatarUrl, characterName) {
 
 // Helper function to hide specific avatar container
 function hideAvatarContainer(container, placeholderText) {
-    if (container) {
-        container.style.display = 'block';
-        container.innerHTML = `
-            <div class="avatar-placeholder">
-                <div class="avatar-placeholder-icon">👤</div>
-                <div class="avatar-name no-avatar">${placeholderText}</div>
-            </div>
-        `;
-    }
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">${placeholderText}</div>
+        </div>
+    `;
 }
 
 // Helper function to hide specific avatar container
 function hideAvatarContainer(container, placeholderText) {
-    if (container) {
-        container.style.display = 'block';
-        container.innerHTML = `
-            <div class="avatar-placeholder">
-                <div class="avatar-placeholder-icon">👤</div>
-                <div class="avatar-name no-avatar">${placeholderText}</div>
-            </div>
-        `;
-    }
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">${placeholderText}</div>
+        </div>
+    `;
 }
               
         // Reset avatar container to placeholder state
@@ -6442,23 +6481,36 @@ function showPatientDoc() {
     window.open(viewableUrl, '_blank');
     showStatus('Document opened in new tab', 'success');
 }
-
-        function testAvatarUrls() {
-    const urls = [
-        'https://raw.githubusercontent.com/bap04223/AI-Chatbot-Hub/main/IdleAnimations/001_Avatar_Idle_Animation.mp4',
-        'https://raw.githubusercontent.com/bap04223/AI-Chatbot-Hub/main/IdleAnimations/008_Avatar_Idle_Animation.mp4'
-    ];
-    
-    urls.forEach((url, index) => {
-        fetch(url, { method: 'HEAD' })
-            .then(response => console.log(`Video ${index + 1}: ${response.ok ? 'OK' : 'FAILED'} (${response.status})`))
-            .catch(error => console.log(`Video ${index + 1}: ERROR -`, error));
-    });
-}
         
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
