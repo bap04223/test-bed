@@ -1373,6 +1373,22 @@ select option {
             display: block;
             object-fit: contain;
         }
+
+        .patient-pdf {
+    width: 100%;
+    height: 85vh;
+    min-height: 600px;
+    display: block;
+    border: none;
+    background: white;
+}
+
+@media (max-width: 768px) {
+    .patient-pdf {
+        height: 70vh;
+        min-height: 400px;
+    }
+}
         
         .image-loading {
             padding: 40px;
@@ -1793,9 +1809,9 @@ a:hover {
        <div class="header">
             <div class="header-content">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-<div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #43e97b, #38f9d7);">👨‍⚕️👩‍⚕️</div>
+<div class="card-icon" style="margin: 0;  background: linear-gradient(135deg, #a855f7, #c084fc);">👨‍⚕️👩‍⚕️</div>
 <h1 style="margin: 0;">MDT Consultation Training</h1>
-<div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #43e97b, #38f9d7);">👨‍⚕️👩‍⚕️</div>
+<div class="card-icon" style="margin: 0;  background: linear-gradient(135deg, #a855f7, #c084fc);">👨‍⚕️👩‍⚕️</div>
                 </div>
                 <p>Practice your conmunication skills with our AI-Powered Clinical Teams</p>
                <a href="https://bap04223.github.io/AI-Chatbot-Hub/" class="back-to-landing-btn" title="Return to Landing Page">
@@ -4103,11 +4119,22 @@ function updatePatientImageButton() {
         if (patientImages.length > 0) {
             // Images available
             button.className = 'patient-image-btn available';
-            if (patientImages.length === 1) {
-                button.innerHTML = '👁️ View Patient Image';
-            } else {
-                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
-            }
+           // Check if any files are PDFs
+const hasPdf = patientImages.some(url => detectFileType(url) === 'pdf');
+const hasImages = patientImages.some(url => detectFileType(url) === 'image');
+
+if (patientImages.length === 1) {
+    const fileType = detectFileType(patientImages[0]);
+    button.innerHTML = fileType === 'pdf' ? '📄 View Patient Document' : '👁️ View Patient Image';
+} else {
+    if (hasPdf && hasImages) {
+        button.innerHTML = `📁 View Patient Files (${patientImages.length})`;
+    } else if (hasPdf) {
+        button.innerHTML = `📄 View Patient Documents (${patientImages.length})`;
+    } else {
+        button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
+    }
+}
             button.disabled = false;
         } else {
             // No valid images
@@ -4155,26 +4182,55 @@ function updatePatientImageButton() {
         }
         
         // Helper function to convert Google Drive share links to direct image URLs
-        function convertGoogleDriveUrl(url) {
-            if (!url || typeof url !== 'string') {
-                return url;
-            }
+        function convertGoogleDriveUrl(url, fileType = 'image') {
+    if (!url || typeof url !== 'string') {
+        return url;
+    }
+    
+    // Check if it's a Google Drive share link
+    if (url.includes('drive.google.com/file/d/')) {
+        const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (fileIdMatch && fileIdMatch[1]) {
+            const fileId = fileIdMatch[1];
             
-            // Check if it's a Google Drive share link
-            if (url.includes('drive.google.com/file/d/')) {
-                const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (fileIdMatch && fileIdMatch[1]) {
-                    const fileId = fileIdMatch[1];
-                    // Use the thumbnail format which is more reliable for embedding
-                    const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w3000`;
-                    console.log('Converted Google Drive URL:', url, '->', directUrl);
-                    return directUrl;
-                }
+            if (fileType === 'pdf') {
+                // For PDFs, use the preview format
+                const directUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                console.log('Converted Google Drive PDF URL:', url, '->', directUrl);
+                return directUrl;
+            } else {
+                // For images, use the thumbnail format
+                const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w3000`;
+                console.log('Converted Google Drive image URL:', url, '->', directUrl);
+                return directUrl;
             }
-            
-            // Return original URL if not a Google Drive link or conversion failed
-            return url;
         }
+    }
+    
+    // Return original URL if not a Google Drive link or conversion failed
+    return url;
+}
+
+        // Helper function to detect file type from URL
+function detectFileType(url) {
+    if (!url || typeof url !== 'string') {
+        return 'image';
+    }
+    
+    const lowercaseUrl = url.toLowerCase();
+    
+    if (lowercaseUrl.includes('.pdf') || lowercaseUrl.includes('pdf')) {
+        return 'pdf';
+    }
+    
+    // Check for common image extensions
+    if (lowercaseUrl.match(/\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?|$|#)/)) {
+        return 'image';
+    }
+    
+    // Default to image if uncertain
+    return 'image';
+}
         
         // Load image at specific index
         function loadImageAtIndex(index) {
@@ -4190,7 +4246,8 @@ function updatePatientImageButton() {
             }
             
             // Convert Google Drive share links to direct image URLs
-            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
+            const fileType = detectFileType(imageUrl.trim());
+const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim(), fileType);
             
             // Log URL conversion for debugging
             if (convertedImageUrl !== imageUrl.trim()) {
@@ -4217,15 +4274,22 @@ function updatePatientImageButton() {
                 </div>
             `;
             
-            // Create image element
-            const img = new Image();
-            
-            img.onload = function() {
-                // Image loaded successfully
-                const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
-                modalBody.innerHTML = galleryHTML;
-                updateNavigationButtons();
-            };
+            // Create image or PDF element based on file type
+if (fileType === 'pdf') {
+    // Handle PDF display
+    const galleryHTML = createGalleryHTML(convertedImageUrl, patientName, 'pdf');
+    modalBody.innerHTML = galleryHTML;
+    updateNavigationButtons();
+} else {
+    // Handle image display (existing logic)
+    const img = new Image();
+
+    img.onload = function() {
+        // Image loaded successfully
+        const galleryHTML = createGalleryHTML(convertedImageUrl, patientName, 'image');
+        modalBody.innerHTML = galleryHTML;
+        updateNavigationButtons();
+    };
             
             img.onerror = function() {
                 // Image failed to load - try alternative Google Drive formats
@@ -4255,7 +4319,7 @@ function updatePatientImageButton() {
                         ` : ''}
                         
                         <div class="image-error">
-                            <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
+                            <h4>Failed to Load ${fileType === 'pdf' ? 'PDF Document' : 'Image'} ${currentImageIndex + 1}</h4>
                             <p>The image could not be loaded. This might be due to:</p>
                             <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
                                 <li>The image is not set to "Anyone with the link can view"</li>
@@ -4310,37 +4374,44 @@ function updatePatientImageButton() {
         }
 
         // Create gallery HTML with navigation
-        function createGalleryHTML(imageUrl, patientName) {
-            const showNavigation = patientImages.length > 1;
+function createGalleryHTML(mediaUrl, patientName, mediaType = 'image') {
+    const showNavigation = patientImages.length > 1;
+    
+    let mediaElement;
+    if (mediaType === 'pdf') {
+        mediaElement = `<iframe src="${mediaUrl}" class="patient-pdf" frameborder="0"></iframe>`;
+    } else {
+        mediaElement = `<img src="${mediaUrl}" alt="${patientName}" class="patient-image">`;
+    }
+    
+    return `
+        <div class="image-gallery">
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                    ❮ Previous
+                </button>
+            ` : ''}
             
-            return `
-                <div class="image-gallery">
-                    ${showNavigation ? `
-                        <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
-                            ❮ Previous
-                        </button>
-                    ` : ''}
-                    
-                    <img src="${imageUrl}" alt="${patientName}" class="patient-image">
-                    
-                    ${showNavigation ? `
-                        <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
-                            Next ❯
-                        </button>
-                    ` : ''}
-                </div>
-                
-                ${showNavigation ? `
-                    <div class="gallery-indicators">
-                        ${patientImages.map((_, index) => `
-                            <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
-                                    onclick="loadImageAtIndex(${index})">
-                            </button>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            `;
-        }
+            ${mediaElement}
+            
+            ${showNavigation ? `
+                <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                    Next ❯
+                </button>
+            ` : ''}
+        </div>
+        
+        ${showNavigation ? `
+            <div class="gallery-indicators">
+                ${patientImages.map((_, index) => `
+                    <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                            onclick="loadImageAtIndex(${index})">
+                    </button>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+}
 
         // Navigation functions
         function nextImage() {
@@ -6115,6 +6186,8 @@ function removeAvatarHighlights() {
     </script>
 </body>
 </html>
+
+
 
 
 
