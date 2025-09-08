@@ -4107,6 +4107,8 @@ function loadTeamMemberVoices() {
 // Update patient image button state based on scenario
 function updatePatientImageButton() {
     const button = document.getElementById('patientImageBtn');
+
+     const button = document.getElementById('patientImageBtn');
     
     if (!currentScenario) {
         // No scenario selected
@@ -4189,10 +4191,22 @@ if (hasImages || hasDocs) {
 
         // Show patient image modal with gallery functionality
        function showPatientImage() {
-    if (!currentScenario || (patientImages.length === 0 && (!window.patientDocs || window.patientDocs.length === 0))) {
-        showStatus('No scenario selected or no media available', 'error');
-        return;
-    }
+    // Debug what we have
+console.log('showPatientImage called');
+console.log('currentScenario exists:', !!currentScenario);
+console.log('patientImages length:', patientImages.length);
+console.log('patientDocs length:', window.patientDocs ? window.patientDocs.length : 'undefined');
+
+if (!currentScenario) {
+    showStatus('No scenario selected', 'error');
+    return;
+}
+
+if (patientImages.length === 0 && (!window.patientDocs || window.patientDocs.length === 0)) {
+    showStatus('No media available for this scenario', 'error');
+    debugScenarioData(); // Call our debug function
+    return;
+}
     
     // Reset to first item
     currentImageIndex = 0;
@@ -6350,10 +6364,25 @@ function removeAvatarHighlights() {
         }
     });
 }
+
+        // Add this anywhere in your script section for debugging
+function debugScenarioData() {
+    console.log('=== SCENARIO DEBUG ===');
+    console.log('currentScenario exists:', !!currentScenario);
+    if (currentScenario) {
+        console.log('Patient Image field:', currentScenario['Patient Image']);
+        console.log('All scenario keys:', Object.keys(currentScenario));
+        console.log('Full scenario object:', currentScenario);
+    }
+    console.log('patientImages array:', patientImages);
+    console.log('window.patientDocs array:', window.patientDocs);
+    console.log('===================');
+}
         
     </script>
 </body>
 </html>
+
 
 
 
