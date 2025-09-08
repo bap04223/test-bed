@@ -4452,6 +4452,8 @@ function loadAvatarInContainer(container, mediaUrl, isVideo, containerId, charac
                 <div class="avatar-name">${characterName}</div>
             `;
             console.log(`${characterName} avatar video loaded successfully:`, convertedUrl);
+            console.log(`Character name being displayed: ${characterName}`);
+            console.log(`Container ID: ${containerId}`);
         };
         
         video.onerror = function() {
@@ -6204,6 +6206,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
