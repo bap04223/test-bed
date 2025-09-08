@@ -4106,9 +4106,9 @@ function loadTeamMemberVoices() {
         
 // Update patient image button state based on scenario
 function updatePatientImageButton() {
+      console.log('updatePatientImageButton called, currentScenario:', !!currentScenario);
+    
     const button = document.getElementById('patientImageBtn');
-
-     const button = document.getElementById('patientImageBtn');
     
     if (!currentScenario) {
         // No scenario selected
@@ -6382,6 +6382,7 @@ function debugScenarioData() {
     </script>
 </body>
 </html>
+
 
 
 
