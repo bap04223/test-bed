@@ -2063,6 +2063,14 @@ Load Scenario Sets
                 <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
             </div>
         </div>
+        
+        <!-- Second Avatar Image Container -->
+        <div class="avatar-container" id="avatarContainer2" style="display: block;">
+            <div class="avatar-placeholder">
+                <div class="avatar-placeholder-icon">👤</div>
+                <div class="avatar-name no-avatar">Select a scenario to load second avatar</div>
+            </div>
+        </div>
     </div>
 </div>
 </div>
@@ -4367,99 +4375,178 @@ function updatePatientImageButton() {
             modal.classList.remove('show');
         }
         // Load and display avatar video or image
-        function loadAvatarImage() {
-            const avatarContainer = document.getElementById('avatarContainer');
-            
-            if (!currentScenario) {
-                hideAvatar();
-                return;
+      function loadAvatarImage() {
+    const avatarContainer = document.getElementById('avatarContainer');
+    const avatarContainer2 = document.getElementById('avatarContainer2');
+    
+    if (!currentScenario) {
+        hideAvatar();
+        return;
+    }
+    
+    // Check for idle animation URL first (column AA)
+    const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
+                           currentScenario['Idle Animation'] ||
+                           currentScenario['Animation URL'] ||
+                           currentScenario['Video URL'];
+    
+    // Check for static avatar URL as fallback
+    const avatarUrl = currentScenario['Avatar URL'] || 
+                     currentScenario['Avatar'] ||
+                     currentScenario['Avatar Image'] ||
+                     currentScenario['Patient Avatar'];
+    
+    // Check for second avatar URLs
+    const idleAnimationUrl2 = currentScenario['Idle Animation URL 2'] || 
+                             currentScenario['Idle Animation 2'] ||
+                             currentScenario['Animation URL 2'] ||
+                             currentScenario['Video URL 2'];
+    
+    const avatarUrl2 = currentScenario['Avatar URL 2'] || 
+                      currentScenario['Avatar 2'] ||
+                      currentScenario['Avatar Image 2'] ||
+                      currentScenario['Patient Avatar 2'];
+    
+    // Load first avatar
+    const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
+    const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
+    
+    if (mediaUrl && mediaUrl.trim() !== '') {
+        loadAvatarInContainer(avatarContainer, mediaUrl, isVideo, 'avatarContainer');
+    } else {
+        hideAvatarContainer(avatarContainer, 'Select a scenario to load patient avatar');
+    }
+    
+    // Load second avatar
+    const mediaUrl2 = idleAnimationUrl2 && idleAnimationUrl2.trim() !== '' ? idleAnimationUrl2 : avatarUrl2;
+    const isVideo2 = idleAnimationUrl2 && idleAnimationUrl2.trim() !== '';
+    
+    if (mediaUrl2 && mediaUrl2.trim() !== '') {
+        loadAvatarInContainer(avatarContainer2, mediaUrl2, isVideo2, 'avatarContainer2');
+    } else {
+        hideAvatarContainer(avatarContainer2, 'Select a scenario to load second avatar');
+    }
+}
+
+        // Helper function to load avatar in specific container
+function loadAvatarInContainer(container, mediaUrl, isVideo, containerId) {
+    // Show container and loading state
+    container.style.display = 'block';
+    container.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
+    
+    // Convert Google Drive URLs if needed
+    const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
+    
+    const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
+    
+    if (isVideo) {
+        // Create video element for idle animation
+        const video = document.createElement('video');
+        
+        video.oncanplaythrough = function() {
+            // Video loaded successfully
+            container.innerHTML = `
+                <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
+                    Your browser does not support the video tag.
+                </video>
+                <div class="avatar-name">${patientName}</div>
+            `;
+            console.log('Avatar video loaded successfully:', convertedUrl);
+        };
+        
+        video.onerror = function() {
+            // Try alternative Google Drive format if applicable
+            if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
+                console.log('First video format failed, trying alternative...');
+                video.hasTriedAlternative = true;
+                
+                const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    console.log('Trying alternative video URL:', alternativeUrl);
+                    video.src = alternativeUrl;
+                    return;
+                }
             }
             
-            // Check for idle animation URL first (column AA)
-            const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
-                                   currentScenario['Idle Animation'] ||
-                                   currentScenario['Animation URL'] ||
-                                   currentScenario['Video URL'];
+            // Video failed to load, try fallback to static image if available
+            console.log('Video failed, showing error message');
+            container.innerHTML = `
+                <div class="avatar-error">
+                    Avatar video could not be loaded.<br>
+                    <small>Check URL: ${mediaUrl}</small>
+                </div>
+                <div class="avatar-name">${patientName}</div>
+            `;
+            console.error('Avatar video failed to load:', mediaUrl);
+        };
+        
+        // Start loading the video
+        video.src = convertedUrl;
+    } else {
+        // Load static image
+        loadStaticAvatarInContainer(container, mediaUrl, patientName);
+    }
+}
+
+// Helper function to load static avatar image in specific container
+function loadStaticAvatarInContainer(container, avatarUrl, patientName) {
+    const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+    
+    // Create image element
+    const img = new Image();
+    
+    img.onload = function() {
+        // Image loaded successfully
+        container.innerHTML = `
+            <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
+            <div class="avatar-name">${patientName}</div>
+        `;
+        console.log('Avatar image loaded successfully:', convertedUrl);
+    };
+    
+    img.onerror = function() {
+        // Try alternative Google Drive format if applicable
+        if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+            console.log('First avatar format failed, trying alternative...');
+            img.hasTriedAlternative = true;
             
-            // Check for static avatar URL as fallback
-            const avatarUrl = currentScenario['Avatar URL'] || 
-                             currentScenario['Avatar'] ||
-                             currentScenario['Avatar Image'] ||
-                             currentScenario['Patient Avatar'];
-            
-            // Use idle animation if available, otherwise use static image
-            const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
-            const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
-            
-            if (!mediaUrl || mediaUrl.trim() === '') {
-                hideAvatar();
+            const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const fileId = fileIdMatch[1];
+                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log('Trying alternative avatar URL:', alternativeUrl);
+                img.src = alternativeUrl;
                 return;
-            }
-            
-            // Show container and loading state
-            avatarContainer.style.display = 'block';
-            avatarContainer.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
-            
-            // Convert Google Drive URLs if needed
-            const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
-            
-            const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
-            
-            if (isVideo) {
-                // Create video element for idle animation
-                const video = document.createElement('video');
-                
-                video.oncanplaythrough = function() {
-                    // Video loaded successfully
-                    avatarContainer.innerHTML = `
-                        <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
-                            Your browser does not support the video tag.
-                        </video>
-                        <div class="avatar-name">${patientName}</div>
-                    `;
-                    console.log('Avatar video loaded successfully:', convertedUrl);
-                };
-                
-                video.onerror = function() {
-                    // Try alternative Google Drive format if applicable
-                    if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
-                        console.log('First video format failed, trying alternative...');
-                        video.hasTriedAlternative = true;
-                        
-                        const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                        if (fileIdMatch && fileIdMatch[1]) {
-                            const fileId = fileIdMatch[1];
-                            const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                            console.log('Trying alternative video URL:', alternativeUrl);
-                            video.src = alternativeUrl;
-                            return;
-                        }
-                    }
-                    
-                    // Video failed to load, try fallback to static image if available
-                    if (avatarUrl && avatarUrl.trim() !== '') {
-                        console.log('Video failed, falling back to static avatar image');
-                        loadStaticAvatar(avatarUrl, patientName);
-                    } else {
-                        // No fallback available
-                        avatarContainer.innerHTML = `
-                            <div class="avatar-error">
-                                Avatar video could not be loaded.<br>
-                                <small>Check URL: ${mediaUrl}</small>
-                            </div>
-                            <div class="avatar-name">${patientName}</div>
-                        `;
-                        console.error('Avatar video failed to load:', mediaUrl);
-                    }
-                };
-                
-                // Start loading the video
-                video.src = convertedUrl;
-            } else {
-                // Load static image
-                loadStaticAvatar(mediaUrl, patientName);
             }
         }
+        
+        // Image failed to load completely
+        container.innerHTML = `
+            <div class="avatar-error">
+                Avatar could not be loaded.<br>
+                <small>Check URL: ${avatarUrl}</small>
+            </div>
+            <div class="avatar-name">${patientName}</div>
+        `;
+        console.error('Avatar failed to load:', avatarUrl);
+    };
+    
+    // Start loading the image
+    img.src = convertedUrl;
+}
+
+// Helper function to hide specific avatar container
+function hideAvatarContainer(container, placeholderText) {
+    container.style.display = 'block';
+    container.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">${placeholderText}</div>
+        </div>
+    `;
+}
         
         // Helper function to load static avatar image
         function loadStaticAvatar(avatarUrl, patientName) {
@@ -4517,6 +4604,15 @@ function updatePatientImageButton() {
         <div class="avatar-placeholder">
             <div class="avatar-placeholder-icon">👤</div>
             <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
+        </div>
+    `;
+    
+    const avatarContainer2 = document.getElementById('avatarContainer2');
+    avatarContainer2.style.display = 'block';
+    avatarContainer2.innerHTML = `
+        <div class="avatar-placeholder">
+            <div class="avatar-placeholder-icon">👤</div>
+            <div class="avatar-name no-avatar">Select a scenario to load second avatar</div>
         </div>
     `;
 }
@@ -5989,6 +6085,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
