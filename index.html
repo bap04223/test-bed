@@ -4126,8 +4126,8 @@ const imageData = currentScenario['Patient Image'] ||
                  currentScenario['Picture URL'] ||
                  currentScenario['Picture'];
 
-// Check for Google Doc URL
-const docData = currentScenario['Patient Image'] || 
+// Check for Google Doc URL - ALSO check the Patient Image field for docs
+const docData = currentScenario['Patient Document'] || 
                currentScenario['Document URL'] || 
                currentScenario['Google Doc'] || 
                currentScenario['Doc URL'] ||
@@ -6354,6 +6354,7 @@ function removeAvatarHighlights() {
     </script>
 </body>
 </html>
+
 
 
 
