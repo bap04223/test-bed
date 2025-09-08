@@ -21,7 +21,7 @@
     --primary-hover: #4f46e5;
     --secondary-color: #10b981;
     --danger-color: #ef4444;
-    --background: #0f0f23;
+    --background: #0f0f23; //
     --card-background: #1a1a2e;
     --text-primary: #e2e8f0;
     --text-secondary: #94a3b8;
@@ -4389,6 +4389,11 @@ function updatePatientImageButton() {
     const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
     
 // Get team member names for labels - use names from teamMembers object if available
+    console.log('Available scenario columns:', Object.keys(currentScenario));
+    console.log('Team Member 1 Name value:', currentScenario['Team Member 1 Name']);
+    console.log('Team Member 2 Name value:', currentScenario['Team Member 2 Name']);
+    console.log('teamMembers object:', teamMembers);
+    
     const teamMember1Name = (teamMembers.member1 && teamMembers.member1.name !== 'Healthcare Professional') 
                            ? teamMembers.member1.name 
                            : (currentScenario['Team Member 1 Name'] || 
@@ -4399,6 +4404,9 @@ function updatePatientImageButton() {
                            : (currentScenario['Team Member 2 Name'] || 
                               currentScenario['Name 2'] || 
                               'Team Member 2');
+                              
+    console.log('Final teamMember1Name:', teamMember1Name);
+    console.log('Final teamMember2Name:', teamMember2Name);
     
    // Load Team Member 1 in top container
     if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
@@ -6039,6 +6047,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
