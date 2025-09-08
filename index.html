@@ -4388,13 +4388,13 @@ function updatePatientImageButton() {
     const teamMember1IdleAnimation = currentScenario['Team Member 1 Idle Animation'];
     const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
     
-    // Get team member names for labels
-    const teamMember1Name = currentScenario['Team Member 1 Name'] || 
-                           currentScenario['Name 1'] || 
-                           'Team Member 1';
-    const teamMember2Name = currentScenario['Team Member 2 Name'] || 
-                           currentScenario['Name 2'] || 
-                           'Team Member 2';
+    // Get team member names for labels (from columns B and D)
+    const teamMember1Name = currentScenario['Team Member 1 Name'] || 'Team Member 1';
+    const teamMember2Name = currentScenario['Team Member 2 Name'] || 'Team Member 2';
+    
+    console.log('Team Member 1 Name from sheet:', teamMember1Name);
+    console.log('Team Member 2 Name from sheet:', teamMember2Name);
+    console.log('All scenario data:', currentScenario);
     
     // Load Team Member 1 in top container
     if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
@@ -6204,6 +6204,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
