@@ -2676,9 +2676,9 @@ function updateSessionInfo() {
     document.getElementById('browserTtsBtn').classList.toggle('active', provider === 'browser');
     document.getElementById('elevenlabsTtsBtn').classList.toggle('active', provider === 'elevenlabs');
     
-    // Show/hide settings - ElevenLabs settings always shown but contents are hidden
+    // Show/hide settings - Hide ElevenLabs settings completely
     document.getElementById('browserTtsSettings').style.display = provider === 'browser' ? 'block' : 'none';
-    document.getElementById('elevenlabsSettings').style.display = provider === 'elevenlabs' ? 'block' : 'none';
+    document.getElementById('elevenlabsSettings').style.display = 'none'; // Always hidden
     
     // Save preference
     saveConfig();
@@ -5989,6 +5989,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
