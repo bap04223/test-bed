@@ -1760,6 +1760,25 @@ a:hover {
         padding: 10px 15px;
     }
 }
+
+        .avatar-name.speaking {
+    background: var(--success-color) !important;
+    color: white !important;
+    animation: gentle-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    transform: scale(1.05);
+}
+
+@keyframes gentle-pulse {
+    0%, 100% { 
+        opacity: 1; 
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+    50% { 
+        opacity: 0.8; 
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    }
+}
              
   </style>
        
@@ -5014,6 +5033,9 @@ async function speakAsTeamMember(text, roleOrName) {
     // Show visual indicator of who's speaking
     showSpeakerIndicator(member.name, member.role);
     
+    // Highlight the speaking avatar's name box
+    highlightSpeakingAvatar(member.name);
+    
     // Apply team member's voice settings and wait for completion
     if (member.provider === 'browser' && member.voice) {
         await speakWithTeamMemberBrowserVoice(text, member.voice);
@@ -5023,6 +5045,9 @@ async function speakAsTeamMember(text, roleOrName) {
         // Use current provider with original settings
         speakText(text);
     }
+    
+    // Remove highlight when done speaking
+    removeAvatarHighlights();
 }
 
 // Helper function to speak with specific browser voice
@@ -6038,10 +6063,59 @@ function closeHelpModal(event) {
     const modal = document.getElementById('helpModal');
     modal.classList.remove('show');
 }
+
+        // Function to highlight the speaking avatar's name box
+function highlightSpeakingAvatar(speakerName) {
+    // Remove any existing highlights first
+    removeAvatarHighlights();
+    
+    // Determine which container to highlight based on speaker name
+    let targetContainer = null;
+    
+    // Handle single character scenarios
+    if (speakerName === 'single') {
+        targetContainer = document.getElementById('avatarContainer');
+    } else {
+        // Check both team members to find the matching name
+        if (teamMembers.member1 && teamMembers.member1.name === speakerName) {
+            targetContainer = document.getElementById('avatarContainer');
+        } else if (teamMembers.member2 && teamMembers.member2.name === speakerName) {
+            targetContainer = document.getElementById('avatarContainer2');
+        }
+    }
+    
+    if (targetContainer) {
+        // Add speaking class to the name box
+        const nameBox = targetContainer.querySelector('.avatar-name');
+        if (nameBox) {
+            nameBox.classList.add('speaking');
+        }
+        
+        console.log(`Highlighted name box for ${speakerName}`);
+    }
+}
+
+// Function to remove all avatar highlights
+function removeAvatarHighlights() {
+    const containers = [
+        document.getElementById('avatarContainer'),
+        document.getElementById('avatarContainer2')
+    ];
+    
+    containers.forEach(container => {
+        if (container) {
+            const nameBox = container.querySelector('.avatar-name');
+            if (nameBox) {
+                nameBox.classList.remove('speaking');
+            }
+        }
+    });
+}
         
     </script>
 </body>
 </html>
+
 
 
 
