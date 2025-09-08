@@ -2105,28 +2105,16 @@ Load Scenario Sets
 
 
       <!-- Patient Image Button -->
-        <!-- Patient Media Buttons Container -->
-<div style="display: flex; gap: 10px; margin-top: 10px;">
-    <button 
-        class="patient-image-btn disabled" 
-        id="patientImageBtn"
-        onclick="showPatientImage()"
-        disabled
-        style="flex: 1; margin-top: 0;"
-    >
-        📷 No Images
-    </button>
-    
-    <button 
-        class="patient-image-btn disabled" 
-        id="patientDocBtn"
-        onclick="showPatientDoc()"
-        disabled
-        style="flex: 1; margin-top: 0;"
-    >
-        📄 No Document
-    </button>
-</div>
+<!-- Single Patient Media Button -->
+<button 
+    class="patient-image-btn disabled" 
+    id="patientImageBtn"
+    onclick="showPatientImage()"
+    disabled
+    style="width: 100%; margin-top: 10px;"
+>
+    📷 No Scenario Selected
+</button>
         
        <!-- Avatar Image Container -->
         <div class="avatar-container" id="avatarContainer" style="display: block;">
@@ -6486,6 +6474,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
