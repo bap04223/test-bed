@@ -4840,50 +4840,55 @@ function clearScenarioState() {
 } 
  
 // Helper function to load static avatar image in specific container
-function loadStaticAvatarInContainer(container, avatarUrl, characterName) {
-    const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-    
-    // Create image element
-    const img = new Image();
-    
-    img.onload = function() {
-        // Image loaded successfully
-        container.innerHTML = `
-            <img src="${convertedUrl}" alt="${characterName} Avatar" class="avatar-image">
-            <div class="avatar-name">${characterName}</div>
-        `;
-        console.log(`${characterName} avatar image loaded successfully:`, convertedUrl);
-    };
-    
-    img.onerror = function() {
-        // Try alternative Google Drive format if applicable
-        if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-            console.log(`First ${characterName} avatar format failed, trying alternative...`);
-            img.hasTriedAlternative = true;
-            
-            const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (fileIdMatch && fileIdMatch[1]) {
-                const fileId = fileIdMatch[1];
-                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                console.log(`Trying alternative ${characterName} avatar URL:`, alternativeUrl);
-                img.src = alternativeUrl;
-                return;
-            }
-        }
+// Helper function to load static avatar image in specific container (Promise version)
+function loadStaticAvatarInContainerPromise(container, avatarUrl, characterName) {
+    return new Promise((resolve, reject) => {
+        const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
         
-        // Image failed to load completely
-        container.innerHTML = `
-            <div class="avatar-error">
-                ${characterName} avatar could not be loaded.<br>
-                <small>Check URL: ${avatarUrl}</small>
-            </div>
-            <div class="avatar-name">${characterName}</div>
-        `;
-        console.error(`${characterName} avatar failed to load:`, avatarUrl);
-    };
-    
-    // Start loading the image
-    img.src = convertedUrl;
+        // Create image element
+        const img = new Image();
+        
+        img.onload = function() {
+            // Image loaded successfully
+            container.innerHTML = `
+                <img src="${convertedUrl}" alt="${characterName} Avatar" class="avatar-image">
+                <div class="avatar-name">${characterName}</div>
+            `;
+            console.log(`${characterName} avatar image loaded successfully:`, convertedUrl);
+            resolve();
+        };
+        
+        img.onerror = function() {
+            // Try alternative Google Drive format if applicable
+            if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                console.log(`First ${characterName} avatar format failed, trying alternative...`);
+                img.hasTriedAlternative = true;
+                
+                const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch && fileIdMatch[1]) {
+                    const fileId = fileIdMatch[1];
+                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                    console.log(`Trying alternative ${characterName} avatar URL:`, alternativeUrl);
+                    img.src = alternativeUrl;
+                    return;
+                }
+            }
+            
+            // Image failed to load completely
+            container.innerHTML = `
+                <div class="avatar-error">
+                    ${characterName} avatar could not be loaded.<br>
+                    <small>Check URL: ${avatarUrl}</small>
+                </div>
+                <div class="avatar-name">${characterName}</div>
+            `;
+            console.error(`${characterName} avatar failed to load:`, avatarUrl);
+            reject(new Error(`Failed to load ${characterName} image`));
+        };
+        
+        // Start loading the image
+        img.src = convertedUrl;
+    });
 }
 
 // Helper function to hide specific avatar container
@@ -6501,6 +6506,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
