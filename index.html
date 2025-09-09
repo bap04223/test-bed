@@ -2571,11 +2571,11 @@ Load Scenario Sets
 
         // ===== MULTI-IMAGE GALLERY VARIABLES =====
 let currentImageIndex = 0;
-let patientImages = [];
+
 
 // Ensure patientDocs is properly initialized
 if (typeof window.patientDocs === 'undefined') {
-    window.patientDocs = [];
+   
 }
         
         // ===== INITIALIZATION =====
@@ -4122,6 +4122,15 @@ function loadTeamMemberVoices() {
         
 // Update patient image button state based on scenario
 function updatePatientImageButton() {
+    // Initialize arrays once at the start
+    patientImages = [];
+    if (typeof window.patientDocs === 'undefined') {
+        
+    } else {
+       
+    }
+        
+function updatePatientImageButton() {
       console.log('updatePatientImageButton called, currentScenario:', !!currentScenario);
     
     const button = document.getElementById('patientImageBtn');
@@ -4170,7 +4179,7 @@ if (imageData && imageData.trim() !== '') {
         .filter(url => url !== '');
     hasImages = patientImages.length > 0;
 } else {
-    patientImages = [];
+    
 }
 
     console.log('Processed patientImages:', patientImages);
@@ -4188,7 +4197,7 @@ if (docData && docData.trim() !== '') {
 
 // Store docs globally for access in modal (ensure it's always an array)
 if (typeof window.patientDocs === 'undefined') {
-    window.patientDocs = [];
+   
 }
 window.patientDocs = patientDocs || [];
 
@@ -4744,9 +4753,9 @@ function loadAvatarInContainer(container, mediaUrl, characterName) {
         // Clear all global state when switching scenarios
 function clearScenarioState() {
     // Clear media arrays
-    patientImages = [];
+   
     if (window.patientDocs) {
-        window.patientDocs = [];
+        
     }
     
     // Reset image index
@@ -6427,6 +6436,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
