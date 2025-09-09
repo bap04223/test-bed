@@ -4626,17 +4626,6 @@ function loadAvatarImage() {
         return;
     }
     
-    // Clear both containers completely first
-    if (avatarContainer) {
-        avatarContainer.innerHTML = '';
-        avatarContainer.style.display = 'block';
-    }
-    if (avatarContainer2) {
-        avatarContainer2.innerHTML = '';
-        avatarContainer2.style.display = 'block';
-    }
-    
-    // Get team member data
     const teamMember1IdleAnimation = currentScenario['Team Member 1 Idle Animation'];
     const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
     
@@ -4647,28 +4636,24 @@ function loadAvatarImage() {
                            ? teamMembers.member2.name 
                            : (currentScenario['Team Member 2 Name'] || 'Team Member 2');
     
-    console.log('Loading avatars:', {
-        member1: teamMember1Name,
-        member2: teamMember2Name,
-        animation1: teamMember1IdleAnimation,
-        animation2: teamMember2IdleAnimation
-    });
-    
-    // Load first avatar immediately
-    if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
-        loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, teamMember1Name);
+    // Direct HTML insertion - no JavaScript events or timing issues
+    if (teamMember1IdleAnimation) {
+        avatarContainer.innerHTML = `
+            <video src="${teamMember1IdleAnimation}" class="avatar-video" autoplay loop muted playsinline></video>
+            <div class="avatar-name">${teamMember1Name}</div>
+        `;
     } else {
         hideAvatarContainer(avatarContainer, `No animation for ${teamMember1Name}`);
     }
     
-    // Load second avatar with delay to prevent conflicts
-    setTimeout(() => {
-        if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
-            loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, teamMember2Name);
-        } else {
-            hideAvatarContainer(avatarContainer2, `No animation for ${teamMember2Name}`);
-        }
-    }, 500); // 500ms delay between loads
+    if (teamMember2IdleAnimation) {
+        avatarContainer2.innerHTML = `
+            <video src="${teamMember2IdleAnimation}" class="avatar-video" autoplay loop muted playsinline></video>
+            <div class="avatar-name">${teamMember2Name}</div>
+        `;
+    } else {
+        hideAvatarContainer(avatarContainer2, `No animation for ${teamMember2Name}`);
+    }
 }
 
         // Helper function to load avatar in specific container
@@ -6427,6 +6412,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
