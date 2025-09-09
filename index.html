@@ -4005,14 +4005,17 @@ function setButtonPending(buttonId, pendingText = null) {
             // Load team member configurations first
             loadTeamMemberVoices();
             
-            // Apply scenario-specific voice settings
-            applyScenarioVoiceSettings();
-            
-            console.log('Selected scenario:', currentScenario);
-            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-            
-            // Update patient image button based on image availability
-            updatePatientImageButton();
+           // Apply scenario-specific voice settings
+applyScenarioVoiceSettings();
+
+console.log('Selected scenario:', currentScenario);
+showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+
+// Update patient image button based on image availability
+updatePatientImageButton();
+
+// Load avatar animations
+loadAvatarImage();
 
           
             
@@ -4620,6 +4623,17 @@ function previousImage() {
         }
         // Load and display avatar video or image
 function loadAvatarImage() {
+
+ console.log('=== AVATAR DEBUG ===');
+    console.log('currentScenario exists:', !!currentScenario);
+    if (currentScenario) {
+        console.log('Team Member 1 Idle Animation:', currentScenario['Team Member 1 Idle Animation']);
+        console.log('Team Member 2 Idle Animation:', currentScenario['Team Member 2 Idle Animation']);
+        console.log('All scenario keys:', Object.keys(currentScenario));
+    }
+    console.log('teamMembers:', teamMembers);
+    console.log('==================');
+    
     const avatarContainer = document.getElementById('avatarContainer');
     const avatarContainer2 = document.getElementById('avatarContainer2');
     
@@ -6408,6 +6422,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
