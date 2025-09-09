@@ -4675,14 +4675,26 @@ function loadAvatarVideo(container, videoUrl, memberName) {
     container.innerHTML = '<div class="avatar-loading">Loading avatar...</div>';
     
     // Create video element programmatically
-    const video = document.createElement('video');
-    video.className = 'avatar-video';
-    video.src = videoUrl;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = 'metadata';
+const video = document.createElement('video');
+video.className = 'avatar-video';
+video.src = videoUrl;
+video.autoplay = true;
+video.loop = true;
+video.muted = true;
+video.playsInline = true;
+video.preload = 'metadata';
+
+// Add debugging for the video URL
+console.log('Attempting to load video:', videoUrl, 'for:', memberName, 'in container:', container.id);
+
+// Test if URL is accessible
+fetch(videoUrl, { method: 'HEAD' })
+    .then(response => {
+        console.log('URL accessibility test for', memberName, '- Status:', response.status, response.ok ? 'OK' : 'FAILED');
+    })
+    .catch(error => {
+        console.error('URL accessibility test failed for', memberName, ':', error);
+    });
     
     // Create name element
     const nameDiv = document.createElement('div');
@@ -4690,28 +4702,30 @@ function loadAvatarVideo(container, videoUrl, memberName) {
     nameDiv.textContent = memberName;
     
     // Handle successful load
-    video.addEventListener('loadeddata', function() {
-        console.log('Video loaded successfully for:', memberName);
-        container.innerHTML = '';
-        container.appendChild(video);
-        container.appendChild(nameDiv);
-        
-        // Force play if needed
-        video.play().catch(e => {
-            console.log('Video autoplay blocked, user interaction needed:', e);
-        });
+video.addEventListener('loadeddata', function() {
+    console.log('Video loaded successfully for:', memberName, 'in container:', container.id);
+    container.innerHTML = '';
+    container.appendChild(video);
+    container.appendChild(nameDiv);
+    
+    // Force play if needed
+    video.play().catch(e => {
+        console.log('Video autoplay blocked, user interaction needed:', e);
     });
+});
     
     // Handle errors
-    video.addEventListener('error', function(e) {
-        console.error('Video failed to load for:', memberName, e);
-        container.innerHTML = `
-            <div class="avatar-error">
-                ${memberName} avatar failed to load
-            </div>
-            <div class="avatar-name">${memberName}</div>
-        `;
-    });
+video.addEventListener('error', function(e) {
+    console.error('Video failed to load for:', memberName, 'in container:', container.id, e);
+    console.error('Video URL that failed:', videoUrl);
+    container.innerHTML = `
+        <div class="avatar-error">
+            ${memberName} avatar failed to load<br>
+            <small>URL: ${videoUrl}</small>
+        </div>
+        <div class="avatar-name">${memberName}</div>
+    `;
+});
     
     // Timeout fallback
     setTimeout(() => {
@@ -6477,6 +6491,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
