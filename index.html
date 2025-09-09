@@ -4161,36 +4161,38 @@ console.log('docData:', docData);
 console.log('Image URL field value:', currentScenario['Image URL']);
 console.log('===================================');
     
-    // Parse image URLs
+  // Parse image URLs
 let hasImages = false;
+let currentPatientImages = [];
 if (imageData && imageData.trim() !== '') {
-    patientImages = imageData
+    currentPatientImages = imageData
         .split(/[,;\n\r]+/)
         .map(url => url.trim())
         .filter(url => url !== '');
-    hasImages = patientImages.length > 0;
-} else {
-    patientImages = [];
+    hasImages = currentPatientImages.length > 0;
+    patientImages = currentPatientImages;
 }
 
     console.log('Processed patientImages:', patientImages);
 
 // Parse document URLs
 let hasDocs = false;
-let patientDocs = [];
+let currentPatientDocs = [];
 if (docData && docData.trim() !== '') {
-    patientDocs = docData
+    currentPatientDocs = docData
         .split(/[,;\n\r]+/)
         .map(url => url.trim())
         .filter(url => url !== '');
-    hasDocs = patientDocs.length > 0;
+    hasDocs = currentPatientDocs.length > 0;
 }
 
 // Store docs globally for access in modal (ensure it's always an array)
 if (typeof window.patientDocs === 'undefined') {
     window.patientDocs = [];
 }
-window.patientDocs = patientDocs || [];
+if (currentPatientDocs.length > 0) {
+    window.patientDocs = currentPatientDocs;
+}
 
 // Update button based on available content
 if (hasImages || hasDocs) {
@@ -4198,12 +4200,12 @@ if (hasImages || hasDocs) {
     let buttonText = '👁️ View Patient ';
     let items = [];
     
-    if (hasImages) {
-        items.push(patientImages.length === 1 ? 'Image' : `Images (${patientImages.length})`);
-    }
-    if (hasDocs) {
-        items.push(patientDocs.length === 1 ? 'Document' : `Documents (${patientDocs.length})`);
-    }
+   if (hasImages) {
+    items.push(currentPatientImages.length === 1 ? 'Image' : `Images (${currentPatientImages.length})`);
+}
+if (hasDocs) {
+    items.push(currentPatientDocs.length === 1 ? 'Document' : `Documents (${currentPatientDocs.length})`);
+}
     
     button.innerHTML = buttonText + items.join(' & ');
     button.disabled = false;
@@ -4728,12 +4730,6 @@ function loadAvatarInContainer(container, mediaUrl, characterName) {
 
         // Clear all global state when switching scenarios
 function clearScenarioState() {
-    // Clear media arrays
-    patientImages = [];
-    if (window.patientDocs) {
-        window.patientDocs = [];
-    }
-    
     // Reset image index
     currentImageIndex = 0;
     
@@ -6412,6 +6408,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
