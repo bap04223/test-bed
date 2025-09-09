@@ -4623,13 +4623,11 @@ function previousImage() {
         }
         // Load and display avatar video or image
 function loadAvatarImage() {
-
- console.log('=== AVATAR DEBUG ===');
+    console.log('=== AVATAR DEBUG ===');
     console.log('currentScenario exists:', !!currentScenario);
     if (currentScenario) {
         console.log('Team Member 1 Idle Animation:', currentScenario['Team Member 1 Idle Animation']);
         console.log('Team Member 2 Idle Animation:', currentScenario['Team Member 2 Idle Animation']);
-        console.log('All scenario keys:', Object.keys(currentScenario));
     }
     console.log('teamMembers:', teamMembers);
     console.log('==================');
@@ -4652,24 +4650,81 @@ function loadAvatarImage() {
                            ? teamMembers.member2.name 
                            : (currentScenario['Team Member 2 Name'] || 'Team Member 2');
     
-    // Direct HTML insertion - no JavaScript events or timing issues
-    if (teamMember1IdleAnimation) {
-        avatarContainer.innerHTML = `
-            <video src="${teamMember1IdleAnimation}" class="avatar-video" autoplay loop muted playsinline></video>
-            <div class="avatar-name">${teamMember1Name}</div>
-        `;
+    // Load first avatar
+    if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
+        console.log('Loading avatar 1:', teamMember1IdleAnimation);
+        loadAvatarVideo(avatarContainer, teamMember1IdleAnimation, teamMember1Name);
     } else {
+        console.log('No animation for team member 1');
         hideAvatarContainer(avatarContainer, `No animation for ${teamMember1Name}`);
     }
     
-    if (teamMember2IdleAnimation) {
-        avatarContainer2.innerHTML = `
-            <video src="${teamMember2IdleAnimation}" class="avatar-video" autoplay loop muted playsinline></video>
-            <div class="avatar-name">${teamMember2Name}</div>
-        `;
+    // Load second avatar
+    if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
+        console.log('Loading avatar 2:', teamMember2IdleAnimation);
+        loadAvatarVideo(avatarContainer2, teamMember2IdleAnimation, teamMember2Name);
     } else {
+        console.log('No animation for team member 2');
         hideAvatarContainer(avatarContainer2, `No animation for ${teamMember2Name}`);
     }
+}
+
+// New helper function to properly load avatar videos
+function loadAvatarVideo(container, videoUrl, memberName) {
+    // Clear container first
+    container.innerHTML = '<div class="avatar-loading">Loading avatar...</div>';
+    
+    // Create video element programmatically
+    const video = document.createElement('video');
+    video.className = 'avatar-video';
+    video.src = videoUrl;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    
+    // Create name element
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'avatar-name';
+    nameDiv.textContent = memberName;
+    
+    // Handle successful load
+    video.addEventListener('loadeddata', function() {
+        console.log('Video loaded successfully for:', memberName);
+        container.innerHTML = '';
+        container.appendChild(video);
+        container.appendChild(nameDiv);
+        
+        // Force play if needed
+        video.play().catch(e => {
+            console.log('Video autoplay blocked, user interaction needed:', e);
+        });
+    });
+    
+    // Handle errors
+    video.addEventListener('error', function(e) {
+        console.error('Video failed to load for:', memberName, e);
+        container.innerHTML = `
+            <div class="avatar-error">
+                ${memberName} avatar failed to load
+            </div>
+            <div class="avatar-name">${memberName}</div>
+        `;
+    });
+    
+    // Timeout fallback
+    setTimeout(() => {
+        if (container.innerHTML.includes('Loading avatar')) {
+            console.warn('Video load timeout for:', memberName);
+            container.innerHTML = `
+                <div class="avatar-error">
+                    ${memberName} avatar load timeout
+                </div>
+                <div class="avatar-name">${memberName}</div>
+            `;
+        }
+    }, 10000);
 }
 
         // Helper function to load avatar in specific container
@@ -6422,6 +6477,7 @@ function showPatientDoc() {
     </script>
 </body>
 </html>
+
 
 
 
