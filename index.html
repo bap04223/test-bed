@@ -3279,42 +3279,6 @@ function stopRecording() {
     }
 }
 
-function stopRecording() {
-    if (recordingState !== 'recording') {
-        return;
-    }
-    
-    if (currentSttProvider === 'deepgram') {
-        console.log('Stopping Deepgram recording...');
-        stopDeepgramRecording();
-        recordingState = 'processing';
-        updateTalkButton();
-        showStatus('Processing... Please wait', 'info');
-        
-        // Wait a moment for final transcript, then show review
-        setTimeout(() => {
-            if (fullTranscript.trim()) {
-                showReviewSection(fullTranscript.trim());
-            } else {
-                showStatus('No speech detected. Please try again.', 'error');
-                recordingState = 'stopped';
-                updateTalkButton();
-            }
-        }, 1000);
-        
-    } else {
-        // Browser STT
-        if (recognition) {
-            console.log('Stopping browser recording...');
-            forceStopRecognition = true;
-            recognition.stop();
-            recordingState = 'processing';
-            updateTalkButton();
-            showStatus('Processing... Please wait', 'info');
-        }
-    }
-}
-
 function updateTalkButton() {
     const button = document.getElementById('talkButton');
     
@@ -5753,6 +5717,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
