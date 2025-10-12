@@ -3290,13 +3290,13 @@ function startRecording() {
         pendingTranscript = '';
         
         if (isPressToTalkMode) {
-    // In press-to-talk mode, show connecting status
-    showStatus('Connecting to Deepgram...', 'info');
-} else {
+    // Show connecting status for BOTH modes
+showStatus('Connecting to Deepgram...', 'info');
+
+if (!isPressToTalkMode) {
+    // Only update review box in review mode
     document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
-    showStatus('Connecting to Deepgram...', 'info');
-}
-        
+}       
         recordingState = 'recording';
         updateTalkButton();
         
@@ -5840,5 +5840,6 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
