@@ -2834,12 +2834,7 @@ function stopDeepgramRecording() {
             deepgramSocket = null;
         }
         
-        // Process final transcript - DO NOT auto-send, let the review process handle it
-if (fullTranscript.trim()) {
-    console.log('Deepgram transcript ready for review:', fullTranscript);
-    // The timeout in stopRecording() will call showReviewSection()
-    // Do NOT call addMessage or sendToWebhook here
-}
+        console.log('Deepgram recording stopped. Final transcript:', fullTranscript);
     }, 1500);
 }
         
@@ -3249,32 +3244,42 @@ function stopRecording(autoSend = false) {
     // Store autoSend flag globally so recognition.onend can access it
     window.autoSendAfterRecording = autoSend;
     
-    if (currentSttProvider === 'deepgram') {
-        console.log('Stopping Deepgram recording...', autoSend ? '(auto-send)' : '');
-        stopDeepgramRecording();
-        recordingState = 'processing';
-        updateTalkButton();
-        showStatus('Processing... Please wait', 'info');
+if (currentSttProvider === 'deepgram') {
+    console.log('Stopping Deepgram recording...', autoSend ? '(auto-send)' : '');
+    stopDeepgramRecording();
+    recordingState = 'processing';
+    updateTalkButton();
+    showStatus('Processing... Please wait', 'info');
+    
+    // Wait longer for Deepgram to send final transcript (2000ms to be safe)
+    setTimeout(() => {
+        console.log('Deepgram processing complete. Transcript:', fullTranscript);
+        console.log('Auto-send:', autoSend, 'Review mode:', reviewModeEnabled);
         
-        // Wait a moment for final transcript
-        setTimeout(() => {
-            if (fullTranscript.trim()) {
-                if (autoSend) {
-                    // Skip review, send directly
-                    addMessage(fullTranscript.trim(), 'user');
-                    sendToWebhook(fullTranscript.trim());
-                    recordingState = 'stopped';
-                    fullTranscript = '';
-                    updateTalkButton();
-                } else {
-                    showReviewSection(fullTranscript.trim());
-                }
-            } else {
-                showStatus('No speech detected. Please try again.', 'error');
+        if (fullTranscript.trim()) {
+            if (autoSend && !reviewModeEnabled) {
+                // Skip review, send directly (only if review mode is OFF)
+                console.log('Auto-sending Deepgram transcript to webhook');
+                addMessage(fullTranscript.trim(), 'user');
+                sendToWebhook(fullTranscript.trim());
                 recordingState = 'stopped';
+                fullTranscript = '';
                 updateTalkButton();
+                // Hide live transcription
+                document.getElementById('liveTranscription').style.display = 'none';
+            } else {
+                console.log('Showing review section for Deepgram transcript');
+                showReviewSection(fullTranscript.trim());
             }
-        }, 1000);
+        } else {
+            console.error('No transcript received from Deepgram');
+            showStatus('No speech detected. Please try again.', 'error');
+            recordingState = 'stopped';
+            updateTalkButton();
+            // Hide live transcription
+            document.getElementById('liveTranscription').style.display = 'none';
+        }
+    }, 2000);
         
     } else {
         // Browser STT
@@ -5677,6 +5682,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
