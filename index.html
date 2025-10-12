@@ -2038,22 +2038,38 @@ Random Scenario
             </p>
         </div>
         
-        <!-- Control buttons with improved layout -->
-        <div class="button-group">
-            <button class="btn-secondary" onclick="clearChat()">
-                Clear Chat
-            </button>
-            <button class="btn-danger" onclick="submitConversation()">
-                Submit Chat
-            </button>
-            <button class="btn-info" onclick="exportConversation()">
-                Export Chat
-            </button>
-            <button class="btn-warning" onclick="newSession()">
-                New Session
-            </button>
-        </div>  
-        
+    <!-- Control buttons with improved layout -->
+<div class="button-group">
+    <button class="btn-secondary" onclick="clearChat()">
+        Clear Chat
+    </button>
+    <button class="btn-danger" onclick="submitConversation()">
+        Submit Chat
+    </button>
+    <button class="btn-info" onclick="exportConversation()">
+        Export Chat
+    </button>
+    <button class="btn-warning" onclick="newSession()">
+        New Session
+    </button>
+</div>
+
+<!-- Talk Button - Always Visible -->
+<div style="margin-top: 20px; text-align: center;">
+    <button 
+        class="btn-info" 
+        id="talkButton"
+        onmousedown="handleRecordStart(event)"
+        onmouseup="handleRecordStop(event)"
+        onmouseleave="handleRecordStop(event)"
+        ontouchstart="handleRecordStart(event)"
+        ontouchend="handleRecordStop(event)"
+        style="width: 100%; padding: 15px 20px; font-size: 18px; font-weight: 600;"
+    >
+        🎤 Press & Hold to Talk
+    </button>
+</div>
+
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
 <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
@@ -2063,17 +2079,6 @@ Random Scenario
 </div>
 
 <div class="review-buttons">
-<button 
-    class="btn-info" 
-    id="talkButton"
-    onmousedown="handleRecordStart(event)"
-    onmouseup="handleRecordStop(event)"
-    onmouseleave="handleRecordStop(event)"
-    ontouchstart="handleRecordStart(event)"
-    ontouchend="handleRecordStop(event)"
->
-    🎤 Press & Hold to Talk
-</button>
 <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
     Send Message
 </button>
@@ -5672,6 +5677,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
