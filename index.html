@@ -3111,7 +3111,7 @@ recognition.onend = function() {
                     recordingState = 'stopped';
                     updateTalkButton();
                 }
-            }, 800); // 800ms delay to allow transcript finalization
+            }, 1500); // 1500ms delay to allow transcript finalization
         } else {
             // In review mode, show review section immediately
             showReviewSection(fullTranscript.trim());
@@ -5840,6 +5840,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
