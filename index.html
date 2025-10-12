@@ -3242,6 +3242,105 @@ function toggleRecording() {
     }
 }
 
+function startRecording() {
+    if (currentSttProvider === 'deepgram') {
+        // Use Deepgram
+        if (!document.getElementById('deepgramApiKey').value) {
+            showStatus('Please enter Deepgram API key first', 'error');
+            return;
+        }
+        
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        synthesis.cancel();
+        
+        // Clear previous data
+        fullTranscript = '';
+        pendingTranscript = '';
+        
+        if (isPressToTalkMode) {
+            // In press-to-talk mode, show a simple indicator
+            showStatus('Recording... Release to send', 'info');
+        } else {
+            document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
+        }
+        
+        recordingState = 'recording';
+        updateTalkButton();
+        
+        startDeepgramRecording().then(success => {
+            if (!success) {
+                recordingState = 'stopped';
+                updateTalkButton();
+            }
+        });
+        
+    } else {
+        // Use browser STT
+        if (!recognition) {
+            showStatus('Speech recognition not available', 'error');
+            return;
+        }
+        
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        synthesis.cancel();
+        
+        // Clear previous data
+        fullTranscript = '';
+        pendingTranscript = '';
+        forceStopRecognition = false;
+        
+        if (!isPressToTalkMode) {
+            // Clear review box only in review mode
+            document.getElementById('reviewTranscript').textContent = 'No message to review yet';
+        }
+        
+        recordingState = 'recording';
+        updateTalkButton();
+        
+        try {
+            recognition.start();
+            if (isPressToTalkMode) {
+                showStatus('Recording... Release to send', 'info');
+            } else {
+                showStatus('Recording... Click "Stop Recording" when finished', 'info');
+            }
+        } catch (error) {
+            console.error('Error starting recognition:', error);
+            showStatus('Error starting recording', 'error');
+            recordingState = 'stopped';
+            updateTalkButton();
+        }
+    }
+}        
+
 function stopRecording() {
     if (recordingState !== 'recording') {
         return;
@@ -5722,6 +5821,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
