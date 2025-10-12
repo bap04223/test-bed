@@ -871,7 +871,7 @@ select option {
     background: linear-gradient(135deg, #1e293b, #334155);
     border: 2px solid var(--warning-color);
     border-radius: 8px;
-    display: none; /* Hidden by default for push-to-talk */
+    display: block;
     opacity: 1;
     box-shadow: 0 0 20px var(--accent-glow);
 }
@@ -2038,38 +2038,22 @@ Random Scenario
             </p>
         </div>
         
-    <!-- Control buttons with improved layout -->
-<div class="button-group">
-    <button class="btn-secondary" onclick="clearChat()">
-        Clear Chat
-    </button>
-    <button class="btn-danger" onclick="submitConversation()">
-        Submit Chat
-    </button>
-    <button class="btn-info" onclick="exportConversation()">
-        Export Chat
-    </button>
-    <button class="btn-warning" onclick="newSession()">
-        New Session
-    </button>
-</div>
-
-<!-- Talk Button - Always Visible -->
-<div style="margin-top: 20px; text-align: center;">
-    <button 
-        class="btn-info" 
-        id="talkButton"
-        onmousedown="handleRecordStart(event)"
-        onmouseup="handleRecordStop(event)"
-        onmouseleave="handleRecordStop(event)"
-        ontouchstart="handleRecordStart(event)"
-        ontouchend="handleRecordStop(event)"
-        style="width: 100%; padding: 15px 20px; font-size: 18px; font-weight: 600;"
-    >
-        🎤 Press & Hold to Talk
-    </button>
-</div>
-
+        <!-- Control buttons with improved layout -->
+        <div class="button-group">
+            <button class="btn-secondary" onclick="clearChat()">
+                Clear Chat
+            </button>
+            <button class="btn-danger" onclick="submitConversation()">
+                Submit Chat
+            </button>
+            <button class="btn-info" onclick="exportConversation()">
+                Export Chat
+            </button>
+            <button class="btn-warning" onclick="newSession()">
+                New Session
+            </button>
+        </div>  
+        
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
 <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
@@ -2079,6 +2063,13 @@ Random Scenario
 </div>
 
 <div class="review-buttons">
+<button 
+    class="btn-info" 
+    id="talkButton"
+    onclick="toggleRecording()"
+>
+    Start Recording
+</button>
 <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
     Send Message
 </button>
@@ -2834,7 +2825,12 @@ function stopDeepgramRecording() {
             deepgramSocket = null;
         }
         
-        console.log('Deepgram recording stopped. Final transcript:', fullTranscript);
+        // Process final transcript - DO NOT auto-send, let the review process handle it
+if (fullTranscript.trim()) {
+    console.log('Deepgram transcript ready for review:', fullTranscript);
+    // The timeout in stopRecording() will call showReviewSection()
+    // Do NOT call addMessage or sendToWebhook here
+}
     }, 1500);
 }
         
@@ -3012,29 +3008,15 @@ reviewBox.textContent = displayText || 'Listening...';
                     updateTalkButton();
                 };
                 
-           // Handle when recognition ends
+               // Handle when recognition ends
 recognition.onend = function() {
     console.log('Recognition ended. Force stop:', forceStopRecognition, 'State:', recordingState);
     
-    // Check if we should auto-send
-    const autoSend = window.autoSendAfterRecording || false;
-    window.autoSendAfterRecording = false; // Reset flag
-    
     // If we were recording and stopped intentionally
     if (recordingState === 'processing' && fullTranscript.trim()) {
-        console.log('Processing transcript:', fullTranscript, 'Auto-send:', autoSend);
-        
-        if (autoSend) {
-            // Skip review, send directly
-            addMessage(fullTranscript.trim(), 'user');
-            sendToWebhook(fullTranscript.trim());
-            recordingState = 'stopped';
-            fullTranscript = '';
-            updateTalkButton();
-        } else {
-            // Show review section
-            showReviewSection(fullTranscript.trim());
-        }
+        console.log('Showing review for transcript:', fullTranscript);
+        showReviewSection(fullTranscript.trim());
+        // REMOVED: Do NOT send to webhook here - only show review
     } else if (recordingState === 'processing') {
         // No transcript captured
         showStatus('No speech detected. Please try again.', 'error');
@@ -3115,31 +3097,7 @@ recognition.onend = function() {
         }
         
         // ===== NEW RECORDING FUNCTIONS =====
-// Push-to-talk: Press and hold to record, release to send
-
-function handleRecordStart(event) {
-    event.preventDefault();
-    
-    // Prevent if already recording or in wrong state
-    if (recordingState !== 'stopped') {
-        return;
-    }
-    
-    console.log('Button pressed - starting recording');
-    startRecording();
-}
-
-function handleRecordStop(event) {
-    event.preventDefault();
-    
-    // Only process if we're actually recording
-    if (recordingState !== 'recording') {
-        return;
-    }
-    
-    console.log('Button released - stopping and sending');
-    stopRecording(true); // Pass true to auto-send
-}
+// Toggle recording start/stop functionality
 
 function toggleRecording() {
     if (recordingState === 'stopped') {
@@ -3236,55 +3194,33 @@ document.getElementById('reviewTranscript').textContent = 'No message to review 
     }
 }
 
-function stopRecording(autoSend = false) {
+function stopRecording() {
     if (recordingState !== 'recording') {
         return;
     }
     
-    // Store autoSend flag globally so recognition.onend can access it
-    window.autoSendAfterRecording = autoSend;
-    
-if (currentSttProvider === 'deepgram') {
-    console.log('Stopping Deepgram recording...', autoSend ? '(auto-send)' : '');
-    stopDeepgramRecording();
-    recordingState = 'processing';
-    updateTalkButton();
-    showStatus('Processing... Please wait', 'info');
-    
-    // Wait longer for Deepgram to send final transcript (2000ms to be safe)
-    setTimeout(() => {
-        console.log('Deepgram processing complete. Transcript:', fullTranscript);
-        console.log('Auto-send:', autoSend, 'Review mode:', reviewModeEnabled);
+    if (currentSttProvider === 'deepgram') {
+        console.log('Stopping Deepgram recording...');
+        stopDeepgramRecording();
+        recordingState = 'processing';
+        updateTalkButton();
+        showStatus('Processing... Please wait', 'info');
         
-        if (fullTranscript.trim()) {
-            if (autoSend && !reviewModeEnabled) {
-                // Skip review, send directly (only if review mode is OFF)
-                console.log('Auto-sending Deepgram transcript to webhook');
-                addMessage(fullTranscript.trim(), 'user');
-                sendToWebhook(fullTranscript.trim());
-                recordingState = 'stopped';
-                fullTranscript = '';
-                updateTalkButton();
-                // Hide live transcription
-                document.getElementById('liveTranscription').style.display = 'none';
-            } else {
-                console.log('Showing review section for Deepgram transcript');
+        // Wait a moment for final transcript, then show review
+        setTimeout(() => {
+            if (fullTranscript.trim()) {
                 showReviewSection(fullTranscript.trim());
+            } else {
+                showStatus('No speech detected. Please try again.', 'error');
+                recordingState = 'stopped';
+                updateTalkButton();
             }
-        } else {
-            console.error('No transcript received from Deepgram');
-            showStatus('No speech detected. Please try again.', 'error');
-            recordingState = 'stopped';
-            updateTalkButton();
-            // Hide live transcription
-            document.getElementById('liveTranscription').style.display = 'none';
-        }
-    }, 2000);
+        }, 1000);
         
     } else {
         // Browser STT
         if (recognition) {
-            console.log('Stopping browser recording...', autoSend ? '(auto-send)' : '');
+            console.log('Stopping browser recording...');
             forceStopRecognition = true;
             recognition.stop();
             recordingState = 'processing';
@@ -3301,14 +3237,14 @@ function updateTalkButton() {
         case 'stopped':
             button.classList.remove('recording');
             button.className = 'btn-info';
-            button.innerHTML = '🎤 Press & Hold to Talk';
+            button.innerHTML = '🎤 Start Recording';
             button.disabled = false;
             break;
             
         case 'recording':
             button.classList.add('recording');
             button.className = 'btn-danger recording';
-            button.innerHTML = '🔴 Recording... (Release to Send)';
+            button.innerHTML = '⏹️ Stop Recording';
             button.disabled = false;
             break;
             
@@ -3337,10 +3273,8 @@ function showReviewSection(transcript) {
     // Update review transcript
     document.getElementById('reviewTranscript').textContent = transcript;
     
-    // Show and activate review section
-    const reviewSection = document.getElementById('reviewSection');
-    reviewSection.style.display = 'block';
-    reviewSection.classList.add('active');
+    // Activate review section
+    document.getElementById('reviewSection').classList.add('active');
     
     // Enable buttons
     document.getElementById('sendBtn').disabled = false;
@@ -3351,7 +3285,7 @@ function showReviewSection(transcript) {
     showKeyboardHints();
     
     // Scroll to review section
-    reviewSection.scrollIntoView({ 
+    document.getElementById('reviewSection').scrollIntoView({ 
         behavior: 'smooth', 
         block: 'center' 
     });
@@ -3412,9 +3346,7 @@ document.getElementById('reviewTranscript').textContent = 'No message to review 
 }
 
 function hideReviewSection() {
-    const reviewSection = document.getElementById('reviewSection');
-    reviewSection.classList.remove('active');
-    reviewSection.style.display = 'none'; // Hide completely
+    document.getElementById('reviewSection').classList.remove('active');
     document.getElementById('reviewTranscript').textContent = 'No message to review yet';
     
     // Remove keyboard hints if they exist
@@ -4473,24 +4405,6 @@ document.addEventListener('keydown', function(event) {
 // ===== KEYBOARD SHORTCUTS =====
 // Global keyboard event handler for shortcuts
 document.addEventListener('keydown', function(event) {
-// Handle spacebar release for push-to-talk
-document.addEventListener('keyup', function(event) {
-    const activeElement = document.activeElement;
-    const isTextInput = (activeElement.tagName === 'INPUT' && 
-                        (activeElement.type === 'text' || 
-                         activeElement.type === 'password' || 
-                         activeElement.type === 'email' || 
-                         activeElement.type === 'search')) || 
-                       activeElement.tagName === 'TEXTAREA' ||
-                       activeElement.contentEditable === 'true';
-    
-    // Space bar release - stop recording and send
-    if (event.code === 'Space' && !isTextInput && recordingState === 'recording') {
-        console.log('Spacebar released - stopping and sending');
-        event.preventDefault();
-        handleRecordStop(event);
-    }
-});
     console.log('Key pressed:', event.key, 'Code:', event.code, 'Active element:', document.activeElement.tagName, 'ID:', document.activeElement.id);
     
     // Check if user is typing in a text input field (but allow shortcuts for dropdowns)
@@ -4505,19 +4419,21 @@ document.addEventListener('keyup', function(event) {
     
     console.log('Is text input:', isTextInput, 'Recording state:', recordingState);
     
-  // Space bar for push-to-talk (press to start, release to send)
-if (event.code === 'Space' && !isTextInput) {
-    const talkButton = document.getElementById('talkButton');
-    
-    if (talkButton && !talkButton.disabled) {
-        if (event.type === 'keydown' && !event.repeat) {
-            console.log('Spacebar pressed - starting recording');
-            event.preventDefault();
-            handleRecordStart(event);
+    // Space bar for start/stop recording (allow when not typing in text inputs)
+    if (event.code === 'Space' && !isTextInput) {
+        console.log('Spacebar detected - attempting to toggle recording');
+        event.preventDefault(); // Prevent page scrolling
+        const talkButton = document.getElementById('talkButton');
+        
+        if (talkButton) {
+            console.log('Talk button found, disabled:', talkButton.disabled);
+            if (!talkButton.disabled) {
+                console.log('Calling toggleRecording()');
+                toggleRecording();
+            }
         }
+        return;
     }
-    return;
-}
     
     // Enter key for sending message
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -5682,6 +5598,13 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
