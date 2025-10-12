@@ -871,7 +871,7 @@ select option {
     background: linear-gradient(135deg, #1e293b, #334155);
     border: 2px solid var(--warning-color);
     border-radius: 8px;
-    display: block;
+    display: none; /* Hidden by default for push-to-talk */
     opacity: 1;
     box-shadow: 0 0 20px var(--accent-glow);
 }
@@ -3327,8 +3327,10 @@ function showReviewSection(transcript) {
     // Update review transcript
     document.getElementById('reviewTranscript').textContent = transcript;
     
-    // Activate review section
-    document.getElementById('reviewSection').classList.add('active');
+    // Show and activate review section
+    const reviewSection = document.getElementById('reviewSection');
+    reviewSection.style.display = 'block';
+    reviewSection.classList.add('active');
     
     // Enable buttons
     document.getElementById('sendBtn').disabled = false;
@@ -3339,7 +3341,7 @@ function showReviewSection(transcript) {
     showKeyboardHints();
     
     // Scroll to review section
-    document.getElementById('reviewSection').scrollIntoView({ 
+    reviewSection.scrollIntoView({ 
         behavior: 'smooth', 
         block: 'center' 
     });
@@ -3400,7 +3402,9 @@ document.getElementById('reviewTranscript').textContent = 'No message to review 
 }
 
 function hideReviewSection() {
-    document.getElementById('reviewSection').classList.remove('active');
+    const reviewSection = document.getElementById('reviewSection');
+    reviewSection.classList.remove('active');
+    reviewSection.style.display = 'none'; // Hide completely
     document.getElementById('reviewTranscript').textContent = 'No message to review yet';
     
     // Remove keyboard hints if they exist
@@ -5668,6 +5672,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
