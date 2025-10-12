@@ -433,6 +433,66 @@ select option {
     transform: translateY(0);
 }
 
+/* Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    display: inline-block;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+/* Press-to-Talk Mode Styles */
+.press-to-talk-mode .review-section {
+    display: none !important;
+}
+
+.press-to-talk-mode #talkButton {
+    font-size: 1.1em;
+    padding: 15px 25px;
+}
+        
 /* Feedback Modal Styles */
 .feedback-modal {
     display: none;
@@ -2039,6 +2099,25 @@ Random Scenario
         </div>
         
         <!-- Control buttons with improved layout -->
+        <!-- Recording Mode Toggle -->
+<div class="recording-mode-toggle" style="margin-bottom: 15px; padding: 15px; background: var(--input-background); border-radius: 8px; border: 1px solid var(--border-color);">
+    <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0;">
+        <span style="font-weight: 500; color: var(--text-primary);">
+            <span style="font-size: 1.1em; margin-right: 8px;">🎙️</span>
+            Recording Mode:
+        </span>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="modeLabel" style="font-size: 0.9em; color: var(--text-secondary);">Review Mode</span>
+            <div class="toggle-switch">
+                <input type="checkbox" id="recordingModeToggle" onchange="toggleRecordingMode()">
+                <span class="toggle-slider"></span>
+            </div>
+        </div>
+    </label>
+    <p style="margin: 8px 0 0 0; font-size: 0.85em; color: var(--text-secondary); line-height: 1.4;">
+        <span id="modeDescription">Review Mode: Record, review, edit, then send</span>
+    </p>
+</div>
         <div class="button-group">
             <button class="btn-secondary" onclick="clearChat()">
                 Clear Chat
@@ -2441,6 +2520,7 @@ Random Scenario
         let currentAudio = null;         // Current playing audio for ElevenLabs
         let currentSttProvider = 'browser'; // Current STT provider (browser or deepgram)
         let recordingState = 'stopped'; // 'stopped', 'recording', 'reviewing'
+        let isPressToTalkMode = false; // Toggle between review mode and press-to-talk mode
         let pendingTranscript = ''; // Store transcript for review
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let deepgramApiKey = ''; // Deepgram API key
@@ -3014,9 +3094,15 @@ recognition.onend = function() {
     
     // If we were recording and stopped intentionally
     if (recordingState === 'processing' && fullTranscript.trim()) {
-        console.log('Showing review for transcript:', fullTranscript);
-        showReviewSection(fullTranscript.trim());
-        // REMOVED: Do NOT send to webhook here - only show review
+        console.log('Processing transcript:', fullTranscript);
+        
+        if (isPressToTalkMode) {
+            // In press-to-talk mode, send immediately without review
+            autoSendMessage(fullTranscript.trim());
+        } else {
+            // In review mode, show review section
+            showReviewSection(fullTranscript.trim());
+        }
     } else if (recordingState === 'processing') {
         // No transcript captured
         showStatus('No speech detected. Please try again.', 'error');
@@ -3094,6 +3180,50 @@ recognition.onend = function() {
             document.getElementById('sheetId').addEventListener('change', saveConfig);
             document.getElementById('elevenlabsApiKey').addEventListener('change', saveConfig);
             document.getElementById('elevenlabsApiKey').addEventListener('input', resetElevenLabsButtonState);
+
+            // Add mouse/touch event listeners for press-and-hold in press-to-talk mode
+    const talkButton = document.getElementById('talkButton');
+    
+    // Mouse events
+    talkButton.addEventListener('mousedown', function(e) {
+        if (isPressToTalkMode && recordingState === 'stopped') {
+            startRecording();
+        }
+    });
+    
+    talkButton.addEventListener('mouseup', function(e) {
+        if (isPressToTalkMode && recordingState === 'recording') {
+            stopRecording();
+        }
+    });
+    
+    talkButton.addEventListener('mouseleave', function(e) {
+        if (isPressToTalkMode && recordingState === 'recording') {
+            stopRecording();
+        }
+    });
+    
+    // Touch events for mobile
+    talkButton.addEventListener('touchstart', function(e) {
+        if (isPressToTalkMode && recordingState === 'stopped') {
+            e.preventDefault();
+            startRecording();
+        }
+    });
+    
+    talkButton.addEventListener('touchend', function(e) {
+        if (isPressToTalkMode && recordingState === 'recording') {
+            e.preventDefault();
+            stopRecording();
+        }
+    });
+    
+    talkButton.addEventListener('touchcancel', function(e) {
+        if (isPressToTalkMode && recordingState === 'recording') {
+            e.preventDefault();
+            stopRecording();
+        }
+    });
         }
         
         // ===== NEW RECORDING FUNCTIONS =====
@@ -3107,89 +3237,44 @@ function toggleRecording() {
     }
 }
 
-function startRecording() {
+function stopRecording() {
+    if (recordingState !== 'recording') {
+        return;
+    }
+    
     if (currentSttProvider === 'deepgram') {
-        // Use Deepgram
-        if (!document.getElementById('deepgramApiKey').value) {
-            showStatus('Please enter Deepgram API key first', 'error');
-            return;
-        }
-        
-        if (!document.getElementById('webhookUrl').value) {
-            showStatus('Please enter webhook URL first', 'error');
-            return;
-        }
-        
-        if (!currentScenario) {
-            showStatus('Please select a patient scenario first', 'error');
-            return;
-        }
-        
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-        synthesis.cancel();
-        
-        // Clear previous data
-        fullTranscript = '';
-        pendingTranscript = '';
-        document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
-        
-        recordingState = 'recording';
+        console.log('Stopping Deepgram recording...');
+        stopDeepgramRecording();
+        recordingState = 'processing';
         updateTalkButton();
+        showStatus('Processing... Please wait', 'info');
         
-        startDeepgramRecording().then(success => {
-            if (!success) {
+        // Wait a moment for final transcript
+        setTimeout(() => {
+            if (fullTranscript.trim()) {
+                if (isPressToTalkMode) {
+                    // In press-to-talk mode, send immediately
+                    autoSendMessage(fullTranscript.trim());
+                } else {
+                    // In review mode, show review section
+                    showReviewSection(fullTranscript.trim());
+                }
+            } else {
+                showStatus('No speech detected. Please try again.', 'error');
                 recordingState = 'stopped';
                 updateTalkButton();
             }
-        });
+        }, 1000);
         
     } else {
-        // Use browser STT
-        if (!recognition) {
-            showStatus('Speech recognition not available', 'error');
-            return;
-        }
-        
-        if (!document.getElementById('webhookUrl').value) {
-            showStatus('Please enter webhook URL first', 'error');
-            return;
-        }
-        
-        if (!currentScenario) {
-            showStatus('Please select a patient scenario first', 'error');
-            return;
-        }
-        
-        // Stop any currently playing audio
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-        synthesis.cancel();
-        
-        // Clear previous data
-        fullTranscript = '';
-        pendingTranscript = '';
-        forceStopRecognition = false;
-        
-        // Clear review box
-document.getElementById('reviewTranscript').textContent = 'No message to review yet';
-        
-        recordingState = 'recording';
-        updateTalkButton();
-        
-        try {
-            recognition.start();
-            showStatus('Recording... Click "Stop Recording" when finished', 'info');
-        } catch (error) {
-            console.error('Error starting recognition:', error);
-            showStatus('Error starting recording', 'error');
-            recordingState = 'stopped';
+        // Browser STT
+        if (recognition) {
+            console.log('Stopping browser recording...');
+            forceStopRecognition = true;
+            recognition.stop();
+            recordingState = 'processing';
             updateTalkButton();
+            showStatus('Processing... Please wait', 'info');
         }
     }
 }
@@ -3237,14 +3322,14 @@ function updateTalkButton() {
         case 'stopped':
             button.classList.remove('recording');
             button.className = 'btn-info';
-            button.innerHTML = '🎤 Start Recording';
+            button.innerHTML = isPressToTalkMode ? '🎤 Press & Hold to Talk' : '🎤 Start Recording';
             button.disabled = false;
             break;
             
         case 'recording':
             button.classList.add('recording');
             button.className = 'btn-danger recording';
-            button.innerHTML = '⏹️ Stop Recording';
+            button.innerHTML = isPressToTalkMode ? '⏺️ Recording... (Release to Send)' : '⏹️ Stop Recording';
             button.disabled = false;
             break;
             
@@ -3361,6 +3446,70 @@ function hideReviewSection() {
     document.getElementById('deleteBtn').disabled = true;
     
     document.getElementById('talkButton').disabled = false;
+}
+
+
+// ===== PRESS-TO-TALK MODE FUNCTIONS =====
+function toggleRecordingMode() {
+    const checkbox = document.getElementById('recordingModeToggle');
+    const modeLabel = document.getElementById('modeLabel');
+    const modeDescription = document.getElementById('modeDescription');
+    const conversationCard = document.querySelector('.card:last-child');
+    
+    isPressToTalkMode = checkbox.checked;
+    
+    if (isPressToTalkMode) {
+        // Switch to Press-to-Talk mode
+        modeLabel.textContent = 'Press-to-Talk';
+        modeDescription.innerHTML = '<strong>Press-to-Talk Mode:</strong> Hold button to record, release to send automatically';
+        conversationCard.classList.add('press-to-talk-mode');
+        
+        // Hide review section
+        hideReviewSection();
+        
+        // Update button text
+        const talkButton = document.getElementById('talkButton');
+        if (recordingState === 'stopped') {
+            talkButton.innerHTML = '🎤 Press & Hold to Talk';
+        }
+        
+        showStatus('Switched to Press-to-Talk mode: Hold button to record, release to send', 'success');
+    } else {
+        // Switch to Review mode
+        modeLabel.textContent = 'Review Mode';
+        modeDescription.innerHTML = 'Review Mode: Record, review, edit, then send';
+        conversationCard.classList.remove('press-to-talk-mode');
+        
+        // Update button text
+        const talkButton = document.getElementById('talkButton');
+        if (recordingState === 'stopped') {
+            talkButton.innerHTML = '🎤 Start Recording';
+        }
+        
+        showStatus('Switched to Review mode: Record, review, then send', 'success');
+    }
+    
+    // Save preference
+    localStorage.setItem('pressToTalkMode', isPressToTalkMode);
+}
+
+function autoSendMessage(message) {
+    console.log('Auto-sending message in press-to-talk mode:', message);
+    
+    // Reset state immediately
+    recordingState = 'stopped';
+    updateTalkButton();
+    
+    // Add message to chat
+    addMessage(message, 'user');
+    
+    // Send to webhook
+    sendToWebhook(message);
+    
+    // Clear transcript for next recording
+    fullTranscript = '';
+    
+    showStatus('Message sent!', 'success');
 }
 
         // ===== GOOGLE SHEETS INTEGRATION =====
@@ -5295,6 +5444,12 @@ if (config.deepgramLanguage) {
                     document.getElementById('elevenlabsVoice').value = config.elevenlabsVoice;
                 }
             }
+            // Load press-to-talk mode preference
+        const savedPressToTalk = localStorage.getItem('pressToTalkMode');
+        if (savedPressToTalk === 'true') {
+            document.getElementById('recordingModeToggle').checked = true;
+            toggleRecordingMode();
+        }
         }
 
         // ===== COLLAPSIBLE PANELS =====
@@ -5598,6 +5753,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
