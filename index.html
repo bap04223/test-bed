@@ -3102,17 +3102,35 @@ recognition.onend = function() {
         console.log('Processing transcript:', fullTranscript);
         
         if (isPressToTalkMode) {
-            // In press-to-talk mode, send immediately without review
-            autoSendMessage(fullTranscript.trim());
+            // In press-to-talk mode, add delay to ensure transcript is complete
+            setTimeout(() => {
+                if (fullTranscript.trim()) {
+                    autoSendMessage(fullTranscript.trim());
+                } else {
+                    showStatus('No speech detected. Please try again.', 'error');
+                    recordingState = 'stopped';
+                    updateTalkButton();
+                }
+            }, 800); // 800ms delay to allow transcript finalization
         } else {
-            // In review mode, show review section
+            // In review mode, show review section immediately
             showReviewSection(fullTranscript.trim());
         }
     } else if (recordingState === 'processing') {
-        // No transcript captured
-        showStatus('No speech detected. Please try again.', 'error');
-        recordingState = 'stopped';
-        updateTalkButton();
+        // No transcript captured yet, wait a bit longer
+        setTimeout(() => {
+            if (fullTranscript.trim()) {
+                if (isPressToTalkMode) {
+                    autoSendMessage(fullTranscript.trim());
+                } else {
+                    showReviewSection(fullTranscript.trim());
+                }
+            } else {
+                showStatus('No speech detected. Please try again.', 'error');
+                recordingState = 'stopped';
+                updateTalkButton();
+            }
+        }, 800);
     }
     
     // Reset recognition state
@@ -5821,6 +5839,7 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
 
 
 
