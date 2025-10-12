@@ -3285,20 +3285,19 @@ function startRecording() {
         }
         synthesis.cancel();
         
-               
-       // Clear previous data
-fullTranscript = '';
-pendingTranscript = '';
-
-// Show connecting status for BOTH modes
+        // Clear previous data
+        fullTranscript = '';
+        pendingTranscript = '';
+        
+        if (isPressToTalkMode) {
+    // Show connecting status for BOTH modes
 showStatus('Connecting to Deepgram...', 'info');
 
 if (!isPressToTalkMode) {
     // Only update review box in review mode
     document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
-}
-
-recordingState = 'recording';
+}       
+        recordingState = 'recording';
         updateTalkButton();
         
         startDeepgramRecording().then(success => {
@@ -5841,6 +5840,10 @@ function closeHelpModal(event) {
     </script>
 </body>
 </html>
+
+
+
+
 
 
 
