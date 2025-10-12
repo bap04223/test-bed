@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDT Consultation Training - AI MDT Simulator</title>
+    <title>Chat-Bot Consultation Training - AI Patient Simulator</title>
     
     <!-- Modern styling for the interface -->
     <style>
@@ -1145,17 +1145,6 @@ select option {
             justify-content: center;
             gap: 8px;
         }
-
-        <!-- Add this right after the existing patient image button -->
-<button 
-    class="patient-image-btn disabled" 
-    id="patientDocBtn"
-    onclick="showPatientDoc()"
-    disabled
-    style="margin-top: 10px;"
->
-    📄 No Document Available
-</button>
         
         .patient-image-btn.available {
             background-color: var(--success-color);
@@ -1321,9 +1310,8 @@ select option {
         
         .image-modal-content {
             position: relative;
-            width: 98%;
-            max-width: 1400px;
-            max-height: 98%;
+            max-width: 95%;
+            max-height: 95%;
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -1680,7 +1668,7 @@ select option {
 
 /* Adjust grid when panels are collapsed */
 .grid.config-collapsed {
-    grid-template-columns: 40px 1.0fr 2.5fr;
+    grid-template-columns: 40px 1.1fr 2.5fr;
     transition: all 0.3s ease;
 }
 
@@ -1736,88 +1724,6 @@ a:hover {
 .card-icon:hover {
     transform: scale(1.1) rotate(5deg);
 }
-
-        /* Speaker Indicator Styles */
-.speaker-indicator {
-    position: fixed;
-    top: 50px;
-    right: 20px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    color: white;
-    padding: 12px 20px;
-    border-radius: 25px;
-    font-weight: bold;
-    font-size: 14px;
-    z-index: 1500;
-    opacity: 0;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px var(--accent-glow);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    transform: translateX(20px);
-}
-
-.speaker-indicator.active {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-@media (max-width: 768px) {
-    .speaker-indicator {
-        top: 160px;
-        right: 10px;
-        left: 10px;
-        text-align: center;
-        font-size: 13px;
-        padding: 10px 15px;
-    }
-}
-
-        .avatar-name.speaking {
-    background: var(--success-color) !important;
-    color: white !important;
-    animation: gentle-pulse 2s ease-in-out infinite;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-    transform: scale(1.05);
-}
-
-@keyframes gentle-pulse {
-    0%, 100% { 
-        opacity: 1; 
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
-    }
-    50% { 
-        opacity: 0.8; 
-        box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
-    }
-}
-
-        /* Document-specific gallery styles */
-.gallery-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-}
-
-.gallery-dot:hover {
-    border-color: var(--primary-color);
-    transform: scale(1.2);
-}
-
-.gallery-dot.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
              
   </style>
        
@@ -1832,11 +1738,11 @@ a:hover {
        <div class="header">
             <div class="header-content">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-<div class="card-icon" style="margin: 0;  background: linear-gradient(135deg, #a855f7, #c084fc);">👨‍⚕️👩‍⚕️</div>
-<h1 style="margin: 0;">MDT Consultation Training</h1>
-<div class="card-icon" style="margin: 0;  background: linear-gradient(135deg, #a855f7, #c084fc);">👨‍⚕️👩‍⚕️</div>
+                    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #43e97b, #38f9d7);">🎤</div>
+                    <h1 style="margin: 0;">Chat-Bot Consultation Training</h1>
+                    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #43e97b, #38f9d7);">🎤</div>
                 </div>
-                <p>Practice your conmunication skills with our AI-Powered Clinical Teams</p>
+                <p>Practice your consultation skills with our AI-powered patients</p>
                <a href="https://bap04223.github.io/AI-Chatbot-Hub/" class="back-to-landing-btn" title="Return to Landing Page">
     ← Back to Hub
 </a>
@@ -1934,42 +1840,7 @@ Load Scenario Sets
                         ElevenLabs
                     </button>
                 </div>
-           </div>
-
-            <!-- Chatbot and Scenario Selection -->
-            <div class="form-group" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);">
-                <label for="chatbotSelect">Select Chatbot:</label>
-                <select id="chatbotSelect" disabled style="font-size: 14px;">
-                    <option value="">Load configurations first...</option>
-                </select>
             </div>
-
-            <div class="form-group" style="margin-top: 15px;">
-                <label for="scenarioSetSelect">Select Scenario Set:</label>
-                <select id="scenarioSetSelect" disabled style="font-size: 14px;">
-                    <option value="">Load scenario sets first...</option>
-                </select>
-            </div>
-
-            <!-- Google Sheets configuration -->
-            <div class="form-group">
-                <label for="sheetName">Sheet Name:</label>
-                <select id="sheetName" disabled>
-                    <option value="">Select scenario set first</option>
-                </select>
-            </div>
-
-          <!-- Scenario selection dropdown -->
-            <div class="form-group" style="margin-top: 20px;">
-                <label for="scenarioSelect">Select Scenario:</label>
-                <select id="scenarioSelect" disabled>
-                    <option value="">Load sheet data first...</option>
-                </select>
-            </div>
-
-            <button class="btn-info" onclick="selectRandomScenario()" style="width: 100%; margin-top: 10px;">
-                Random Scenario
-            </button>
             
             <!-- Browser TTS Settings -->
             <div id="browserTtsSettings" class="tts-settings">
@@ -1994,60 +1865,57 @@ Load Scenario Sets
                 </div>
             </div>
             
-          <!-- ElevenLabs TTS Settings -->
-<div id="elevenlabsSettings" class="tts-settings elevenlabs-config" style="display: none;">
-    <!-- All ElevenLabs configuration options are hidden -->
-    <div style="display: none;">
-        <div class="form-group">
-            <label for="elevenlabsApiKey">ElevenLabs API Key:</label>
-            <input 
-                type="text" 
-                id="elevenlabsApiKey" 
-                placeholder="Enter your ElevenLabs API key"
-                title="Get your API key from elevenlabs.io"
-            >
-            <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
-                Get your API key from <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a>
-            </small>
-        </div>
-        
-       <div class="form-group">
-            <label for="elevenlabsVoice">ElevenLabs Voice:</label>
-            <select id="elevenlabsVoice" disabled>
-                <option value="">Enter API key to load voices...</option>
-            </select>
-            <button class="btn-voice-load-pending" id="loadVoicesBtn" onclick="loadElevenLabsVoices()" style="margin-top: 8px; width: 100%; font-size: 14px;">
-                Load Voices
-            </button>
-        </div>
-        
-        <div class="form-group">
-            <label for="elevenlabsStability">Voice Stability:</label>
-            <input 
-                type="range" 
-                id="elevenlabsStability" 
-                min="0" 
-                max="1" 
-                step="0.1" 
-                value="0.5"
-            >
-            <span id="stabilityValue">0.5</span>
-        </div>
-        
-        <div class="form-group">
-            <label for="elevenlabsClarity">Voice Clarity:</label>
-            <input 
-                type="range" 
-                id="elevenlabsClarity" 
-                min="0" 
-                max="1" 
-                step="0.1" 
-                value="0.75"
-            >
-            <span id="clarityValue">0.75</span>
-        </div>
-    </div>
-</div>
+            <!-- ElevenLabs TTS Settings -->
+            <div id="elevenlabsSettings" class="tts-settings elevenlabs-config" style="display: none;">
+                <div class="form-group" style="display: none;">
+                    <label for="elevenlabsApiKey">ElevenLabs API Key:</label>
+                    <input 
+                        type="text" 
+                        id="elevenlabsApiKey" 
+                        placeholder="Enter your ElevenLabs API key"
+                        title="Get your API key from elevenlabs.io"
+                    >
+                    <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+                        Get your API key from <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a>
+                    </small>
+                </div>
+                
+               <div class="form-group">
+                    <label for="elevenlabsVoice">ElevenLabs Voice:</label>
+                    <select id="elevenlabsVoice" disabled>
+                        <option value="">Enter API key to load voices...</option>
+                    </select>
+                    <button class="btn-voice-load-pending" id="loadVoicesBtn" onclick="loadElevenLabsVoices()" style="margin-top: 8px; width: 100%; font-size: 14px;">
+                        Load Voices
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="elevenlabsStability">Voice Stability:</label>
+                    <input 
+                        type="range" 
+                        id="elevenlabsStability" 
+                        min="0" 
+                        max="1" 
+                        step="0.1" 
+                        value="0.5"
+                    >
+                    <span id="stabilityValue">0.5</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="elevenlabsClarity">Voice Clarity:</label>
+                    <input 
+                        type="range" 
+                        id="elevenlabsClarity" 
+                        min="0" 
+                        max="1" 
+                        step="0.1" 
+                        value="0.75"
+                    >
+                    <span id="clarityValue">0.75</span>
+                </div>
+            </div>
 
            
 <!-- Deepgram STT Settings -->
@@ -2100,35 +1968,60 @@ Load Scenario Sets
 <div class="card-content">
     <div class="scrollable-section">
 
+    <div class="form-group" style="margin-top: 15px;">
+    <label for="chatbotSelect">Select Chatbot:</label>
+    <select id="chatbotSelect" disabled style="font-size: 14px;">
+        <option value="">Load configurations first...</option>
+    </select>
+</div>
+
+    
+         <div class="form-group" style="margin-top: 15px;">
+        <label for="scenarioSetSelect">Select Scenario Set:</label>
+        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+            <option value="">Load scenario sets first...</option>
+        </select>
+    </div>
+    
     <!-- Hidden field - automatically populated from scenario set selection -->
     <input type="hidden" id="sheetId">
 
 
-      <!-- Patient Image Button -->
-<!-- Single Patient Media Button -->
-<button 
-    class="patient-image-btn disabled" 
-    id="patientImageBtn"
-    onclick="showPatientImage()"
-    disabled
-    style="width: 100%; margin-top: 10px;"
->
-    📷 No Scenario Selected
+<!-- Google Sheets configuration - MODIFIED -->
+<div class="form-group">
+    <label for="sheetName">Sheet Name:</label>
+    <select id="sheetName" disabled>
+        <option value="">Select scenario set first</option>
+    </select>
+</div>
+
+<!-- Scenario selection dropdown -->
+<div class="form-group" style="margin-top: 20px;">
+    <label for="scenarioSelect">Select Scenario:</label>
+    <select id="scenarioSelect" disabled>
+        <option value="">Load sheet data first...</option>
+    </select>
+</div>
+
+<button class="btn-info" onclick="selectRandomScenario()" style="width: 100%; margin-top: 10px;">
+Random Scenario
 </button>
+
+      <!-- Patient Image Button -->
+        <button 
+            class="patient-image-btn disabled" 
+            id="patientImageBtn"
+            onclick="showPatientImage()"
+            disabled
+        >
+            📷 No Scenario Selected
+        </button>
         
        <!-- Avatar Image Container -->
         <div class="avatar-container" id="avatarContainer" style="display: block;">
             <div class="avatar-placeholder">
                 <div class="avatar-placeholder-icon">👤</div>
                 <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
-            </div>
-        </div>
-        
-        <!-- Second Avatar Image Container -->
-        <div class="avatar-container" id="avatarContainer2" style="display: block;">
-            <div class="avatar-placeholder">
-                <div class="avatar-placeholder-icon">👤</div>
-                <div class="avatar-name no-avatar">Select a scenario to load second avatar</div>
             </div>
         </div>
     </div>
@@ -2173,9 +2066,13 @@ Load Scenario Sets
 <button 
     class="btn-info" 
     id="talkButton"
-    onclick="toggleRecording()"
+    onmousedown="handleRecordStart(event)"
+    onmouseup="handleRecordStop(event)"
+    onmouseleave="handleRecordStop(event)"
+    ontouchstart="handleRecordStart(event)"
+    ontouchend="handleRecordStop(event)"
 >
-    Start Recording
+    🎤 Press & Hold to Talk
 </button>
 <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
     Send Message
@@ -2503,11 +2400,9 @@ Load Scenario Sets
                 <h4>🎯 Best Practices</h4>
                 <ul>
                     <li><strong>Be Professional:</strong> Practice real-world communication skills with proper pharmacy consultation techniques</li>
-                    <li><strong>Team Consultations:</strong> When multiple healthcare professionals respond, listen to each voice and role carefully</li>
                     <li><strong>Ask Questions:</strong> Gather information about symptoms, medications, allergies, and medical history</li>
                     <li><strong>Provide Clear Advice:</strong> Give specific, actionable recommendations with proper explanations</li>
                     <li><strong>Show Empathy:</strong> Acknowledge patient concerns and demonstrate caring communication</li>
-                    <li><strong>Multidisciplinary Care:</strong> Practice coordinating with different healthcare roles (pharmacists, doctors, nurses)</li>
                     <li><strong>Follow Up:</strong> Ask if the patient has any other questions or concerns</li>
                 </ul>
             </div>
@@ -2556,11 +2451,6 @@ Load Scenario Sets
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
 
-        // ===== TEAM MEMBER VARIABLES =====
-        let teamMembers = {};            // Store team member configurations
-        let currentSpeaker = 'member1';  // Track who should speak next
-        let originalVoiceSettings = {}; // Store original voice settings for restoration
-
                 // ===== CHATBOT CONFIGURATION VARIABLES =====
         let chatbotConfigurations = [];     // Store loaded chatbot configurations
         let currentChatbotConfig = null;    // Currently selected chatbot configuration
@@ -2570,13 +2460,8 @@ Load Scenario Sets
         let currentScenarioSet = null;      // Currently selected scenario set
 
         // ===== MULTI-IMAGE GALLERY VARIABLES =====
-let currentImageIndex = 0;
-let patientImages = [];
-
-// Ensure patientDocs is properly initialized
-if (typeof window.patientDocs === 'undefined') {
-    window.patientDocs = [];
-}
+        let currentImageIndex = 0;
+        let patientImages = [];
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -2743,21 +2628,21 @@ function updateSessionInfo() {
         // Handle switching between browser and ElevenLabs TTS
         
         function selectTtsProvider(provider) {
-    currentTtsProvider = provider;
-    
-    // Update UI
-    document.getElementById('browserTtsBtn').classList.toggle('active', provider === 'browser');
-    document.getElementById('elevenlabsTtsBtn').classList.toggle('active', provider === 'elevenlabs');
-    
-    // Show/hide settings - Hide ElevenLabs settings completely
-    document.getElementById('browserTtsSettings').style.display = provider === 'browser' ? 'block' : 'none';
-    document.getElementById('elevenlabsSettings').style.display = 'none'; // Always hidden
-    
-    // Save preference
-    saveConfig();
-    
-    console.log('TTS provider changed to:', provider);
-}
+            currentTtsProvider = provider;
+            
+            // Update UI
+            document.getElementById('browserTtsBtn').classList.toggle('active', provider === 'browser');
+            document.getElementById('elevenlabsTtsBtn').classList.toggle('active', provider === 'elevenlabs');
+            
+            // Show/hide settings
+            document.getElementById('browserTtsSettings').style.display = provider === 'browser' ? 'block' : 'none';
+            document.getElementById('elevenlabsSettings').style.display = provider === 'elevenlabs' ? 'block' : 'none';
+            
+            // Save preference
+            saveConfig();
+            
+            console.log('TTS provider changed to:', provider);
+        }
 
         // ===== STT PROVIDER MANAGEMENT =====
 function selectSttProvider(provider) {
@@ -3127,15 +3012,29 @@ reviewBox.textContent = displayText || 'Listening...';
                     updateTalkButton();
                 };
                 
-               // Handle when recognition ends
+           // Handle when recognition ends
 recognition.onend = function() {
     console.log('Recognition ended. Force stop:', forceStopRecognition, 'State:', recordingState);
     
+    // Check if we should auto-send
+    const autoSend = window.autoSendAfterRecording || false;
+    window.autoSendAfterRecording = false; // Reset flag
+    
     // If we were recording and stopped intentionally
     if (recordingState === 'processing' && fullTranscript.trim()) {
-        console.log('Showing review for transcript:', fullTranscript);
-        showReviewSection(fullTranscript.trim());
-        // REMOVED: Do NOT send to webhook here - only show review
+        console.log('Processing transcript:', fullTranscript, 'Auto-send:', autoSend);
+        
+        if (autoSend) {
+            // Skip review, send directly
+            addMessage(fullTranscript.trim(), 'user');
+            sendToWebhook(fullTranscript.trim());
+            recordingState = 'stopped';
+            fullTranscript = '';
+            updateTalkButton();
+        } else {
+            // Show review section
+            showReviewSection(fullTranscript.trim());
+        }
     } else if (recordingState === 'processing') {
         // No transcript captured
         showStatus('No speech detected. Please try again.', 'error');
@@ -3216,7 +3115,31 @@ recognition.onend = function() {
         }
         
         // ===== NEW RECORDING FUNCTIONS =====
-// Toggle recording start/stop functionality
+// Push-to-talk: Press and hold to record, release to send
+
+function handleRecordStart(event) {
+    event.preventDefault();
+    
+    // Prevent if already recording or in wrong state
+    if (recordingState !== 'stopped') {
+        return;
+    }
+    
+    console.log('Button pressed - starting recording');
+    startRecording();
+}
+
+function handleRecordStop(event) {
+    event.preventDefault();
+    
+    // Only process if we're actually recording
+    if (recordingState !== 'recording') {
+        return;
+    }
+    
+    console.log('Button released - stopping and sending');
+    stopRecording(true); // Pass true to auto-send
+}
 
 function toggleRecording() {
     if (recordingState === 'stopped') {
@@ -3313,22 +3236,34 @@ document.getElementById('reviewTranscript').textContent = 'No message to review 
     }
 }
 
-function stopRecording() {
+function stopRecording(autoSend = false) {
     if (recordingState !== 'recording') {
         return;
     }
     
+    // Store autoSend flag globally so recognition.onend can access it
+    window.autoSendAfterRecording = autoSend;
+    
     if (currentSttProvider === 'deepgram') {
-        console.log('Stopping Deepgram recording...');
+        console.log('Stopping Deepgram recording...', autoSend ? '(auto-send)' : '');
         stopDeepgramRecording();
         recordingState = 'processing';
         updateTalkButton();
         showStatus('Processing... Please wait', 'info');
         
-        // Wait a moment for final transcript, then show review
+        // Wait a moment for final transcript
         setTimeout(() => {
             if (fullTranscript.trim()) {
-                showReviewSection(fullTranscript.trim());
+                if (autoSend) {
+                    // Skip review, send directly
+                    addMessage(fullTranscript.trim(), 'user');
+                    sendToWebhook(fullTranscript.trim());
+                    recordingState = 'stopped';
+                    fullTranscript = '';
+                    updateTalkButton();
+                } else {
+                    showReviewSection(fullTranscript.trim());
+                }
             } else {
                 showStatus('No speech detected. Please try again.', 'error');
                 recordingState = 'stopped';
@@ -3339,7 +3274,7 @@ function stopRecording() {
     } else {
         // Browser STT
         if (recognition) {
-            console.log('Stopping browser recording...');
+            console.log('Stopping browser recording...', autoSend ? '(auto-send)' : '');
             forceStopRecognition = true;
             recognition.stop();
             recordingState = 'processing';
@@ -3356,14 +3291,14 @@ function updateTalkButton() {
         case 'stopped':
             button.classList.remove('recording');
             button.className = 'btn-info';
-            button.innerHTML = '🎤 Start Recording';
+            button.innerHTML = '🎤 Press & Hold to Talk';
             button.disabled = false;
             break;
             
         case 'recording':
             button.classList.add('recording');
             button.className = 'btn-danger recording';
-            button.innerHTML = '⏹️ Stop Recording';
+            button.innerHTML = '🔴 Recording... (Release to Send)';
             button.disabled = false;
             break;
             
@@ -3481,53 +3416,6 @@ function hideReviewSection() {
     
     document.getElementById('talkButton').disabled = false;
 }
-
-        function hideReviewSection() {
-    // ... existing code ...
-}
-
-// Show keyboard shortcuts hint
-function showKeyboardHints() {
-    // Remove existing hints
-    const existingHints = document.querySelector('.keyboard-hints');
-    if (existingHints) {
-        existingHints.remove();
-    }
-    
-    // Create hints element
-    const hintsDiv = document.createElement('div');
-    hintsDiv.className = 'keyboard-hints';
-    hintsDiv.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--card-background);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 10px 15px;
-        font-size: 12px;
-        color: var(--text-secondary);
-        z-index: 1000;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    `;
-    hintsDiv.innerHTML = `
-        <strong>Keyboard Shortcuts:</strong><br>
-        Enter: Send Message<br>
-        Escape: Cancel Review
-    `;
-    
-    document.body.appendChild(hintsDiv);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (hintsDiv && hintsDiv.parentNode) {
-            hintsDiv.remove();
-        }
-    }, 5000);
-}
-
-        // ===== GOOGLE SHEETS INTEGRATION =====
-        // Load sheet names from Google Sheets
 
         // ===== GOOGLE SHEETS INTEGRATION =====
         // Load sheet names from Google Sheets
@@ -4002,26 +3890,18 @@ function setButtonPending(buttonId, pendingText = null) {
                 currentScenario[header] = row[index];
             });
 
-            // Load team member configurations first
-            loadTeamMemberVoices();
+                    // ADD THIS NEW CODE BLOCK:
+            // Apply scenario-specific voice settings
+            applyScenarioVoiceSettings();
             
-           // Apply scenario-specific voice settings
-applyScenarioVoiceSettings();
-
-console.log('Selected scenario:', currentScenario);
-showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-
-// Update patient image button based on image availability
-updatePatientImageButton();
-
-// Load avatar animations
-loadAvatarImage();
-
-          
+            console.log('Selected scenario:', currentScenario);
+            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
             
-            // Clear previous state and conversation
-
-clearChat();
+            // Update patient image button based on image availability
+            updatePatientImageButton();
+            
+            // Clear previous conversation
+            clearChat();
             
             // Add initial message
             addMessage('Scenario loaded. Press and hold the talk button to start the consultation.', 'ai');
@@ -4078,55 +3958,9 @@ function applyScenarioVoiceSettings() {
     // Save the updated configuration
     saveConfig();
 }
-
-        // Load team member configurations from scenario data
-function loadTeamMemberVoices() {
-    if (!currentScenario) {
-        teamMembers = {};
-        return;
-    }
-    
-    // Store original voice settings
-    originalVoiceSettings = {
-        browserVoice: document.getElementById('voiceSelect').value,
-        elevenlabsVoice: document.getElementById('elevenlabsVoice').value,
-        ttsProvider: currentTtsProvider
-    };
-    
-    // Define team members from scenario data
-    teamMembers = {
-        member1: {
-            role: currentScenario['Team Member 1 Role'] || currentScenario['Role 1'] || 'Pharmacist',
-            voice: currentScenario['Team Member 1 Voice'] || currentScenario['Voice 1'] || '',
-            name: currentScenario['Team Member 1 Name'] || currentScenario['Name 1'] || 'Healthcare Professional',
-            provider: currentScenario['Team Member 1 Provider'] || currentScenario['Provider 1'] || 'browser'
-        },
-        member2: {
-            role: currentScenario['Team Member 2 Role'] || currentScenario['Role 2'] || 'Doctor',
-            voice: currentScenario['Team Member 2 Voice'] || currentScenario['Voice 2'] || '',
-            name: currentScenario['Team Member 2 Name'] || currentScenario['Name 2'] || 'Specialist',
-            provider: currentScenario['Team Member 2 Provider'] || currentScenario['Provider 2'] || 'browser'
-        }
-    };
-    
-    // Check if this is a team scenario
-    const isTeamScenario = (teamMembers.member1.role !== 'Pharmacist' || teamMembers.member2.role !== 'Doctor') ||
-                          (teamMembers.member1.voice !== '' || teamMembers.member2.voice !== '') ||
-                          (teamMembers.member1.name !== 'Healthcare Professional' || teamMembers.member2.name !== 'Specialist');
-    
-    if (isTeamScenario) {
-        console.log('Team scenario detected:', teamMembers);
-        showStatus(`Team scenario loaded: ${teamMembers.member1.name} (${teamMembers.member1.role}) + ${teamMembers.member2.name} (${teamMembers.member2.role})`, 'info');
-    } else {
-        console.log('Single character scenario');
-        teamMembers = {}; // Clear team members for single character
-    }
-}
         
 // Update patient image button state based on scenario
 function updatePatientImageButton() {
-      console.log('updatePatientImageButton called, currentScenario:', !!currentScenario);
-    
     const button = document.getElementById('patientImageBtn');
     
     if (!currentScenario) {
@@ -4139,129 +3973,74 @@ function updatePatientImageButton() {
     }
     
     // Check for image URL in various possible column names
-const imageData = currentScenario['Patient Image'] || 
-                 currentScenario['Image URL'] || 
-                 currentScenario['Photo URL'] || 
-                 currentScenario['Image'] || 
-                 currentScenario['Photo'] ||
-                 currentScenario['Picture URL'] ||
-                 currentScenario['Picture'];
-
-  
-    console.log('imageData value:', imageData);
-console.log('Image URL field specifically:', currentScenario['Image URL']);
-
-// Check for Google Doc URL - ALSO check the Patient Image field for docs
-const docData = currentScenario['Patient Document'] || 
-               currentScenario['Document URL'] || 
-               currentScenario['Google Doc'] || 
-               currentScenario['Doc URL'] ||
-               currentScenario['Patient Doc'];
-
-    console.log('=== DEBUGGING IMAGE DETECTION ===');
-console.log('imageData:', imageData);
-console.log('docData:', docData);
-console.log('Image URL field value:', currentScenario['Image URL']);
-console.log('===================================');
+    const imageData = currentScenario['Patient Image'] || 
+                     currentScenario['Image URL'] || 
+                     currentScenario['Photo URL'] || 
+                     currentScenario['Image'] || 
+                     currentScenario['Photo'] ||
+                     currentScenario['Picture URL'] ||
+                     currentScenario['Picture'];
     
-  // Parse image URLs
-let hasImages = false;
-let currentPatientImages = [];
-if (imageData && imageData.trim() !== '') {
-    currentPatientImages = imageData
-        .split(/[,;\n\r]+/)
-        .map(url => url.trim())
-        .filter(url => url !== '');
-    hasImages = currentPatientImages.length > 0;
-    patientImages = currentPatientImages;
-}
-
-    console.log('Processed patientImages:', patientImages);
-
-// Parse document URLs
-let hasDocs = false;
-let currentPatientDocs = [];
-if (docData && docData.trim() !== '') {
-    currentPatientDocs = docData
-        .split(/[,;\n\r]+/)
-        .map(url => url.trim())
-        .filter(url => url !== '');
-    hasDocs = currentPatientDocs.length > 0;
-}
-
-// Store docs globally for access in modal (ensure it's always an array)
-if (typeof window.patientDocs === 'undefined') {
-    window.patientDocs = [];
-}
-if (currentPatientDocs.length > 0) {
-    window.patientDocs = currentPatientDocs;
-}
-
-// Update button based on available content
-if (hasImages || hasDocs) {
-    button.className = 'patient-image-btn available';
-    let buttonText = '👁️ View Patient ';
-    let items = [];
-    
-   if (hasImages) {
-    items.push(currentPatientImages.length === 1 ? 'Image' : `Images (${currentPatientImages.length})`);
-}
-if (hasDocs) {
-    items.push(currentPatientDocs.length === 1 ? 'Document' : `Documents (${currentPatientDocs.length})`);
-}
-    
-    button.innerHTML = buttonText + items.join(' & ');
-    button.disabled = false;
-} else {
-    button.className = 'patient-image-btn unavailable';
-    button.innerHTML = '❌ No Patient Media';
-    button.disabled = true;
-}
+    if (imageData && imageData.trim() !== '') {
+        // Parse multiple image URLs (separated by comma, semicolon, or line breaks)
+        patientImages = imageData
+            .split(/[,;\n\r]+/)
+            .map(url => url.trim())
+            .filter(url => url !== '');
+        
+        if (patientImages.length > 0) {
+            // Images available
+            button.className = 'patient-image-btn available';
+            if (patientImages.length === 1) {
+                button.innerHTML = '👁️ View Patient Image';
+            } else {
+                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
+            }
+            button.disabled = false;
+        } else {
+            // No valid images
+            button.className = 'patient-image-btn unavailable';
+            button.innerHTML = '❌ No Patient Image';
+            button.disabled = true;
+        }
+    } else {
+        // No image data
+        patientImages = [];
+        button.className = 'patient-image-btn unavailable';
+        button.innerHTML = '❌ No Patient Image';
+        button.disabled = true;
+    }
     
     // Load avatar image
     loadAvatarImage();
 }
 
         // Show patient image modal with gallery functionality
-       function showPatientImage() {
-    // Debug what we have
-console.log('showPatientImage called');
-console.log('currentScenario exists:', !!currentScenario);
-console.log('patientImages length:', patientImages.length);
-console.log('patientDocs length:', window.patientDocs ? window.patientDocs.length : 'undefined');
-
-if (!currentScenario) {
-    showStatus('No scenario selected', 'error');
-    return;
-}
-
-if (patientImages.length === 0 && (!window.patientDocs || window.patientDocs.length === 0)) {
-    showStatus('No media available for this scenario', 'error');
-    debugScenarioData(); // Call our debug function
-    return;
-}
-    
-    // Reset to first item
-    currentImageIndex = 0;
-    
-    // Set modal title
-    const patientName = currentScenario['Patient Name'] || 'Patient';
-    const titleElement = document.getElementById('imageModalTitle');
-    
-    let totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
-    if (totalItems === 1) {
-        titleElement.textContent = `${patientName} - Patient Media`;
-    } else {
-        titleElement.textContent = `${patientName} - Item 1 of ${totalItems}`;
-    }
-    
-    // Show modal
-    const modal = document.getElementById('imageModal');
-    modal.classList.add('show');
-    
-    // Load the first item
-    loadMediaAtIndex(0);
-}
+        function showPatientImage() {
+            if (!currentScenario || patientImages.length === 0) {
+                showStatus('No scenario selected or no images available', 'error');
+                return;
+            }
+            
+            // Reset to first image
+            currentImageIndex = 0;
+            
+            // Set modal title
+            const patientName = currentScenario['Patient Name'] || 'Patient';
+            const titleElement = document.getElementById('imageModalTitle');
+            if (patientImages.length === 1) {
+                titleElement.textContent = `${patientName} - Patient Image`;
+            } else {
+                titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
+            }
+            
+            // Show modal
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('show');
+            
+            // Load the first image
+            loadImageAtIndex(0);
+        }
         
         // Helper function to convert Google Drive share links to direct image URLs
         function convertGoogleDriveUrl(url) {
@@ -4286,245 +4065,137 @@ if (patientImages.length === 0 && (!window.patientDocs || window.patientDocs.len
         }
         
         // Load image at specific index
-       function loadMediaAtIndex(index) {
-    const totalImages = patientImages.length;
-    const totalDocs = window.patientDocs ? window.patientDocs.length : 0;
-    const totalItems = totalImages + totalDocs;
-    
-    if (index < 0 || index >= totalItems) return;
-    
-    currentImageIndex = index;
-    
-    // Update modal title with current item number
-    const patientName = currentScenario['Patient Name'] || 'Patient';
-    const titleElement = document.getElementById('imageModalTitle');
-    if (totalItems > 1) {
-        titleElement.textContent = `${patientName} - Item ${index + 1} of ${totalItems}`;
-    }
-    
-    const modal = document.getElementById('imageModal');
-    const modalBody = document.getElementById('imageModalBody');
-    
-    // Determine if this is an image or document
-    if (index < totalImages) {
-        // Load image
-        const imageUrl = patientImages[index];
-        loadImageContent(imageUrl, index, totalItems, modalBody);
-    } else {
-        // Load document
-        const docIndex = index - totalImages;
-        const docUrl = window.patientDocs[docIndex];
-        loadDocumentContent(docUrl, index, totalItems, modalBody);
-    }
-}
-
-function loadImageContent(imageUrl, currentIndex, totalItems, modalBody) {
-    // Show loading state
-    modalBody.innerHTML = `
-        <div class="image-loading">
-            <div class="spinner"></div>
-            Loading image ${currentIndex + 1} of ${totalItems}...
-        </div>
-    `;
-    
-    // Convert Google Drive URLs if needed
-    const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
-    
-    // Create image element
-    const img = new Image();
-    
-    img.onload = function() {
-        // Image loaded successfully
-        const galleryHTML = createGalleryHTML(convertedImageUrl, 'Patient Image', true);
-        modalBody.innerHTML = galleryHTML;
-        updateNavigationButtons();
-    };
-    
-    img.onerror = function() {
-        // Handle image load errors (keep your existing error handling)
-        if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-            img.hasTriedAlternative = true;
-            const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            if (fileIdMatch && fileIdMatch[1]) {
-                const fileId = fileIdMatch[1];
-                const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                img.src = alternativeUrl;
+        function loadImageAtIndex(index) {
+            if (index < 0 || index >= patientImages.length) return;
+            
+            currentImageIndex = index;
+            const imageUrl = patientImages[index];
+            
+           // Check for image URL - if somehow empty, skip
+            if (!imageUrl || imageUrl.trim() === '') {
+                showStatus('No image URL available for this patient', 'error');
                 return;
             }
-        }
-        
-        // Show error message
-        modalBody.innerHTML = createErrorHTML('Image', imageUrl, convertedImageUrl, totalItems);
-        updateNavigationButtons();
-    };
-    
-    img.src = convertedImageUrl;
-}
-
-function loadDocumentContent(docUrl, currentIndex, totalItems, modalBody) {
-    // Show loading state
-    modalBody.innerHTML = `
-        <div class="image-loading">
-            <div class="spinner"></div>
-            Loading document ${currentIndex + 1} of ${totalItems}...
-        </div>
-    `;
-    
-    // Convert Google Drive/Docs URL to embeddable format
-    const embedUrl = convertGoogleDocUrl(docUrl.trim());
-    
-    if (embedUrl) {
-        // Create iframe for Google Doc
-        const galleryHTML = createDocumentGalleryHTML(embedUrl, docUrl);
-        modalBody.innerHTML = galleryHTML;
-        updateNavigationButtons();
-    } else {
-        // Show error for unsupported document
-        modalBody.innerHTML = createDocumentErrorHTML(docUrl, totalItems);
-        updateNavigationButtons();
-    }
-}
-
-        // Convert Google Docs URL to embeddable format
-function convertGoogleDocUrl(url) {
-    if (!url || typeof url !== 'string') {
-        return null;
-    }
-    
-    // Handle various Google Docs URL formats
-    if (url.includes('docs.google.com/document/d/')) {
-        const docIdMatch = url.match(/\/document\/d\/([a-zA-Z0-9-_]+)/);
-        if (docIdMatch && docIdMatch[1]) {
-            const docId = docIdMatch[1];
-            return `https://docs.google.com/document/d/${docId}/preview`;
-        }
-    }
-    
-    // Handle Google Drive file URLs for documents
-    if (url.includes('drive.google.com/file/d/')) {
-        const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        if (fileIdMatch && fileIdMatch[1]) {
-            const fileId = fileIdMatch[1];
-            return `https://drive.google.com/file/d/${fileId}/preview`;
-        }
-    }
-    
-    // Return original URL if it's already in a usable format
-    if (url.includes('/preview') || url.includes('/embed')) {
-        return url;
-    }
-    
-    return null;
-}
-
-// Create HTML for document display
-function createDocumentGalleryHTML(embedUrl, originalUrl) {
-    const showNavigation = (patientImages.length + (window.patientDocs ? window.patientDocs.length : 0)) > 1;
-    
-    return `
-        <div class="image-gallery">
-            ${showNavigation ? `
-                <button class="gallery-nav gallery-nav-prev" onclick="previousMedia()" id="prevBtn">
-                    ❮ Previous
-                </button>
-            ` : ''}
             
-            <div style="width: 100%; height: 70vh; min-height: 500px; border-radius: 8px; overflow: hidden;">
-                <iframe 
-                    src="${embedUrl}" 
-                    style="width: 100%; height: 100%; border: none;" 
-                    frameborder="0"
-                    title="Patient Document">
-                </iframe>
-            </div>
+            // Convert Google Drive share links to direct image URLs
+            const convertedImageUrl = convertGoogleDriveUrl(imageUrl.trim());
             
-            <div style="text-align: center; margin-top: 10px;">
-                <button onclick="window.open('${originalUrl}', '_blank')" 
-                        style="padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🔗 Open in New Tab
-                </button>
-            </div>
+            // Log URL conversion for debugging
+            if (convertedImageUrl !== imageUrl.trim()) {
+                console.log('Original URL:', imageUrl.trim());
+                console.log('Converted URL:', convertedImageUrl);
+            }
             
-            ${showNavigation ? `
-                <button class="gallery-nav gallery-nav-next" onclick="nextMedia()" id="nextBtn">
-                    Next ❯
-                </button>
-            ` : ''}
-        </div>
-        
-        ${showNavigation ? `
-            <div class="gallery-indicators">
-                ${createIndicatorDots()}
-            </div>
-        ` : ''}
-    `;
-}
-
-// Create error HTML for documents
-function createDocumentErrorHTML(docUrl, totalItems) {
-    const showNavigation = totalItems > 1;
-    
-    return `
-        <div class="image-gallery">
-            ${showNavigation ? `
-                <button class="gallery-nav gallery-nav-prev" onclick="previousMedia()" id="prevBtn">
-                    ❮ Previous
-                </button>
-            ` : ''}
+            // Update modal title with current image number
+            const patientName = currentScenario['Patient Name'] || 'Patient';
+            const titleElement = document.getElementById('imageModalTitle');
+            if (patientImages.length > 1) {
+                titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+            }
             
-            <div class="image-error">
-                <h4>Cannot Load Document</h4>
-                <p>The document could not be embedded. This might be due to:</p>
-                <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-                    <li>The document is not set to "Anyone with the link can view"</li>
-                    <li>The document type is not supported for embedding</li>
-                    <li>The URL format is not recognized</li>
-                </ul>
+            // Show modal
+            const modal = document.getElementById('imageModal');
+            const modalBody = document.getElementById('imageModalBody');
+            
+            // Show loading state
+            modalBody.innerHTML = `
+                <div class="image-loading">
+                    <div class="spinner"></div>
+                    Loading image ${index + 1} of ${patientImages.length}...
+                </div>
+            `;
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
+                modalBody.innerHTML = galleryHTML;
+                updateNavigationButtons();
+            };
+            
+            img.onerror = function() {
+                // Image failed to load - try alternative Google Drive formats
+                if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First Google Drive format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
+                    
+                    // Extract file ID and try different format
+                    const fileIdMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    if (fileIdMatch && fileIdMatch[1]) {
+                        const fileId = fileIdMatch[1];
+                        // Try the uc format as backup
+                        const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                        console.log('Trying alternative URL:', alternativeUrl);
+                        img.src = alternativeUrl;
+                        return;
+                    }
+                }
                 
-                <p><strong>Document URL:</strong></p>
-                <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${docUrl}</p>
-                
-                <button onclick="window.open('${docUrl}', '_blank')" 
-                        style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🔗 Open Original Link
-                </button>
-            </div>
+                // Image failed to load completely - preserve ALL your error handling
+                modalBody.innerHTML = `
+                    <div class="image-gallery">
+                        ${patientImages.length > 1 ? `
+                            <button class="gallery-nav gallery-nav-prev" onclick="previousImage()" id="prevBtn">
+                                ❮ Previous
+                            </button>
+                        ` : ''}
+                        
+                        <div class="image-error">
+                            <h4>Failed to Load Image ${currentImageIndex + 1}</h4>
+                            <p>The image could not be loaded. This might be due to:</p>
+                            <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
+                                <li>The image is not set to "Anyone with the link can view"</li>
+                                <li>Google Drive is blocking the image embedding</li>
+                                <li>The file is not an image format</li>
+                                <li>The URL is incorrect or the file was deleted</li>
+                            </ul>
+                            
+                            <p><strong>Attempted URL:</strong></p>
+                            <p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${convertedImageUrl}</p>
+                            
+                            ${convertedImageUrl !== imageUrl.trim() ? `<p><strong>Original URL:</strong></p><p style="word-break: break-all; font-family: monospace; background: #f3f4f6; padding: 10px; border-radius: 4px; margin: 10px 0;">${imageUrl.trim()}</p>` : ''}
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
+                                <h5 style="margin: 0 0 10px 0; color: #92400e;">💡 Solutions:</h5>
+                                <p style="margin: 5px 0; color: #92400e;"><strong>For Google Drive:</strong></p>
+                                <ol style="margin: 5px 0 10px 20px; color: #92400e;">
+                                    <li>Right-click the image → "Get link"</li>
+                                    <li>Change to "Anyone with the link"</li>
+                                    <li>Use a direct image hosting service instead</li>
+                                </ol>
+                                <p style="margin: 5px 0; color: #92400e;"><strong>Alternatives:</strong> Try imgur.com, dropbox.com, or any direct image URL</p>
+                            </div>
+                            
+                            <button onclick="window.open('${imageUrl.trim()}', '_blank')" style="margin-top: 15px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                🔗 Open Original Link
+                            </button>
+                        </div>
+                        
+                        ${patientImages.length > 1 ? `
+                            <button class="gallery-nav gallery-nav-next" onclick="nextImage()" id="nextBtn">
+                                Next ❯
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    ${patientImages.length > 1 ? `
+                        <div class="gallery-indicators">
+                            ${patientImages.map((_, index) => `
+                                <button class="gallery-dot ${index === currentImageIndex ? 'active' : ''}" 
+                                        onclick="loadImageAtIndex(${index})">
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                updateNavigationButtons();
+            };
             
-            ${showNavigation ? `
-                <button class="gallery-nav gallery-nav-next" onclick="nextMedia()" id="nextBtn">
-                    Next ❯
-                </button>
-            ` : ''}
-        </div>
-        
-        ${showNavigation ? `
-            <div class="gallery-indicators">
-                ${createIndicatorDots()}
-            </div>
-        ` : ''}
-    `;
-}
-
-// Create indicator dots for mixed media
-function createIndicatorDots() {
-    const totalImages = patientImages.length;
-    const totalDocs = window.patientDocs ? window.patientDocs.length : 0;
-    const totalItems = totalImages + totalDocs;
-    
-    let dotsHTML = '';
-    for (let i = 0; i < totalItems; i++) {
-        const isActive = i === currentImageIndex ? 'active' : '';
-        const mediaType = i < totalImages ? '🖼️' : '📄';
-        dotsHTML += `
-            <button class="gallery-dot ${isActive}" 
-                    onclick="loadMediaAtIndex(${i})"
-                    title="${i < totalImages ? 'Image' : 'Document'} ${i + 1}">
-                ${mediaType}
-            </button>
-        `;
-    }
-    return dotsHTML;
-}
+            // Start loading the image
+            img.src = convertedImageUrl;
+        }
 
         // Create gallery HTML with navigation
         function createGalleryHTML(imageUrl, patientName) {
@@ -4559,27 +4230,16 @@ function createIndicatorDots() {
             `;
         }
 
-        // Navigation functions for mixed media
-function nextMedia() {
-    const totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
-    const nextIndex = (currentImageIndex + 1) % totalItems;
-    loadMediaAtIndex(nextIndex);
-}
+        // Navigation functions
+        function nextImage() {
+            const nextIndex = (currentImageIndex + 1) % patientImages.length;
+            loadImageAtIndex(nextIndex);
+        }
 
-function previousMedia() {
-    const totalItems = patientImages.length + (window.patientDocs ? window.patientDocs.length : 0);
-    const prevIndex = (currentImageIndex - 1 + totalItems) % totalItems;
-    loadMediaAtIndex(prevIndex);
-}
-
-// Keep these for backward compatibility
-function nextImage() {
-    nextMedia();
-}
-
-function previousImage() {
-    previousMedia();
-}
+        function previousImage() {
+            const prevIndex = (currentImageIndex - 1 + patientImages.length) % patientImages.length;
+            loadImageAtIndex(prevIndex);
+        }
 
         // Update navigation button states
         function updateNavigationButtons() {
@@ -4622,314 +4282,156 @@ function previousImage() {
             modal.classList.remove('show');
         }
         // Load and display avatar video or image
-function loadAvatarImage() {
-    console.log('=== AVATAR DEBUG ===');
-    console.log('currentScenario exists:', !!currentScenario);
-    if (currentScenario) {
-        console.log('Team Member 1 Idle Animation:', currentScenario['Team Member 1 Idle Animation']);
-        console.log('Team Member 2 Idle Animation:', currentScenario['Team Member 2 Idle Animation']);
-    }
-    console.log('teamMembers:', teamMembers);
-    console.log('==================');
-    
-    const avatarContainer = document.getElementById('avatarContainer');
-    const avatarContainer2 = document.getElementById('avatarContainer2');
-    
-    if (!currentScenario) {
-        hideAvatar();
-        return;
-    }
-    
-    const teamMember1IdleAnimation = currentScenario['Team Member 1 Idle Animation'];
-    const teamMember2IdleAnimation = currentScenario['Team Member 2 Idle Animation'];
-    
-    const teamMember1Name = (teamMembers.member1 && teamMembers.member1.name !== 'Healthcare Professional') 
-                           ? teamMembers.member1.name 
-                           : (currentScenario['Team Member 1 Name'] || 'Team Member 1');
-    const teamMember2Name = (teamMembers.member2 && teamMembers.member2.name !== 'Specialist') 
-                           ? teamMembers.member2.name 
-                           : (currentScenario['Team Member 2 Name'] || 'Team Member 2');
-    
-    // Load Team Member 1 first, then Team Member 2
-if (teamMember1IdleAnimation && teamMember1IdleAnimation.trim() !== '') {
-    loadAvatarInContainer(avatarContainer, teamMember1IdleAnimation, true, 'avatarContainer', teamMember1Name)
-        .then(() => {
-            // Load Team Member 2 only after Team Member 1 completes
-            if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
-                loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, true, 'avatarContainer2', teamMember2Name);
-            } else {
-                hideAvatarContainer(avatarContainer2, 'No Team Member 2 animation available');
-            }
-        })
-        .catch((error) => {
-            console.error('Error loading Team Member 1 avatar:', error);
-            hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
-            // Still try to load Team Member 2 even if Team Member 1 fails
-            if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
-                loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, true, 'avatarContainer2', teamMember2Name);
-            } else {
-                hideAvatarContainer(avatarContainer2, 'No Team Member 2 animation available');
-            }
-        });
-} else {
-    // No Team Member 1 animation, show placeholder and load Team Member 2 directly
-    hideAvatarContainer(avatarContainer, `No animation available for ${teamMember1Name}`);
-    if (teamMember2IdleAnimation && teamMember2IdleAnimation.trim() !== '') {
-        loadAvatarInContainer(avatarContainer2, teamMember2IdleAnimation, true, 'avatarContainer2', teamMember2Name);
-    } else {
-        hideAvatarContainer(avatarContainer2, 'No Team Member 2 animation available');
-    }
-}
-}
-
-// New helper function to properly load avatar videos
-function loadAvatarVideo(container, videoUrl, memberName) {
-    // Clear container first
-    container.innerHTML = '<div class="avatar-loading">Loading avatar...</div>';
-    
-    // Create video element programmatically
-const video = document.createElement('video');
-video.className = 'avatar-video';
-video.src = videoUrl;
-video.autoplay = true;
-video.loop = true;
-video.muted = true;
-video.playsInline = true;
-video.preload = 'metadata';
-
-// Add debugging for the video URL
-console.log('Attempting to load video:', videoUrl, 'for:', memberName, 'in container:', container.id);
-
-// Test if URL is accessible
-fetch(videoUrl, { method: 'HEAD' })
-    .then(response => {
-        console.log('URL accessibility test for', memberName, '- Status:', response.status, response.ok ? 'OK' : 'FAILED');
-    })
-    .catch(error => {
-        console.error('URL accessibility test failed for', memberName, ':', error);
-    });
-    
-    // Create name element
-    const nameDiv = document.createElement('div');
-    nameDiv.className = 'avatar-name';
-    nameDiv.textContent = memberName;
-    
-    // Handle successful load
-video.addEventListener('loadeddata', function() {
-    console.log('Video loaded successfully for:', memberName, 'in container:', container.id);
-    container.innerHTML = '';
-    container.appendChild(video);
-    container.appendChild(nameDiv);
-    
-    // Force play if needed
-    video.play().catch(e => {
-        console.log('Video autoplay blocked, user interaction needed:', e);
-    });
-});
-    
-    // Handle errors
-video.addEventListener('error', function(e) {
-    console.error('Video failed to load for:', memberName, 'in container:', container.id, e);
-    console.error('Video URL that failed:', videoUrl);
-    container.innerHTML = `
-        <div class="avatar-error">
-            ${memberName} avatar failed to load<br>
-            <small>URL: ${videoUrl}</small>
-        </div>
-        <div class="avatar-name">${memberName}</div>
-    `;
-});
-    
-    // Timeout fallback
-    setTimeout(() => {
-        if (container.innerHTML.includes('Loading avatar')) {
-            console.warn('Video load timeout for:', memberName);
-            container.innerHTML = `
-                <div class="avatar-error">
-                    ${memberName} avatar load timeout
-                </div>
-                <div class="avatar-name">${memberName}</div>
-            `;
-        }
-    }, 10000);
-}
-
-        // Helper function to load avatar in specific container
-function loadAvatarInContainer(container, mediaUrl, isVideo, containerId, characterName) {
-    return new Promise((resolve, reject) => {
-        // Show container and loading state
-        container.style.display = 'block';
-        container.innerHTML = `<div class="avatar-loading" id="avatarLoading">Loading ${characterName} avatar...</div>`;
-        
-        // Convert Google Drive URLs if needed
-        const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
-        
-        if (isVideo) {
-            // Create video element for idle animation
-            const video = document.createElement('video');
+        function loadAvatarImage() {
+            const avatarContainer = document.getElementById('avatarContainer');
             
-            video.oncanplaythrough = function() {
-                // Video loaded successfully
-                container.innerHTML = `
-                    <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
-                        Your browser does not support the video tag.
-                    </video>
-                    <div class="avatar-name">${characterName}</div>
+            if (!currentScenario) {
+                hideAvatar();
+                return;
+            }
+            
+            // Check for idle animation URL first (column AA)
+            const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
+                                   currentScenario['Idle Animation'] ||
+                                   currentScenario['Animation URL'] ||
+                                   currentScenario['Video URL'];
+            
+            // Check for static avatar URL as fallback
+            const avatarUrl = currentScenario['Avatar URL'] || 
+                             currentScenario['Avatar'] ||
+                             currentScenario['Avatar Image'] ||
+                             currentScenario['Patient Avatar'];
+            
+            // Use idle animation if available, otherwise use static image
+            const mediaUrl = idleAnimationUrl && idleAnimationUrl.trim() !== '' ? idleAnimationUrl : avatarUrl;
+            const isVideo = idleAnimationUrl && idleAnimationUrl.trim() !== '';
+            
+            if (!mediaUrl || mediaUrl.trim() === '') {
+                hideAvatar();
+                return;
+            }
+            
+            // Show container and loading state
+            avatarContainer.style.display = 'block';
+            avatarContainer.innerHTML = '<div class="avatar-loading" id="avatarLoading">Loading avatar...</div>';
+            
+            // Convert Google Drive URLs if needed
+            const convertedUrl = convertGoogleDriveUrl(mediaUrl.trim());
+            
+            const patientName = currentScenario['Patient Name'] || currentScenario['Name'] || 'Patient';
+            
+            if (isVideo) {
+                // Create video element for idle animation
+                const video = document.createElement('video');
+                
+                video.oncanplaythrough = function() {
+                    // Video loaded successfully
+                    avatarContainer.innerHTML = `
+                        <video src="${convertedUrl}" class="avatar-video" autoplay loop muted playsinline>
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="avatar-name">${patientName}</div>
+                    `;
+                    console.log('Avatar video loaded successfully:', convertedUrl);
+                };
+                
+                video.onerror = function() {
+                    // Try alternative Google Drive format if applicable
+                    if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
+                        console.log('First video format failed, trying alternative...');
+                        video.hasTriedAlternative = true;
+                        
+                        const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                        if (fileIdMatch && fileIdMatch[1]) {
+                            const fileId = fileIdMatch[1];
+                            const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                            console.log('Trying alternative video URL:', alternativeUrl);
+                            video.src = alternativeUrl;
+                            return;
+                        }
+                    }
+                    
+                    // Video failed to load, try fallback to static image if available
+                    if (avatarUrl && avatarUrl.trim() !== '') {
+                        console.log('Video failed, falling back to static avatar image');
+                        loadStaticAvatar(avatarUrl, patientName);
+                    } else {
+                        // No fallback available
+                        avatarContainer.innerHTML = `
+                            <div class="avatar-error">
+                                Avatar video could not be loaded.<br>
+                                <small>Check URL: ${mediaUrl}</small>
+                            </div>
+                            <div class="avatar-name">${patientName}</div>
+                        `;
+                        console.error('Avatar video failed to load:', mediaUrl);
+                    }
+                };
+                
+                // Start loading the video
+                video.src = convertedUrl;
+            } else {
+                // Load static image
+                loadStaticAvatar(mediaUrl, patientName);
+            }
+        }
+        
+        // Helper function to load static avatar image
+        function loadStaticAvatar(avatarUrl, patientName) {
+            const avatarContainer = document.getElementById('avatarContainer');
+            const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+            
+            // Create image element
+            const img = new Image();
+            
+            img.onload = function() {
+                // Image loaded successfully
+                avatarContainer.innerHTML = `
+                    <img src="${convertedUrl}" alt="Patient Avatar" class="avatar-image">
+                    <div class="avatar-name">${patientName}</div>
                 `;
-                console.log(`${characterName} avatar video loaded successfully:`, convertedUrl);
-                resolve(); // Resolve the promise when video loads
+                console.log('Avatar image loaded successfully:', convertedUrl);
             };
             
-            video.onerror = function() {
+            img.onerror = function() {
                 // Try alternative Google Drive format if applicable
-                if (mediaUrl.includes('drive.google.com') && !video.hasTriedAlternative) {
-                    console.log(`First ${characterName} video format failed, trying alternative...`);
-                    video.hasTriedAlternative = true;
+                if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
+                    console.log('First avatar format failed, trying alternative...');
+                    img.hasTriedAlternative = true;
                     
-                    const fileIdMatch = mediaUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                    const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
                     if (fileIdMatch && fileIdMatch[1]) {
                         const fileId = fileIdMatch[1];
                         const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                        console.log(`Trying alternative ${characterName} video URL:`, alternativeUrl);
-                        video.src = alternativeUrl;
+                        console.log('Trying alternative avatar URL:', alternativeUrl);
+                        img.src = alternativeUrl;
                         return;
                     }
                 }
                 
-                // Video failed to load
-                container.innerHTML = `
+                // Image failed to load completely
+                avatarContainer.innerHTML = `
                     <div class="avatar-error">
-                        ${characterName} avatar video could not be loaded.<br>
-                        <small>Check URL: ${mediaUrl}</small>
+                        Avatar could not be loaded.<br>
+                        <small>Check URL: ${avatarUrl}</small>
                     </div>
-                    <div class="avatar-name">${characterName}</div>
+                    <div class="avatar-name">${patientName}</div>
                 `;
-                console.error(`${characterName} avatar video failed to load:`, mediaUrl);
-                reject(new Error(`Failed to load ${characterName} video`));
+                console.error('Avatar failed to load:', avatarUrl);
             };
             
-            // Start loading the video
-            video.src = convertedUrl;
-        } else {
-            // Load static image
-            loadStaticAvatarInContainerPromise(container, mediaUrl, characterName)
-                .then(resolve)
-                .catch(reject);
+            // Start loading the image
+            img.src = convertedUrl;
         }
-    });
-}
-
         
-
-        // Clear all global state when switching scenarios
-function clearScenarioState() {
-    // Reset image index
-    currentImageIndex = 0;
-    
-    // Clear any pending avatar loads
-    const containers = [
-        document.getElementById('avatarContainer'),
-        document.getElementById('avatarContainer2')
-    ];
-    
-    containers.forEach(container => {
-        if (container) {
-            container.innerHTML = '';
-        }
-    });
-} 
- 
-// Helper function to load static avatar image in specific container
-// Helper function to load static avatar image in specific container (Promise version)
-function loadStaticAvatarInContainerPromise(container, avatarUrl, characterName) {
-    return new Promise((resolve, reject) => {
-        const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
-        
-        // Create image element
-        const img = new Image();
-        
-        img.onload = function() {
-            // Image loaded successfully
-            container.innerHTML = `
-                <img src="${convertedUrl}" alt="${characterName} Avatar" class="avatar-image">
-                <div class="avatar-name">${characterName}</div>
-            `;
-            console.log(`${characterName} avatar image loaded successfully:`, convertedUrl);
-            resolve();
-        };
-        
-        img.onerror = function() {
-            // Try alternative Google Drive format if applicable
-            if (avatarUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
-                console.log(`First ${characterName} avatar format failed, trying alternative...`);
-                img.hasTriedAlternative = true;
-                
-                const fileIdMatch = avatarUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                if (fileIdMatch && fileIdMatch[1]) {
-                    const fileId = fileIdMatch[1];
-                    const alternativeUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                    console.log(`Trying alternative ${characterName} avatar URL:`, alternativeUrl);
-                    img.src = alternativeUrl;
-                    return;
-                }
-            }
-            
-            // Image failed to load completely
-            container.innerHTML = `
-                <div class="avatar-error">
-                    ${characterName} avatar could not be loaded.<br>
-                    <small>Check URL: ${avatarUrl}</small>
-                </div>
-                <div class="avatar-name">${characterName}</div>
-            `;
-            console.error(`${characterName} avatar failed to load:`, avatarUrl);
-            reject(new Error(`Failed to load ${characterName} image`));
-        };
-        
-        // Start loading the image
-        img.src = convertedUrl;
-    });
-}
-
-// Helper function to hide specific avatar container
-function hideAvatarContainer(container, placeholderText) {
-    container.style.display = 'block';
-    container.innerHTML = `
-        <div class="avatar-placeholder">
-            <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">${placeholderText}</div>
-        </div>
-    `;
-}
-
-// Helper function to hide specific avatar container
-function hideAvatarContainer(container, placeholderText) {
-    container.style.display = 'block';
-    container.innerHTML = `
-        <div class="avatar-placeholder">
-            <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">${placeholderText}</div>
-        </div>
-    `;
-}
-              
         // Reset avatar container to placeholder state
-      function hideAvatar() {
+        function hideAvatar() {
     const avatarContainer = document.getElementById('avatarContainer');
     avatarContainer.style.display = 'block';
     avatarContainer.innerHTML = `
         <div class="avatar-placeholder">
             <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">Select a scenario to load team member 1</div>
-        </div>
-    `;
-    
-    const avatarContainer2 = document.getElementById('avatarContainer2');
-    avatarContainer2.style.display = 'block';
-    avatarContainer2.innerHTML = `
-        <div class="avatar-placeholder">
-            <div class="avatar-placeholder-icon">👤</div>
-            <div class="avatar-name no-avatar">Select a scenario to load team member 2</div>
+            <div class="avatar-name no-avatar">Select a scenario to load patient avatar</div>
         </div>
     `;
 }
@@ -4957,6 +4459,24 @@ document.addEventListener('keydown', function(event) {
 // ===== KEYBOARD SHORTCUTS =====
 // Global keyboard event handler for shortcuts
 document.addEventListener('keydown', function(event) {
+// Handle spacebar release for push-to-talk
+document.addEventListener('keyup', function(event) {
+    const activeElement = document.activeElement;
+    const isTextInput = (activeElement.tagName === 'INPUT' && 
+                        (activeElement.type === 'text' || 
+                         activeElement.type === 'password' || 
+                         activeElement.type === 'email' || 
+                         activeElement.type === 'search')) || 
+                       activeElement.tagName === 'TEXTAREA' ||
+                       activeElement.contentEditable === 'true';
+    
+    // Space bar release - stop recording and send
+    if (event.code === 'Space' && !isTextInput && recordingState === 'recording') {
+        console.log('Spacebar released - stopping and sending');
+        event.preventDefault();
+        handleRecordStop(event);
+    }
+});
     console.log('Key pressed:', event.key, 'Code:', event.code, 'Active element:', document.activeElement.tagName, 'ID:', document.activeElement.id);
     
     // Check if user is typing in a text input field (but allow shortcuts for dropdowns)
@@ -4971,21 +4491,19 @@ document.addEventListener('keydown', function(event) {
     
     console.log('Is text input:', isTextInput, 'Recording state:', recordingState);
     
-    // Space bar for start/stop recording (allow when not typing in text inputs)
-    if (event.code === 'Space' && !isTextInput) {
-        console.log('Spacebar detected - attempting to toggle recording');
-        event.preventDefault(); // Prevent page scrolling
-        const talkButton = document.getElementById('talkButton');
-        
-        if (talkButton) {
-            console.log('Talk button found, disabled:', talkButton.disabled);
-            if (!talkButton.disabled) {
-                console.log('Calling toggleRecording()');
-                toggleRecording();
-            }
+  // Space bar for push-to-talk (press to start, release to send)
+if (event.code === 'Space' && !isTextInput) {
+    const talkButton = document.getElementById('talkButton');
+    
+    if (talkButton && !talkButton.disabled) {
+        if (event.type === 'keydown' && !event.repeat) {
+            console.log('Spacebar pressed - starting recording');
+            event.preventDefault();
+            handleRecordStart(event);
         }
-        return;
     }
+    return;
+}
     
     // Enter key for sending message
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -5201,12 +4719,11 @@ if (!webhookUrl) {
             addMessage('<div class="spinner"></div>', 'ai');
             
             try {
-              // Prepare data to send
+                // Prepare data to send
                 const payload = {
                     sessionId: sessionId,  // Include unique session ID
                     message: message,
                     scenario: currentScenario,
-                    teamComposition: teamMembers, // Add team member information
                     timestamp: new Date().toISOString(),
                     conversationHistory: conversationHistory,
                     studentInfo: {
@@ -5255,16 +4772,10 @@ if (!webhookUrl) {
                 // Remove loading spinner
                 removeLastMessage();
                 
-               // Check for multi-character response first
-                if (data.responseType === 'multi-character' && data.responses) {
-                    // Handle multi-speaker responses
-                    handleMultiSpeakerResponse(data.responses);
-                    return; // Exit early for multi-character
-                }
-                
-                // Check various possible response formats for single character
+                // Check various possible response formats
                 let aiResponse = null;
                 
+                // Common n8n response formats
                 if (data.response) {
                     aiResponse = data.response;
                 } else if (data.message) {
@@ -5275,21 +4786,16 @@ if (!webhookUrl) {
                     aiResponse = data.output;
                 } else if (typeof data === 'string') {
                     aiResponse = data;
+                } else if (Array.isArray(data) && data.length > 0) {
+                    // Sometimes n8n returns an array
+                    aiResponse = data[0].response || data[0].message || data[0];
                 }
                 
                 if (aiResponse) {
-                    // Check if this is a multi-speaker response
-                    if (Array.isArray(data) && data.length > 0 && data[0].speaker) {
-                        // Handle multi-speaker responses
-                        handleMultiSpeakerResponse(data);
-                    } else if (data.responses && Array.isArray(data.responses)) {
-                        // Alternative format for multi-speaker
-                        handleMultiSpeakerResponse(data.responses);
-                    } else {
-                        // Single speaker response (existing logic)
-                        addMessage(aiResponse, 'ai');
-                        speakText(aiResponse);
-                    }
+                    addMessage(aiResponse, 'ai');
+                    
+                    // Speak the response using selected TTS provider
+                    speakText(aiResponse);
                 } else {
                     console.error('Could not find response in data:', data);
                     showStatus('Unexpected response format from webhook', 'error');
@@ -5310,252 +4816,6 @@ if (!webhookUrl) {
                 }
             }
         }
-
-        // Handle multi-speaker responses
-// Handle multi-speaker responses
-async function handleMultiSpeakerResponse(responses) {
-    if (!Array.isArray(responses)) {
-        console.error('Invalid multi-speaker response format');
-        return;
-    }
-    
-    for (const response of responses) {
-        if (response.speaker && response.text) {
-            await handleTeamMemberResponse(response);
-          
-        }
-    }
-}
-
-// Handle individual team member response
-async function handleTeamMemberResponse(response) {
-    const { speaker, text, speakerRole } = response;
-    
-    // Add message with speaker identification
-    addMessage(`<strong style="color: var(--primary-color);">${speaker}:</strong> ${text}`, 'ai');
-    
-    // Wait for previous audio to finish before starting new speaker
-    await waitForCurrentAudioToFinish();
-    
-    // Speak with appropriate voice
-    await speakAsTeamMember(text, speakerRole || speaker);
-}
-        // Helper function to wait for current audio to finish
-function waitForCurrentAudioToFinish() {
-    return new Promise((resolve) => {
-        // Stop any currently playing audio first
-        if (currentAudio) {
-            currentAudio.pause();
-            currentAudio = null;
-        }
-        synthesis.cancel();
-        
-        // Small delay to ensure audio systems are clear
-        setTimeout(resolve, 500);
-    });
-}
-
-// Speak text as specific team member
-async function speakAsTeamMember(text, roleOrName) {
-    // Find the team member by role or name
-    const member = Object.values(teamMembers).find(m => 
-        m.role.toLowerCase() === roleOrName.toLowerCase() || 
-        m.name.toLowerCase() === roleOrName.toLowerCase()
-    );
-    
-    if (!member || Object.keys(teamMembers).length === 0) {
-        // Fallback to default voice for single character scenarios
-        speakText(text);
-        return;
-    }
-    
-    console.log(`Speaking as ${member.name} (${member.role}) with provider: ${member.provider}`);
-    
-    // Show visual indicator of who's speaking
-    showSpeakerIndicator(member.name, member.role);
-    
-    // Highlight the speaking avatar's name box
-    highlightSpeakingAvatar(member.name);
-    
-    // Apply team member's voice settings and wait for completion
-    if (member.provider === 'browser' && member.voice) {
-        await speakWithTeamMemberBrowserVoice(text, member.voice);
-    } else if (member.provider === 'elevenlabs' && member.voice) {
-        await speakWithTeamMemberElevenLabsVoice(text, member.voice);
-    } else {
-        // Use current provider with original settings
-        speakText(text);
-    }
-    
-    // Remove highlight when done speaking
-    removeAvatarHighlights();
-}
-
-// Helper function to speak with specific browser voice
-async function speakWithTeamMemberBrowserVoice(text, voiceName) {
-    // Store current voice setting
-    const currentVoiceIndex = document.getElementById('voiceSelect').value;
-    
-    // Find and set the team member's voice
-    const voices = synthesis.getVoices();
-    let voiceIndex = null;
-    
-    for (let i = 0; i < voices.length; i++) {
-        if (voices[i].name.toLowerCase().includes(voiceName.toLowerCase()) ||
-            voiceName.toLowerCase().includes(voices[i].name.toLowerCase())) {
-            voiceIndex = i;
-            break;
-        }
-    }
-    
-    if (voiceIndex !== null) {
-        document.getElementById('voiceSelect').value = voiceIndex;
-    }
-    
-    // Speak with the selected voice
-    speakWithBrowser(text);
-    
-    // Wait for speech to complete before restoring
-    synthesis.addEventListener('voiceschanged', function restoreVoice() {
-        document.getElementById('voiceSelect').value = currentVoiceIndex;
-        synthesis.removeEventListener('voiceschanged', restoreVoice);
-    });
-    
-    // Fallback timeout restoration
-    setTimeout(() => {
-        document.getElementById('voiceSelect').value = currentVoiceIndex;
-    }, text.length * 100 + 2000);
-}
-
-// Helper function to speak with specific ElevenLabs voice
-async function speakWithTeamMemberElevenLabsVoice(text, voiceNameOrId) {
-    // Store current voice setting
-    const currentVoiceId = document.getElementById('elevenlabsVoice').value;
-    
-    // Find the voice by name or use ID directly
-    let targetVoiceId = voiceNameOrId;
-    
-    if (elevenlabsVoices.length > 0) {
-        const foundVoice = elevenlabsVoices.find(voice => 
-            voice.name.toLowerCase().includes(voiceNameOrId.toLowerCase()) ||
-            voice.voice_id === voiceNameOrId
-        );
-        
-        if (foundVoice) {
-            targetVoiceId = foundVoice.voice_id;
-        }
-    }
-    
-    // Temporarily set the voice
-    document.getElementById('elevenlabsVoice').value = targetVoiceId;
-    
-    try {
-        // Speak with ElevenLabs and wait for completion
-        await speakWithElevenLabsAndWait(text);
-    } finally {
-        // Restore original voice
-        setTimeout(() => {
-            document.getElementById('elevenlabsVoice').value = currentVoiceId;
-        }, 500);
-    }
-}
-
-// Modified ElevenLabs function that returns a Promise
-async function speakWithElevenLabsAndWait(text) {
-    return new Promise(async (resolve, reject) => {
-        const apiKey = document.getElementById('elevenlabsApiKey').value;
-        const voiceId = document.getElementById('elevenlabsVoice').value;
-        
-        if (!apiKey || !voiceId) {
-            console.error('ElevenLabs API key or voice not available');
-            resolve();
-            return;
-        }
-        
-        try {
-            const stability = parseFloat(document.getElementById('elevenlabsStability').value);
-            const clarity = parseFloat(document.getElementById('elevenlabsClarity').value);
-            
-            const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'audio/mpeg',
-                    'Content-Type': 'application/json',
-                    'xi-api-key': apiKey
-                },
-                body: JSON.stringify({
-                    text: text,
-                    model_id: 'eleven_monolingual_v1',
-                    voice_settings: {
-                        stability: stability,
-                        similarity_boost: clarity,
-                        style: 0.0,
-                        use_speaker_boost: true
-                    }
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`ElevenLabs API error: ${response.status}`);
-            }
-            
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            
-            currentAudio = new Audio(audioUrl);
-            
-            currentAudio.onended = function() {
-                console.log('ElevenLabs audio finished playing');
-                URL.revokeObjectURL(audioUrl);
-                currentAudio = null;
-                resolve(); // Resolve when audio finishes
-            };
-            
-            currentAudio.onerror = function(error) {
-                console.error('ElevenLabs audio playback error:', error);
-                URL.revokeObjectURL(audioUrl);
-                currentAudio = null;
-                resolve(); // Resolve even on error to continue
-            };
-            
-            await currentAudio.play();
-            
-        } catch (error) {
-            console.error('ElevenLabs TTS error:', error);
-            resolve(); // Resolve on error to continue
-        }
-    });
-}
-
-        // Show visual indicator of who's speaking
-function showSpeakerIndicator(memberName, role) {
-    // Remove existing indicator
-    const existingIndicator = document.getElementById('speakerIndicator');
-    if (existingIndicator) {
-        existingIndicator.remove();
-    }
-    
-    // Create new indicator
-    const indicator = document.createElement('div');
-    indicator.id = 'speakerIndicator';
-    indicator.className = 'speaker-indicator active';
-    indicator.textContent = `${memberName} (${role}) speaking...`;
-    
-    // Add to body
-    document.body.appendChild(indicator);
-    
-    // Auto-hide after 4 seconds
-    setTimeout(() => {
-        if (indicator && indicator.parentNode) {
-            indicator.classList.remove('active');
-            setTimeout(() => {
-                if (indicator && indicator.parentNode) {
-                    indicator.remove();
-                }
-            }, 300);
-        }
-    }, 4000);
-}
 
         // ===== SUBMIT CONVERSATION FUNCTION =====
         // Function to submit conversation history to a separate webhook
@@ -5873,7 +5133,7 @@ if (!submitWebhookUrl) {
             },
             body: JSON.stringify({
                 text: text,
-                model_id: 'eleven_monolingual_v1',
+                model_id: 'eleven_turbo_v2_5',
                 voice_settings: {
                     stability: stability,
                     similarity_boost: clarity,
@@ -6404,108 +5664,17 @@ function closeHelpModal(event) {
     const modal = document.getElementById('helpModal');
     modal.classList.remove('show');
 }
-
-        // Function to highlight the speaking avatar's name box
-function highlightSpeakingAvatar(speakerName) {
-    // Remove any existing highlights first
-    removeAvatarHighlights();
-    
-    // Determine which container to highlight based on speaker name
-    let targetContainer = null;
-    
-    // Handle single character scenarios
-    if (speakerName === 'single') {
-        targetContainer = document.getElementById('avatarContainer');
-    } else {
-        // Check both team members to find the matching name
-        if (teamMembers.member1 && teamMembers.member1.name === speakerName) {
-            targetContainer = document.getElementById('avatarContainer');
-        } else if (teamMembers.member2 && teamMembers.member2.name === speakerName) {
-            targetContainer = document.getElementById('avatarContainer2');
-        }
-    }
-    
-    if (targetContainer) {
-        // Add speaking class to the name box
-        const nameBox = targetContainer.querySelector('.avatar-name');
-        if (nameBox) {
-            nameBox.classList.add('speaking');
-        }
-        
-        console.log(`Highlighted name box for ${speakerName}`);
-    }
-}
-
-// Function to remove all avatar highlights
-function removeAvatarHighlights() {
-    const containers = [
-        document.getElementById('avatarContainer'),
-        document.getElementById('avatarContainer2')
-    ];
-    
-    containers.forEach(container => {
-        if (container) {
-            const nameBox = container.querySelector('.avatar-name');
-            if (nameBox) {
-                nameBox.classList.remove('speaking');
-            }
-        }
-    });
-}
-
-        // Add this anywhere in your script section for debugging
-function debugScenarioData() {
-    console.log('=== SCENARIO DEBUG ===');
-    console.log('currentScenario exists:', !!currentScenario);
-    if (currentScenario) {
-        console.log('Patient Image field:', currentScenario['Patient Image']);
-        console.log('All scenario keys:', Object.keys(currentScenario));
-        console.log('Full scenario object:', currentScenario);
-    }
-    console.log('patientImages array:', patientImages);
-    console.log('window.patientDocs array:', window.patientDocs);
-    console.log('===================');
-}
-
-// Show patient document in a new tab/window
-function showPatientDoc() {
-    if (!currentScenario) {
-        showStatus('No scenario selected', 'error');
-        return;
-    }
-    
-    const docData = currentScenario['Patient Document'] || 
-                   currentScenario['Document URL'] || 
-                   currentScenario['Google Doc'] || 
-                   currentScenario['Doc URL'] ||
-                   currentScenario['Patient Doc'];
-    
-    if (!docData || docData.trim() === '') {
-        showStatus('No document available for this scenario', 'error');
-        return;
-    }
-    
-    // Convert to viewable format if it's a Google Doc
-    let viewableUrl = docData.trim();
-    
-    if (viewableUrl.includes('docs.google.com/document')) {
-        // Convert edit links to preview links
-        viewableUrl = viewableUrl.replace('/edit', '/preview');
-        // Remove extra parameters that might cause issues
-        if (viewableUrl.includes('?')) {
-            const baseUrl = viewableUrl.split('?')[0];
-            viewableUrl = baseUrl + '/preview';
-        }
-    }
-    
-    // Open in new tab
-    window.open(viewableUrl, '_blank');
-    showStatus('Document opened in new tab', 'success');
-}
         
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
