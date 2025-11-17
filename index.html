@@ -1638,7 +1638,7 @@ function assessGIWindow(data, baseline, target, targetUpper, targetLower, drugNu
     var reachesTarget = timeToTarget !== null && timeToTarget <= maxAllowedTime;
     var maintainsTarget = firstInRange !== -1 && !consecutiveFailureAfterSuccess;
     
-    var passed = reachesTarget && maintainsTarget;
+ var passed = percentInRange >= 60;
     
     return {
         passed: passed,
@@ -1675,23 +1675,17 @@ function generateGIFeedback(passed, reachesTarget, maintainsTarget, percentInRan
     var drugName = drugNum === 1 ? 'Drug A' : 'Drug B';
     
     if (passed) {
-        return drugName + ' GI target achieved and maintained - optimal drug distribution.';
+        return drugName + ' GI target achieved - ' + percentInRange.toFixed(1) + '% of simulation within GI target range.';
     }
     
     var feedback = [];
-    if (!reachesTarget) {
-        if (timeToTarget === null) {
-            feedback.push(drugName + ' GI target never reached - consider increasing doses or improving formulation');
+    if (percentInRange < 60) {
+        if (percentInRange < 30) {
+            feedback.push('Poor ' + drugName + ' GI achievement (' + percentInRange.toFixed(1) + '%) - significant formulation or dosing changes needed');
+        } else if (percentInRange < 50) {
+            feedback.push('Suboptimal ' + drugName + ' GI achievement (' + percentInRange.toFixed(1) + '%) - optimize absorption and distribution parameters');
         } else {
-            feedback.push(drugName + ' GI target reached too late - optimize absorption parameters');
-        }
-    }
-    
-    if (!maintainsTarget) {
-        if (percentInRange < 50) {
-            feedback.push('Poor ' + drugName + ' GI maintenance (' + percentInRange.toFixed(1) + '%) - review elimination and distribution rates');
-        } else if (percentInRange < 80) {
-            feedback.push('Adequate ' + drugName + ' GI maintenance (' + percentInRange.toFixed(1) + '%) - fine-tune PK parameters');
+            feedback.push('Close to ' + drugName + ' GI target (' + percentInRange.toFixed(1) + '%) - minor PK adjustments may achieve 60% threshold');
         }
     }
     
@@ -2587,6 +2581,7 @@ function initializeSimTimeButtons() {
 </script>
 </body>
 </html>                                    
+
 
 
 
