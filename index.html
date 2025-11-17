@@ -1588,7 +1588,7 @@ function assessTherapeuticWindow(data, baseline, target, targetUpper, targetLowe
     var reachesTarget = timeToTarget !== null && timeToTarget <= maxAllowedTime;
     var maintainsTarget = firstInRange !== -1 && !consecutiveFailureAfterSuccess;
     
-    var passed = percentInRange >= 60;
+    var passed = percentInRange >= 90;
     
     return {
         passed: passed,
@@ -1638,7 +1638,7 @@ function assessGIWindow(data, baseline, target, targetUpper, targetLower, drugNu
     var reachesTarget = timeToTarget !== null && timeToTarget <= maxAllowedTime;
     var maintainsTarget = firstInRange !== -1 && !consecutiveFailureAfterSuccess;
     
- var passed = percentInRange >= 60;
+ var passed = percentInRange >= 90;
     
     return {
         passed: passed,
@@ -1658,13 +1658,13 @@ function generateFeedback(passed, reachesTarget, maintainsTarget, percentInRange
     }
     
     var feedback = [];
-    if (percentInRange < 60) {
-        if (percentInRange < 30) {
+    if (percentInRange < 90) {
+        if (percentInRange < 50) {
             feedback.push('Poor target achievement (' + percentInRange.toFixed(1) + '%) - significant dose or timing adjustments needed');
-        } else if (percentInRange < 50) {
+        } else if (percentInRange < 70) {
             feedback.push('Suboptimal target achievement (' + percentInRange.toFixed(1) + '%) - optimize dosing intervals and parameters');
         } else {
-            feedback.push('Close to target (' + percentInRange.toFixed(1) + '%) - minor adjustments may achieve 60% threshold');
+            feedback.push('Close to target (' + percentInRange.toFixed(1) + '%) - minor adjustments may achieve 90% threshold');
         }
     }
     
@@ -1679,13 +1679,13 @@ function generateGIFeedback(passed, reachesTarget, maintainsTarget, percentInRan
     }
     
     var feedback = [];
-    if (percentInRange < 60) {
-        if (percentInRange < 30) {
+    if (percentInRange < 90) {
+        if (percentInRange < 50) {
             feedback.push('Poor ' + drugName + ' GI achievement (' + percentInRange.toFixed(1) + '%) - significant formulation or dosing changes needed');
-        } else if (percentInRange < 50) {
+        } else if (percentInRange < 70) {
             feedback.push('Suboptimal ' + drugName + ' GI achievement (' + percentInRange.toFixed(1) + '%) - optimize absorption and distribution parameters');
         } else {
-            feedback.push('Close to ' + drugName + ' GI target (' + percentInRange.toFixed(1) + '%) - minor PK adjustments may achieve 60% threshold');
+            feedback.push('Close to ' + drugName + ' GI target (' + percentInRange.toFixed(1) + '%) - minor PK adjustments may achieve 90% threshold');
         }
     }
     
@@ -2581,6 +2581,7 @@ function initializeSimTimeButtons() {
 </script>
 </body>
 </html>                                    
+
 
 
 
