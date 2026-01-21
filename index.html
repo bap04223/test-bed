@@ -4719,36 +4719,14 @@ async function connectStream() {
         }
         
      console.log('SDP answer sent successfully');
-updateAvatarStatus(`Waiting for connection to establish...`, 'loading');
+updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
 
-// Wait for ICE connection to be established before returning
-const connectionEstablished = await new Promise((resolve, reject) => {
-    const maxWaitTime = 30000; // 30 seconds timeout
-    const startTime = Date.now();
-    
-    const checkConnection = setInterval(() => {
-        if (isStreamConnected) {
-            clearInterval(checkConnection);
-            console.log('Connection confirmed established');
-            resolve(true);
-        } else if (Date.now() - startTime > maxWaitTime) {
-            clearInterval(checkConnection);
-            console.error('Connection timeout - stream did not establish in time');
-            reject(new Error('Connection timeout'));
-        }
-    }, 100);
-});
+// Start connection health monitoring
+startConnectionHealthMonitoring();
 
-if (connectionEstablished) {
-    updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
-    
-    // Start connection health monitoring
-    startConnectionHealthMonitoring();
-    
-    // Start idle monitoring if idle animation is available
-    if (idleAnimationUrl) {
-        startIdleMonitoring();
-    }
+// Start idle monitoring if idle animation is available
+if (idleAnimationUrl) {
+    startIdleMonitoring();
 }
         
               
@@ -6899,8 +6877,6 @@ async function loadChatbotConfigurations() {
 });
                 }
             }
-
-            
             
             // AUTO-POPULATE API KEYS FROM FIRST CONFIGURATION
 if (chatbotConfigurations.length > 0) {
@@ -6923,8 +6899,7 @@ if (chatbotConfigurations.length > 0) {
 }
             
             populateChatbotDropdown();
-
-                    
+            
             // Enhanced status message showing what was auto-populated
 let statusParts = [`Loaded ${chatbotConfigurations.length} configurations`];
 if (chatbotConfigurations.length > 0) {
@@ -9063,6 +9038,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>                              
+
 
 
 
