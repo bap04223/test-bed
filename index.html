@@ -3359,7 +3359,7 @@ let idleAnimationBlob = null;     // Cached idle animation as blob for download
 let isPlayingIdle = false;        // Track if idle animation is currently playing
 let idleCheckInterval = null;     // Interval for checking when to show idle
 let lastActivityTime = Date.now(); // Last time there was avatar activity
-const IDLE_DELAY = 1000;         // Show idle after 1 seconds of inactivity
+const IDLE_DELAY = 2000;         // Show idle after 1 seconds of inactivity
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -5582,7 +5582,6 @@ function startIdleMonitoring() {
         clearInterval(idleCheckInterval);
     }
 
-      
     // Start the idle animation running in background immediately
     startIdleAnimation();
     
@@ -5592,27 +5591,37 @@ function startIdleMonitoring() {
         const timeSinceActivity = Date.now() - lastActivityTime;
         const avatarVideo = document.getElementById('avatarVideo');
         
-        // More comprehensive check for avatar activity
         let isAvatarActive = false;
         
-        if (avatarVideo && avatarVideo.srcObject) {
-            const stream = avatarVideo.srcObject;
-            const videoTracks = stream.getVideoTracks();
+        // SIMPLIFIED CHECK: Just check if video element is actually playing
+        if (avatarVideo) {
+            // Video is active if it's playing AND has current time progressing
+            const isPlaying = !avatarVideo.paused && 
+                            !avatarVideo.ended && 
+                            avatarVideo.currentTime > 0 &&
+                            avatarVideo.readyState >= 3; // HAVE_FUTURE_DATA or better
             
-            // Check if we have active video tracks with data flowing
-            const hasActiveVideoTrack = videoTracks.some(track => 
-                track.enabled && 
-                track.readyState === 'live' && 
-                track.muted === false
-            );
+            // Additional check: is currentTime actually advancing?
+            if (!avatarVideo.lastCheckedTime) {
+                avatarVideo.lastCheckedTime = avatarVideo.currentTime;
+            }
             
-            // Check if video element is actually receiving and playing content
-            const isVideoPlaying = !avatarVideo.paused && 
-                                 avatarVideo.currentTime > 0 && 
-                                 !avatarVideo.ended &&
-                                 avatarVideo.readyState > 2;
+            const timeAdvanced = avatarVideo.currentTime > avatarVideo.lastCheckedTime;
+            avatarVideo.lastCheckedTime = avatarVideo.currentTime;
             
-            isAvatarActive = hasActiveVideoTrack && isVideoPlaying;
+            isAvatarActive = isPlaying && (timeAdvanced || avatarVideo.currentTime < 0.5);
+            
+            // Debug logging
+            if (isAvatarActive !== avatarVideo.wasActive) {
+                console.log('🎬 Avatar activity changed:', {
+                    active: isAvatarActive,
+                    paused: avatarVideo.paused,
+                    ended: avatarVideo.ended,
+                    currentTime: avatarVideo.currentTime,
+                    readyState: avatarVideo.readyState
+                });
+                avatarVideo.wasActive = isAvatarActive;
+            }
         }
         
         if (isAvatarActive) {
@@ -5621,16 +5630,16 @@ function startIdleMonitoring() {
             lastActivityTime = Date.now();
         } else if (timeSinceActivity > IDLE_DELAY) {
             // No activity for the delay period - show idle layer
-            console.log(`No avatar activity for ${timeSinceActivity}ms, showing idle`);
+            console.log(`⏱️ No avatar activity for ${timeSinceActivity}ms, switching to idle`);
             showIdleLayer();
         }
         
-    }, 50); // Check every 500ms for responsive transitions
+    }, 500); // Check every 500ms for responsive transitions
     
-    console.log('Idle monitoring with overlay system started');
+    console.log('✅ Idle monitoring with overlay system started');
 }
 
-     // Set up avatar video event listeners for better activity detection
+// Set up avatar video event listeners for better activity detection
 function setupAvatarActivityListeners() {
     const avatarVideo = document.getElementById('avatarVideo');
     
@@ -5638,27 +5647,59 @@ function setupAvatarActivityListeners() {
     
     // When avatar starts playing
     avatarVideo.addEventListener('playing', () => {
-        console.log('Avatar video playing event');
+        console.log('▶️ Avatar video playing event');
         updateActivityTime();
     });
     
     // When avatar receives new data
     avatarVideo.addEventListener('loadeddata', () => {
-        console.log('Avatar video loaded new data');
+        console.log('📥 Avatar video loaded new data');
         updateActivityTime();
     });
     
-    // When avatar ends or pauses
+    // When avatar ends - EXPLICITLY switch to idle after delay
     avatarVideo.addEventListener('ended', () => {
-        console.log('Avatar video ended');
-        // Don't call updateActivityTime here - let idle timer handle it
+        console.log('⏹️ Avatar video ended - will switch to idle after delay');
+        // Don't update activity time - let the timer switch to idle
+        // The idle monitoring will detect no activity and switch after IDLE_DELAY
+        
+        // FORCE switch to idle after a delay (backup mechanism)
+        setTimeout(() => {
+            const timeSinceActivity = Date.now() - lastActivityTime;
+            if (timeSinceActivity > 1000) { // If more than 1 second has passed
+                console.log('✅ Forcing switch to idle layer after video ended');
+                showIdleLayer();
+            }
+        }, 1500); // 1.5 second delay before forcing idle
     });
     
+    // When avatar pauses
     avatarVideo.addEventListener('pause', () => {
-        console.log('Avatar video paused');
-        // Don't call updateActivityTime here - let idle timer handle it
+        console.log('⏸️ Avatar video paused - will switch to idle after delay');
+        // Don't update activity time - let the timer switch to idle
     });
-}   
+}
+```
+
+---
+
+## **Summary of Changes:**
+
+1. ✅ Changed `IDLE_DELAY` from 0ms to 2000ms (2 seconds)
+2. ✅ Simplified activity detection in `startIdleMonitoring()` to check for actual video playback progress
+3. ✅ Changed check interval from 50ms to 500ms
+4. ✅ Added force-switch to idle in the `ended` event listener as backup mechanism
+5. ✅ Added debug console logs with emojis for easier tracking
+
+## **Testing:**
+
+After making these changes, test it and watch your browser console. You should see:
+```
+▶️ Avatar video playing event
+🎬 Avatar activity changed: {active: true, ...}
+⏹️ Avatar video ended - will switch to idle after delay
+⏱️ No avatar activity for 2000ms, switching to idle
+✅ Forcing switch to idle layer after video ended   
 
 // Stop idle monitoring
 function stopIdleMonitoring() {
@@ -9051,6 +9092,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>               
+
 
 
 
