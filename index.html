@@ -3359,7 +3359,7 @@ let idleAnimationBlob = null;     // Cached idle animation as blob for download
 let isPlayingIdle = false;        // Track if idle animation is currently playing
 let idleCheckInterval = null;     // Interval for checking when to show idle
 let lastActivityTime = Date.now(); // Last time there was avatar activity
-const IDLE_DELAY = 2000;         // Show idle after 1 seconds of inactivity
+const IDLE_DELAY = 1000;         // Show idle after 1 seconds of inactivity
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -9094,6 +9094,7 @@ document.addEventListener('keydown', function(event) {
 
 
            
+
 
 
 
