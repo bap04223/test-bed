@@ -5679,27 +5679,7 @@ function setupAvatarActivityListeners() {
         // Don't update activity time - let the timer switch to idle
     });
 }
-```
 
----
-
-## **Summary of Changes:**
-
-1. ✅ Changed `IDLE_DELAY` from 0ms to 2000ms (2 seconds)
-2. ✅ Simplified activity detection in `startIdleMonitoring()` to check for actual video playback progress
-3. ✅ Changed check interval from 50ms to 500ms
-4. ✅ Added force-switch to idle in the `ended` event listener as backup mechanism
-5. ✅ Added debug console logs with emojis for easier tracking
-
-## **Testing:**
-
-After making these changes, test it and watch your browser console. You should see:
-```
-▶️ Avatar video playing event
-🎬 Avatar activity changed: {active: true, ...}
-⏹️ Avatar video ended - will switch to idle after delay
-⏱️ No avatar activity for 2000ms, switching to idle
-✅ Forcing switch to idle layer after video ended   
 
 // Stop idle monitoring
 function stopIdleMonitoring() {
@@ -9092,6 +9072,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>               
+
 
 
 
