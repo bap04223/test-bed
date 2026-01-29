@@ -63,7 +63,9 @@ label[for="didApiKey"],
 label[for="deepgramModel"],
 #deepgramLanguage,
 label[for="deepgramLanguage"],
-#deepgramSettings {
+#deepgramSettings,
+#generateIdleBtn,
+#downloadIdleBtn {
     display: none !important;
 }
 
@@ -101,7 +103,7 @@ body {
 }
         
         /* Header section styling */
-        .header {
+     .header {
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
@@ -109,6 +111,12 @@ body {
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             animation: fadeInUp 0.8s ease-out both;
+            position: relative;
+        }
+
+        .header-content {
+            position: relative;
+            width: 100%;
         }
         
         .header h1 {
@@ -374,17 +382,18 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Back to Landing Page Button */
+/* Back to Landing Page Button */
 .back-to-landing-btn {
-    position: fixed;
-    top: 29px;
-    left: 88px;
-    z-index: 1000;
-    padding: 12px 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    padding: 8px 16px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); 
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -394,7 +403,8 @@ input:focus, select:focus, textarea:focus {
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 .back-to-landing-btn:hover {
@@ -408,13 +418,96 @@ input:focus, select:focus, textarea:focus {
     transform: translateY(0);
 }
 
+/* Feedback Button */
+.feedback-btn {
+    position: absolute;
+    top: 54px;
+    left: 0;
+    z-index: 10;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--warning-color), #d97706); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    min-width: 120px;
+    height: 36px;
+    justify-content: center;
+}
+
+.feedback-btn:hover {
+    background: linear-gradient(135deg, #d97706, #b45309); 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    color: white;
+}
+
+.feedback-btn:active {
+    transform: translateY(0);
+}
+
+/* Help Button */
+.help-btn {
+    position: absolute;
+    top: 105px;
+    left: 0;
+    z-index: 10;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #10b981, #047857); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    min-width: 120px;
+    height: 36px;
+    justify-content: center;
+}
+
+.help-btn:hover {
+    background: linear-gradient(135deg, #047857, #065f46); 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.help-btn:active {
+    transform: translateY(0);
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+    .header {
+        padding: 15px 100px 15px 15px; /* Reduced padding on mobile */
+    }
+    
     .back-to-landing-btn {
-        top: 15px;
-        right: 15px;
-        padding: 10px 16px;
-        font-size: 13px;
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 12px;
+        max-width: 80px;
     }
 }
         
@@ -561,6 +654,410 @@ input:focus, select:focus, textarea:focus {
                 transform: translateY(0);
             }
         }
+
+        /* Feedback Modal Styles */
+.feedback-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.feedback-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback-modal-content {
+    position: relative;
+    width: 95%;
+    max-width: 800px;
+    max-height: 95vh;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid var(--border-color);
+}
+
+.feedback-modal-header {
+    background: var(--warning-color);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.feedback-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.feedback-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.feedback-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.feedback-modal-body {
+    padding: 20px;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+}
+
+.feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.feedback-form .form-group {
+    margin-bottom: 0;
+}
+
+.feedback-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.feedback-form input,
+.feedback-form select,
+.feedback-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    background: var(--input-background);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.feedback-form textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.feedback-form input:focus,
+.feedback-form select:focus,
+.feedback-form textarea:focus {
+    outline: none;
+    border-color: var(--warning-color);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+}
+
+.feedback-form .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.feedback-form .button-group button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.feedback-submit-btn {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.feedback-submit-btn:hover {
+    background-color: #d97706;
+}
+
+.feedback-submit-btn:disabled {
+    background-color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+.feedback-cancel-btn {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.feedback-cancel-btn:hover {
+    background-color: var(--text-secondary);
+}
+
+/* Feedback Form Rating Styles */
+.rating-instructions {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: var(--input-background);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.rating-instructions h4 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+}
+
+.rating-instructions p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.section-header {
+    margin: 25px 0 15px 0;
+    padding: 10px 0;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.section-header h5 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.rating-group {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: var(--input-background);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.rating-group label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+    font-size: 1.1em;
+}
+
+.rating-scale {
+    width: 100%;
+}
+
+.scale-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.scale-numbers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3px;
+}
+
+.scale-numbers input[type="radio"] {
+    display: none;
+}
+
+.scale-numbers label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--card-background);
+    margin: 0;
+}
+
+.scale-numbers label:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.scale-numbers input[type="radio"]:checked + label {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Help Modal Styles */
+.help-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.help-modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-modal-content {
+    position: relative;
+    width: 95%;
+    max-width: 900px;
+    max-height: 95vh;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid var(--border-color);
+}
+
+.help-modal-header {
+    background: var(--success-color);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.help-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.help-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+}
+
+.help-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.help-modal-body {
+    padding: 20px;
+    max-height: calc(95vh - 120px);
+    overflow-y: auto;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.help-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--input-background);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.help-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--success-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.help-section ol,
+.help-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.help-section li {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+}
+
+.help-section strong {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.help-section p {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+/* Mobile responsiveness for rating scales */
+@media (max-width: 768px) {
+    .scale-numbers label {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9em;
+    }
+    
+    .scale-labels {
+        font-size: 0.9em;
+    }
+    
+    .rating-group label {
+        font-size: 1em;
+    }
+    
+    .feedback-modal-content {
+        width: 98%;
+        max-width: none;
+    }
+    
+    .help-modal-content {
+        width: 98%;
+        max-width: none;
+    }
+    
+    .help-modal-body {
+        font-size: 14px;
+    }
+}
         
         /* Button group styling for control buttons */
         .button-group {
@@ -604,10 +1101,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 12px;
     background-color: var(--chat-background);
     width: 100%;
-    height: calc(100vh - 300px);
-    max-width: 100%;
-    max-height: calc(100vh - 300px);
-    min-height: 450px;
+    height: 100%;
     object-fit: contain;
     object-position: center center;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
@@ -659,7 +1153,7 @@ input:focus, select:focus, textarea:focus {
         /* UPDATED Patient Image Button Styling - OVERLAY VERSION */
 .patient-image-btn-overlay {
     position: absolute;
-    bottom: 80px;
+    bottom: 20px;
     left: 20px;
     z-index: 20;
     padding: 0 !important;
@@ -1053,6 +1547,22 @@ input:focus, select:focus, textarea:focus {
         font-size: 14px;
     }
 }
+
+
+        /* Idle animation button specific styling */
+.btn-idle-ready {
+    background: linear-gradient(135deg, #10b981, #047857) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-idle-generating {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+    animation: pulse 1.5s infinite !important;
+}
+
+        
         /* TTS Provider Styling */
         .tts-provider-group {
             display: flex;
@@ -1334,7 +1844,7 @@ input:focus, select:focus, textarea:focus {
 /* Timer Display Styles - Overlay Version */
 .timer-overlay {
     position: absolute;
-    top: 15px;
+    top: 92%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -1479,7 +1989,7 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     max-width: none;
     margin: 0 auto;
-    background: #f8f9fa;
+    background: var(--chat-background);
     border-radius: 12px;
     overflow: hidden;
     flex: 1;
@@ -1524,7 +2034,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Fullscreen timer positioning */
 .video-fullscreen-active .timer-overlay {
-    top: 20px !important;
+    top: 81% !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     background: linear-gradient(135deg, #10b981, #059669) !important;
@@ -1539,8 +2049,8 @@ input:focus, select:focus, textarea:focus {
 
 /* Fullscreen patient image button positioning */
 .video-fullscreen-active .patient-image-btn-overlay {
-    bottom: 120px !important;
-    left: 30px !important;
+    bottom: 100px !important;
+    left: 150px !important;
     width: 80px !important;
     height: 80px !important;
     font-size: 24px !important;
@@ -1550,7 +2060,7 @@ input:focus, select:focus, textarea:focus {
 /* Enhanced fullscreen review section visibility */
 .fullscreen-review-overlay {
     position: fixed !important;
-    bottom: 20px !important;
+    bottom: 5px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 90% !important;
@@ -1595,6 +2105,16 @@ input:focus, select:focus, textarea:focus {
     width: 100% !important;
     box-sizing: border-box !important;
     margin: 10px 0 !important;
+    color: #000000 !important; /* Force black text in fullscreen */
+}
+
+        /* Force black text for overlay transcript in fullscreen */
+#overlayReviewTranscript {
+    color: #000000 !important;
+}
+
+.video-fullscreen-active #overlayReviewTranscript {
+    color: #000000 !important;
 }
 
 .fullscreen-review-overlay .review-buttons {
@@ -1769,25 +2289,35 @@ a:hover {
 
 .card-icon:hover {
     transform: scale(1.1) rotate(5deg);
-}  
+}
+
+
         
     </style>
 </head>
 
 <body>
-    <!-- Back to Landing Page Button -->
-<a href="https://bap04223.github.io/AI-Chatbot-Hub/" class="back-to-landing-btn" title="Return to Landing Page">
-    ← Back to Hub
-</a>
+   
     <div class="container">
         <!-- Header section with title and description -->
         <div class="header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
-    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
-    <h1 style="margin: 0;">Avatar Video Consultation Training</h1>
-    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
-</div>
-            <p>Practice your consultation skills with our AI-powered patients</p>
+            <div class="header-content">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+                    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
+                    <h1 style="margin: 0;">Avatar Video Consultation Training</h1>
+                    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
+                </div>
+                <p>Practice your consultation skills with our AI-powered patients</p>
+               <a href="https://bap04223.github.io/AI-Chatbot-Hub/" class="back-to-landing-btn" title="Return to Landing Page">
+    ← Back to Hub
+</a>
+<button class="feedback-btn" onclick="showFeedbackModal()" title="Submit Feedback">
+    💬 Feedback
+</button>
+<button class="help-btn" onclick="showHelpModal()" title="How to Use">
+    ❓ Help
+</button>
+            </div>
         </div>
         
         <!-- Instructions box -->
@@ -2222,9 +2752,35 @@ a:hover {
     onclick="initializeDID()" 
     style="margin-bottom: 5px; width: 100%;"
     id="initializeAvatarBtn"
+    title="Select a scenario first, then initialize avatar"
 >
     Initialize & Connect Avatar
 </button>
+
+<!-- Idle Animation Controls -->
+<div style="margin-top: 10px; display: flex; gap: 5px;">
+    <button 
+        type="button"
+        class="btn-secondary btn-status-pending" 
+        onclick="generateIdleAnimation()" 
+        style="flex: 1; font-size: 12px; padding: 8px;"
+        id="generateIdleBtn"
+        title="Check for cached or pre-generated idle animation"
+    >
+        Check for Idle
+    </button>
+    <button 
+        type="button"
+        class="btn-info" 
+        onclick="downloadIdleAnimation()" 
+        style="flex: 1; font-size: 12px; padding: 8px;"
+        id="downloadIdleBtn"
+        disabled
+        title="Download idle animation as MP4"
+    >
+        Download Idle
+    </button>
+</div>
 
 </div>
 </div>
@@ -2301,22 +2857,55 @@ a:hover {
     </div>
 </div>
    
-   <video 
+   <!-- Idle Animation Video (Background Layer) -->
+<video 
+    id="idleVideo" 
+    width="100%" 
+    height="100%"
+    autoplay 
+    loop
+    muted
+    style="
+        border-radius: 12px; 
+        background-color: var(--chat-background); 
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: block;
+        margin: 0 auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 1;
+        z-index: 1;
+        transition: opacity 0.05s ease-in-out;
+    "
+>
+</video>
+
+<!-- WebRTC Avatar Video (Foreground Layer) -->
+<video 
     id="avatarVideo" 
     width="100%" 
     height="100%"
     autoplay 
     controls
     style="
-border-radius: 12px; 
-background-color: var(--chat-background); 
-width: 100%;
-height: 100%;
-object-fit: contain;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-display: block;
-margin: 0 auto;
-"
+        border-radius: 12px; 
+        background-color: transparent; 
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        z-index: 2;
+        transition: opacity 0.1s ease-in-out;
+    "
 >
 </video>
 </div>
@@ -2378,9 +2967,357 @@ margin: 0 auto;
         </div>
     </div>
 
+ <!-- Feedback Modal -->
+<div class="feedback-modal" id="feedbackModal" onclick="closeFeedbackModal(event)">
+    <div class="feedback-modal-content" onclick="event.stopPropagation()">
+        <div class="feedback-modal-header">
+            <h3>💬 Submit Feedback</h3>
+            <button class="feedback-modal-close" onclick="closeFeedbackModal()">&times;</button>
+        </div>
+        <div class="feedback-modal-body">
+            <form class="feedback-form" id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackName">Name (Optional):</label>
+                    <input type="text" id="feedbackName" placeholder="Your name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackEmail">Email (Optional):</label>
+                    <input type="email" id="feedbackEmail" placeholder="your.email@example.com">
+                </div>
+                
+                <div class="rating-instructions">
+                    <h4>Post-Simulation Feedback Form</h4>
+                    <p><strong>Rating Scale: 1 (Strongly Disagree) - 10 (Strongly Agree)</strong></p>
+                </div>
+                
+                <!-- User Experience Questions -->
+                <div class="section-header">
+                    <h5>User Experience Questions</h5>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>1. The AI patient responded in a realistic and believable manner throughout the consultation.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="realistic_responses" value="1" id="realistic_1"><label for="realistic_1">1</label>
+                            <input type="radio" name="realistic_responses" value="2" id="realistic_2"><label for="realistic_2">2</label>
+                            <input type="radio" name="realistic_responses" value="3" id="realistic_3"><label for="realistic_3">3</label>
+                            <input type="radio" name="realistic_responses" value="4" id="realistic_4"><label for="realistic_4">4</label>
+                            <input type="radio" name="realistic_responses" value="5" id="realistic_5"><label for="realistic_5">5</label>
+                            <input type="radio" name="realistic_responses" value="6" id="realistic_6"><label for="realistic_6">6</label>
+                            <input type="radio" name="realistic_responses" value="7" id="realistic_7"><label for="realistic_7">7</label>
+                            <input type="radio" name="realistic_responses" value="8" id="realistic_8"><label for="realistic_8">8</label>
+                            <input type="radio" name="realistic_responses" value="9" id="realistic_9"><label for="realistic_9">9</label>
+                            <input type="radio" name="realistic_responses" value="10" id="realistic_10"><label for="realistic_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>2. The simulation interface was user-friendly and easy to navigate.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="user_friendly" value="1" id="friendly_1"><label for="friendly_1">1</label>
+                            <input type="radio" name="user_friendly" value="2" id="friendly_2"><label for="friendly_2">2</label>
+                            <input type="radio" name="user_friendly" value="3" id="friendly_3"><label for="friendly_3">3</label>
+                            <input type="radio" name="user_friendly" value="4" id="friendly_4"><label for="friendly_4">4</label>
+                            <input type="radio" name="user_friendly" value="5" id="friendly_5"><label for="friendly_5">5</label>
+                            <input type="radio" name="user_friendly" value="6" id="friendly_6"><label for="friendly_6">6</label>
+                            <input type="radio" name="user_friendly" value="7" id="friendly_7"><label for="friendly_7">7</label>
+                            <input type="radio" name="user_friendly" value="8" id="friendly_8"><label for="friendly_8">8</label>
+                            <input type="radio" name="user_friendly" value="9" id="friendly_9"><label for="friendly_9">9</label>
+                            <input type="radio" name="user_friendly" value="10" id="friendly_10"><label for="friendly_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>3. The AI patient's responses were appropriate and relevant to my questions and interventions.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="appropriate_responses" value="1" id="appropriate_1"><label for="appropriate_1">1</label>
+                            <input type="radio" name="appropriate_responses" value="2" id="appropriate_2"><label for="appropriate_2">2</label>
+                            <input type="radio" name="appropriate_responses" value="3" id="appropriate_3"><label for="appropriate_3">3</label>
+                            <input type="radio" name="appropriate_responses" value="4" id="appropriate_4"><label for="appropriate_4">4</label>
+                            <input type="radio" name="appropriate_responses" value="5" id="appropriate_5"><label for="appropriate_5">5</label>
+                            <input type="radio" name="appropriate_responses" value="6" id="appropriate_6"><label for="appropriate_6">6</label>
+                            <input type="radio" name="appropriate_responses" value="7" id="appropriate_7"><label for="appropriate_7">7</label>
+                            <input type="radio" name="appropriate_responses" value="8" id="appropriate_8"><label for="appropriate_8">8</label>
+                            <input type="radio" name="appropriate_responses" value="9" id="appropriate_9"><label for="appropriate_9">9</label>
+                            <input type="radio" name="appropriate_responses" value="10" id="appropriate_10"><label for="appropriate_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Educational Value Questions -->
+                <div class="section-header">
+                    <h5>Educational Value Questions</h5>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>4. This simulation helped me practice essential patient communication skills.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="communication_skills" value="1" id="comm_1"><label for="comm_1">1</label>
+                            <input type="radio" name="communication_skills" value="2" id="comm_2"><label for="comm_2">2</label>
+                            <input type="radio" name="communication_skills" value="3" id="comm_3"><label for="comm_3">3</label>
+                            <input type="radio" name="communication_skills" value="4" id="comm_4"><label for="comm_4">4</label>
+                            <input type="radio" name="communication_skills" value="5" id="comm_5"><label for="comm_5">5</label>
+                            <input type="radio" name="communication_skills" value="6" id="comm_6"><label for="comm_6">6</label>
+                            <input type="radio" name="communication_skills" value="7" id="comm_7"><label for="comm_7">7</label>
+                            <input type="radio" name="communication_skills" value="8" id="comm_8"><label for="comm_8">8</label>
+                            <input type="radio" name="communication_skills" value="9" id="comm_9"><label for="comm_9">9</label>
+                            <input type="radio" name="communication_skills" value="10" id="comm_10"><label for="comm_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>5. The scenario challenged me to apply my pharmaceutical knowledge effectively.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="pharma_knowledge" value="1" id="pharma_1"><label for="pharma_1">1</label>
+                            <input type="radio" name="pharma_knowledge" value="2" id="pharma_2"><label for="pharma_2">2</label>
+                            <input type="radio" name="pharma_knowledge" value="3" id="pharma_3"><label for="pharma_3">3</label>
+                            <input type="radio" name="pharma_knowledge" value="4" id="pharma_4"><label for="pharma_4">4</label>
+                            <input type="radio" name="pharma_knowledge" value="5" id="pharma_5"><label for="pharma_5">5</label>
+                            <input type="radio" name="pharma_knowledge" value="6" id="pharma_6"><label for="pharma_6">6</label>
+                            <input type="radio" name="pharma_knowledge" value="7" id="pharma_7"><label for="pharma_7">7</label>
+                            <input type="radio" name="pharma_knowledge" value="8" id="pharma_8"><label for="pharma_8">8</label>
+                            <input type="radio" name="pharma_knowledge" value="9" id="pharma_9"><label for="pharma_9">9</label>
+                            <input type="radio" name="pharma_knowledge" value="10" id="pharma_10"><label for="pharma_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>6. I feel more confident in conducting patient consultations after completing this simulation.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="confidence" value="1" id="conf_1"><label for="conf_1">1</label>
+                            <input type="radio" name="confidence" value="2" id="conf_2"><label for="conf_2">2</label>
+                            <input type="radio" name="confidence" value="3" id="conf_3"><label for="conf_3">3</label>
+                            <input type="radio" name="confidence" value="4" id="conf_4"><label for="conf_4">4</label>
+                            <input type="radio" name="confidence" value="5" id="conf_5"><label for="conf_5">5</label>
+                            <input type="radio" name="confidence" value="6" id="conf_6"><label for="conf_6">6</label>
+                            <input type="radio" name="confidence" value="7" id="conf_7"><label for="conf_7">7</label>
+                            <input type="radio" name="confidence" value="8" id="conf_8"><label for="conf_8">8</label>
+                            <input type="radio" name="confidence" value="9" id="conf_9"><label for="conf_9">9</label>
+                            <input type="radio" name="confidence" value="10" id="conf_10"><label for="conf_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>7. The simulation provided valuable learning opportunities that complement traditional teaching methods.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="learning_value" value="1" id="learn_1"><label for="learn_1">1</label>
+                            <input type="radio" name="learning_value" value="2" id="learn_2"><label for="learn_2">2</label>
+                            <input type="radio" name="learning_value" value="3" id="learn_3"><label for="learn_3">3</label>
+                            <input type="radio" name="learning_value" value="4" id="learn_4"><label for="learn_4">4</label>
+                            <input type="radio" name="learning_value" value="5" id="learn_5"><label for="learn_5">5</label>
+                            <input type="radio" name="learning_value" value="6" id="learn_6"><label for="learn_6">6</label>
+                            <input type="radio" name="learning_value" value="7" id="learn_7"><label for="learn_7">7</label>
+                            <input type="radio" name="learning_value" value="8" id="learn_8"><label for="learn_8">8</label>
+                            <input type="radio" name="learning_value" value="9" id="learn_9"><label for="learn_9">9</label>
+                            <input type="radio" name="learning_value" value="10" id="learn_10"><label for="learn_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group rating-group">
+                    <label>8. I would recommend this simulation to other pharmacy students.</label>
+                    <div class="rating-scale">
+                        <div class="scale-labels">
+                            <span>Strongly Disagree</span>
+                            <span>Strongly Agree</span>
+                        </div>
+                        <div class="scale-numbers">
+                            <input type="radio" name="recommend" value="1" id="rec_1"><label for="rec_1">1</label>
+                            <input type="radio" name="recommend" value="2" id="rec_2"><label for="rec_2">2</label>
+                            <input type="radio" name="recommend" value="3" id="rec_3"><label for="rec_3">3</label>
+                            <input type="radio" name="recommend" value="4" id="rec_4"><label for="rec_4">4</label>
+                            <input type="radio" name="recommend" value="5" id="rec_5"><label for="rec_5">5</label>
+                            <input type="radio" name="recommend" value="6" id="rec_6"><label for="rec_6">6</label>
+                            <input type="radio" name="recommend" value="7" id="rec_7"><label for="rec_7">7</label>
+                            <input type="radio" name="recommend" value="8" id="rec_8"><label for="rec_8">8</label>
+                            <input type="radio" name="recommend" value="9" id="rec_9"><label for="rec_9">9</label>
+                            <input type="radio" name="recommend" value="10" id="rec_10"><label for="rec_10">10</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedbackMessage">Additional Comments (Optional):</label>
+                    <textarea id="feedbackMessage" placeholder="Please share any additional feedback, suggestions, or comments about your experience..."></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="feedback-cancel-btn" onclick="closeFeedbackModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="feedback-submit-btn" id="feedbackSubmitBtn">
+                        Submit Feedback
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="help-modal" id="helpModal" onclick="closeHelpModal(event)">
+    <div class="help-modal-content" onclick="event.stopPropagation()">
+        <div class="help-modal-header">
+            <h3>❓ How to Use the Training System</h3>
+            <button class="help-modal-close" onclick="closeHelpModal()">&times;</button>
+        </div>
+        <div class="help-modal-body">
+            <div class="help-section">
+                <h4>🚀 Getting Started</h4>
+                <ol>
+                    <li><strong>Load Configurations:</strong> Enter your Chatbot ID and Scenario Sets ID, then click the load buttons to populate the dropdown menus.</li>
+                    <li><strong>Select Chatbot:</strong> Choose the AI chatbot configuration you want to practice with from the dropdown.</li>
+                    <li><strong>Select Scenario Set:</strong> Choose the collection of patient scenarios you want to use.</li>
+                    <li><strong>Choose Sheet:</strong> Select the specific sheet containing your scenarios.</li>
+                    <li><strong>Pick a Scenario:</strong> Either select a specific patient scenario or use "Random Scenario" for surprise practice.</li>
+                    <li><strong>Initialize Avatar:</strong> Click "Initialize & Connect Avatar" to set up the video patient.</li>
+                </ol>
+            </div>
+            
+            <div class="help-section">
+                <h4>🎭 During the Video Consultation</h4>
+                <ol>
+                    <li><strong>Start Speaking:</strong> Hold down the "Start Recording" button and speak your consultation naturally.</li>
+                    <li><strong>Professional Communication:</strong> Introduce yourself, ask appropriate questions, provide advice as you would with a real patient.</li>
+                    <li><strong>View Patient Image:</strong> If available, click the patient image button (📷) to see visual information about your patient.</li>
+                    <li><strong>Watch Avatar Response:</strong> The AI patient will respond with both speech and realistic video animation.</li>
+                    <li><strong>Continue Dialogue:</strong> Keep the conversation going by recording your responses to build consultation skills.</li>
+                </ol>
+            </div>
+            
+            <div class="help-section">
+                <h4>🎤 Recording Controls</h4>
+                <ul>
+                    <li><strong>Start Recording:</strong> Click the blue microphone button or press SPACEBAR</li>
+                    <li><strong>Stop Recording:</strong> Click the red stop button or press SPACEBAR again</li>
+                    <li><strong>Review & Edit:</strong> Check your transcription before sending - you can edit it if needed</li>
+                    <li><strong>Send Message:</strong> Click "Send Message" or press ENTER to submit your response</li>
+                    <li><strong>Delete & Retry:</strong> Use this if you want to record again</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>📊 Managing Your Session</h4>
+                <ul>
+                    <li><strong>Clear Chat:</strong> Remove all messages to start fresh with the same scenario</li>
+                    <li><strong>New Session:</strong> Start completely over with a new session ID</li>
+                    <li><strong>Export Chat:</strong> Download your conversation as a text file for review</li>
+                    <li><strong>Submit Chat:</strong> Send your consultation to your instructor for evaluation</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>🎯 Best Practices</h4>
+                <ul>
+                    <li><strong>Be Professional:</strong> Practice real-world communication skills</li>
+                    <li><strong>Ask Questions:</strong> Gather information about symptoms, medications, allergies</li>
+                    <li><strong>Provide Clear Advice:</strong> Give specific, actionable recommendations</li>
+                    <li><strong>Show Empathy:</strong> Acknowledge patient concerns and feelings</li>
+                    <li><strong>Follow Up:</strong> Ask if the patient has any other questions</li>
+                    <li><strong>Speak Clearly:</strong> The speech recognition works best with clear, steady speech</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>🔧 Troubleshooting</h4>
+                <ul>
+                    <li><strong>No Video Response:</strong> Check that you've initialized the avatar and selected a scenario</li>
+                    <li><strong>Speech Not Recognized:</strong> Speak more clearly, check microphone permissions</li>
+                    <li><strong>Can't Load Scenarios:</strong> Verify your Google Sheet IDs are correct and publicly accessible</li>
+                    <li><strong>Avatar Won't Initialize:</strong> Check your D-ID API key and internet connection</li>
+                    <li><strong>No Audio from Avatar:</strong> Check your speakers/headphones and browser audio settings</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h4>💡 Need More Help?</h4>
+                <p>If you encounter issues or have suggestions for improvement, click the <strong>Feedback</strong> button to submit a report. Include details about what you were trying to do and what went wrong.</p>
+            </div>
+        </div>
+    </div>
+</div>
+    
 <!-- JavaScript code for functionality -->
-    <script>
-        // ===== GLOBAL VARIABLES =====
+    <script>    
+      // ===== BROWSER VIDEO CACHE CLASS =====
+class VideoCache {
+    constructor() {
+        this.memoryCache = new Map(); // Only browser memory, no cloud storage
+    }
+
+    generateCacheKey(config) {
+        const keyData = {
+            serviceType: config.serviceType,
+            sourceUrl: config.sourceUrl,
+            presenterId: config.presenterId,
+            voiceId: config.voiceSelection || 'auto'
+        };
+        return btoa(JSON.stringify(keyData)).replace(/[+/=]/g, '');
+    }
+
+    getFromCache(cacheKey) {
+        return this.memoryCache.get(cacheKey);
+    }
+
+    storeInCache(cacheKey, videoData) {
+        this.memoryCache.set(cacheKey, videoData);
+    }
+
+    blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
+}
+
+// Global video cache instance
+const videoCache = new VideoCache();
+
+// ===== GLOBAL VARIABLES =====
         // These store the state of our application
         
         let currentScenario = null;       // Store the selected patient scenario
@@ -2414,6 +3351,15 @@ let avatarVideo = null;           // Video element reference
 let isAvatarInitialized = false;  // Track initialization status
 let isStreamConnected = false;    // Track streaming connection status
 let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+
+// ===== IDLE ANIMATION VARIABLES =====
+let idleAnimationUrl = null;      // Cached idle animation video URL
+let isGeneratingIdle = false;     // Track idle generation status
+let idleAnimationBlob = null;     // Cached idle animation as blob for download
+let isPlayingIdle = false;        // Track if idle animation is currently playing
+let idleCheckInterval = null;     // Interval for checking when to show idle
+let lastActivityTime = Date.now(); // Last time there was avatar activity
+const IDLE_DELAY = 1000;         // Show idle after 1 seconds of inactivity
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -2632,8 +3578,63 @@ function newSession() {
     const currentVoiceSelection = document.getElementById('voiceSelection').value;
     
     // Clear stream IDs
-    streamId = null;
-    didSessionId = null;
+streamId = null;
+didSessionId = null;
+
+// Complete idle animation reset
+    stopIdleMonitoring();
+    isPlayingIdle = false;
+    
+    // Reset idle video element FIRST
+    const idleVideo = document.getElementById('idleVideo');
+    if (idleVideo) {
+        idleVideo.pause();
+        idleVideo.removeAttribute('src');
+        idleVideo.load(); // Force reload of video element
+        idleVideo.style.opacity = '0';
+        idleVideo.currentTime = 0;
+    }
+    
+    // Clear idle animation data but preserve cache
+    if (idleAnimationUrl) {
+        // Only revoke if it's not from cache
+        const config = getAvatarConfiguration();
+        const cacheKey = videoCache.generateCacheKey(config);
+        const cachedData = videoCache.getFromCache(cacheKey);
+        
+        if (!cachedData || cachedData.url !== idleAnimationUrl) {
+            URL.revokeObjectURL(idleAnimationUrl);
+        }
+        idleAnimationUrl = null;
+    }
+    idleAnimationBlob = null;
+    window.preGeneratedIdleUrl = null;
+    
+    // Reset idle animation buttons to initial state
+    const generateBtn = document.getElementById('generateIdleBtn');
+    const downloadBtn = document.getElementById('downloadIdleBtn');
+    
+    if (generateBtn) {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = 'Generate Idle';
+        setButtonStatus('generateIdleBtn', 'pending', 'Generate Idle');
+    }
+    
+    if (downloadBtn) {
+        downloadBtn.disabled = true;
+    }
+    
+  // Clear current session's idle data but preserve cache for reuse
+    if (idleAnimationUrl && !videoCache.getFromCache(videoCache.generateCacheKey(getAvatarConfiguration()))) {
+    URL.revokeObjectURL(idleAnimationUrl);
+        idleAnimationUrl = null;
+      }
+    idleAnimationBlob = null;
+
+    // Don't clear the entire cache - let it persist for reuse
+    // Only clear if you specifically want to force re-download
+    // videoCache.memoryCache.clear(); // COMMENTED OUT - preserves cache for efficiency
+    console.log('Reset idle animation for new session (cache preserved)');
     
     // Reset to default values but preserve configuration
     document.getElementById('didApiKey').value = currentApiKey;
@@ -3484,6 +4485,11 @@ async function initializeDID() {
         console.log('=== initializeDID() called ===');
         updateAvatarStatus('Initializing D-ID Streaming...', 'loading');
         
+        // Check if scenario is selected first
+        if (!currentScenario) {
+            throw new Error('Please select a patient scenario first');
+        }
+        
         // Get API key from configuration
         didApiKey = document.getElementById('didApiKey').value;
         
@@ -3510,6 +4516,10 @@ async function initializeDID() {
         
         console.log('D-ID Streaming API initialized successfully');
         isAvatarInitialized = true;
+
+        console.log('D-ID Streaming API initialized successfully');
+isAvatarInitialized = true;
+setupAvatarActivityListeners(); // Add this line
         
         // Test permissions and fetch presenters
         try {
@@ -3526,9 +4536,15 @@ async function initializeDID() {
             // Continue anyway - don't fail initialization
         }
         
-        // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
+       // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
 updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
 await connectStream();
+
+// AUTOMATICALLY HANDLE IDLE ANIMATION AFTER STREAM CONNECTION
+if (isStreamConnected) {
+    updateAvatarStatus('Stream connected, setting up idle animation...', 'loading');
+    await handleIdleAnimationSetup();
+}
 
 // Set button to completed status
 setButtonCompleted('initializeAvatarBtn', 'Avatar Connected');
@@ -3702,8 +4718,16 @@ async function connectStream() {
             throw new Error(`Failed to send SDP answer: ${sdpResponse.status} - ${errorText}`);
         }
         
-       console.log('SDP answer sent successfully');
-        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+     console.log('SDP answer sent successfully');
+updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+
+// Start connection health monitoring
+startConnectionHealthMonitoring();
+
+// Start idle monitoring if idle animation is available
+if (idleAnimationUrl) {
+    startIdleMonitoring();
+}
         
               
     } catch (error) {
@@ -3801,29 +4825,128 @@ function onIceCandidate(event) {
 
 // FIXED: Enhanced Connection State Handler
 function onIceConnectionStateChange() {
-    console.log('ICE connection state changed to:', peerConnection.iceConnectionState);
+    const state = peerConnection.iceConnectionState;
+    console.log('ICE connection state changed to:', state);
     
-    if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+    if (state === 'connected' || state === 'completed') {
         isStreamConnected = true;
         const currentServiceType = document.getElementById('serviceType').value;
         updateAvatarStatus(`${currentServiceType.toUpperCase()} stream ready for speech`, 'success');
         console.log('Stream connection established successfully');
         
-    } else if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'closed') {
+        // Clear any previous disconnection messages
+        showStatus('Avatar stream connected successfully', 'success');
+        
+    } else if (state === 'disconnected') {
+        console.log('ICE connection temporarily disconnected - attempting to reconnect...');
+        updateAvatarStatus('Connection interrupted - attempting to reconnect...', 'error');
+        showStatus('Avatar connection interrupted - reconnecting...', 'error');
+        
+        // Add chat notification for disconnection
+        addMessage('🔌 Avatar connection temporarily lost. Attempting to reconnect...', 'system');
+        
+    } else if (state === 'failed' || state === 'closed') {
         isStreamConnected = false;
+        console.log('ICE connection failed or closed permanently');
         updateAvatarStatus('Stream connection lost', 'error');
-        console.log('Stream connection lost or failed');
+        showStatus('Avatar connection lost - re-initialization required', 'error');
+        
+        // Add chat notification for permanent disconnection
+        addMessage('🔌 Avatar connection has been lost. Click "Initialize & Connect Avatar" to reconnect for video responses.', 'system');
+        
+        // Reset avatar initialization status
+        if (isAvatarInitialized) {
+            setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+            isAvatarInitialized = false;
+        }
         
         // Auto-cleanup on failure
         setTimeout(() => {
             closeStreamConnection();
         }, 1000);
+        
+    } else if (state === 'checking') {
+        console.log('ICE connection checking...');
+        updateAvatarStatus('Checking connection...', 'loading');
+        
+    } else if (state === 'new') {
+        console.log('ICE connection starting...');
+        updateAvatarStatus('Establishing connection...', 'loading');
     }
 }
 
 function onConnectionStateChange() {
-    console.log('Connection state:', peerConnection.connectionState);
+    const state = peerConnection.connectionState;
+    console.log('Peer connection state changed to:', state);
+    
+    if (state === 'connected') {
+        console.log('Peer connection fully established');
+        
+    } else if (state === 'disconnected') {
+        console.log('Peer connection disconnected');
+        showStatus('Avatar peer connection disconnected', 'error');
+        
+    } else if (state === 'failed') {
+        console.log('Peer connection failed');
+        showStatus('Avatar peer connection failed - restart required', 'error');
+        addMessage('🔌 Avatar peer connection failed. Please re-initialize the avatar.', 'system');
+        
+        // Reset connection status
+        isStreamConnected = false;
+        if (isAvatarInitialized) {
+            setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+            isAvatarInitialized = false;
+        }
+        
+    } else if (state === 'closed') {
+        console.log('Peer connection closed');
+        isStreamConnected = false;
+        
+    } else if (state === 'connecting') {
+        console.log('Peer connection attempting to connect');
+        updateAvatarStatus('Connecting...', 'loading');
+    }
 }
+
+// Periodic connection health monitoring
+let connectionHealthInterval = null;
+
+function startConnectionHealthMonitoring() {
+    // Clear any existing monitoring
+    if (connectionHealthInterval) {
+        clearInterval(connectionHealthInterval);
+    }
+    
+    connectionHealthInterval = setInterval(() => {
+        if (peerConnection && isAvatarInitialized) {
+            const iceState = peerConnection.iceConnectionState;
+            const connectionState = peerConnection.connectionState;
+            
+            // Check if connection has degraded
+            if ((iceState === 'failed' || iceState === 'closed' || 
+                 connectionState === 'failed' || connectionState === 'closed') && 
+                isStreamConnected) {
+                
+                console.log('Connection health check detected failure:', { iceState, connectionState });
+                
+                // Trigger the appropriate state change handler
+                if (iceState === 'failed' || iceState === 'closed') {
+                    onIceConnectionStateChange();
+                } else if (connectionState === 'failed' || connectionState === 'closed') {
+                    onConnectionStateChange();
+                }
+            }
+        }
+    }, 5000); // Check every 5 seconds
+}
+
+function stopConnectionHealthMonitoring() {
+    if (connectionHealthInterval) {
+        clearInterval(connectionHealthInterval);
+        connectionHealthInterval = null;
+    }
+}
+        
 
 function onSignalingStateChange() {
     console.log('Signaling state:', peerConnection.signalingState);
@@ -3889,8 +5012,11 @@ async function closeStreamConnection() {
     const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
     console.log('Closing stream connection for service type:', currentServiceType);
     
-    // Reset connection state immediately
-    isStreamConnected = false;
+   // Reset connection state immediately
+isStreamConnected = false;
+
+// Stop idle monitoring and animation
+stopIdleMonitoring();
     
     // Clean up video element
     if (avatarVideo && avatarVideo.srcObject) {
@@ -3945,6 +5071,9 @@ async function closeStreamConnection() {
             console.error('Error deleting stream on server:', error);
         }
     }
+    
+    // Stop connection health monitoring
+    stopConnectionHealthMonitoring();
     
     // Clear stream variables
     streamId = null;
@@ -4054,23 +5183,62 @@ if (manualVoiceSelection) {
 
 console.log('Final voice configuration:', voiceConfig);
 
-        // Prepare the script payload
-        let scriptPayload = {
-            script: {
-                type: 'text',
-                input: text,
-                provider: voiceConfig
-            },
-            config: {
-                stitch: true,
-            },
-            session_id: didSessionId
-        };
-
-        // Add driver URL only for talks service
-        if (config.serviceType === 'talks') {
-            scriptPayload.driver_url = 'bank://lively/';
+        // Prepare the script payload with consistent framing
+let scriptPayload = {
+    script: {
+        type: 'text',
+        input: text,
+        provider: voiceConfig
+    },
+    config: {
+    stitch: true,
+    fluent: true,
+    crop: {
+        type: "rectangle",
+        rectangle: {
+            top: 0,
+            left: 0,
+            width: 1,
+            height: 1
         }
+    },
+    align: {
+        type: "no-align"
+    },
+    background: {
+        color: "#16213e"
+    }
+},    
+session_id: didSessionId
+};
+
+// Add driver URL for both service types
+scriptPayload.driver_url = 'bank://lively/';
+
+// Don't update activity time immediately - wait for actual playback
+// updateActivityTime(); // REMOVE THIS LINE
+
+// Set up monitoring for when speech actually starts playing
+if (avatarVideo) {
+    const handleSpeechStart = () => {
+        console.log('Avatar video actually started playing');
+        updateActivityTime(); // Only update when video actually plays
+        avatarVideo.removeEventListener('playing', handleSpeechStart);
+        avatarVideo.removeEventListener('loadeddata', handleSpeechStart);
+    };
+    
+    const handleSpeechEnd = () => {
+        console.log('Avatar speech ended');
+        // Don't update activity time here - let the idle timer handle the transition
+        avatarVideo.removeEventListener('ended', handleSpeechEnd);
+        avatarVideo.removeEventListener('pause', handleSpeechEnd);
+    };
+    
+    // Update activity time when speech actually starts playing
+    avatarVideo.addEventListener('playing', handleSpeechStart);
+    avatarVideo.addEventListener('ended', handleSpeechEnd);
+    avatarVideo.addEventListener('pause', handleSpeechEnd);
+}
 
         console.log('Script payload:', scriptPayload);
 
@@ -4121,6 +5289,393 @@ console.log('Final voice configuration:', voiceConfig);
         }, 3000);
     }
 }
+
+        // Idle animation generation
+async function generateIdleAnimation() {
+    if (isGeneratingIdle) {
+        showStatus('Idle animation setup already in progress', 'info');
+        return;
+    }
+
+    try {
+        isGeneratingIdle = true;
+        
+        const generateBtn = document.getElementById('generateIdleBtn');
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '⏳ Checking for idle...';
+        
+        // Use the simplified setup logic
+        const success = await handleIdleAnimationSetup();
+        
+        if (success) {
+            showStatus('Idle animation ready!', 'success');
+        } else {
+            showStatus('No idle animation available. Use external generator to create idle animations.', 'info');
+        }
+        
+    } catch (error) {
+        console.error('Idle animation setup error:', error);
+        showStatus(`Setup failed: ${error.message}`, 'error');
+        
+        const generateBtn = document.getElementById('generateIdleBtn');
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = 'Check for Idle';
+        setButtonStatus('generateIdleBtn', 'pending', 'Check for Idle');
+        
+    } finally {
+        isGeneratingIdle = false;
+    }
+}
+
+
+// Simplified idle animation setup - only handles cached and pre-generated
+async function handleIdleAnimationSetup() {
+    try {
+        console.log('=== Starting idle animation setup (cached/pre-generated only) ===');
+        
+        // Get current avatar configuration
+        const config = getAvatarConfiguration();
+        const cacheKey = videoCache.generateCacheKey(config);
+        
+      // Check browser memory cache first
+        let cachedVideo = videoCache.getFromCache(cacheKey);
+        if (cachedVideo) {
+            console.log('Found idle animation in browser cache - using immediately!');
+            
+            // Always recreate object URL for new session to avoid stale references
+            if (cachedVideo.blob) {
+                // Revoke old URL if it exists
+                if (cachedVideo.url) {
+                    URL.revokeObjectURL(cachedVideo.url);
+                }
+                // Create fresh object URL
+                cachedVideo.url = URL.createObjectURL(cachedVideo.blob);
+                console.log('Created fresh object URL from cached blob:', cachedVideo.url);
+                // Update cache with new URL
+                videoCache.storeInCache(cacheKey, cachedVideo);
+            } else {
+                console.error('Cached video has no blob data');
+                return false;
+            }
+            
+            idleAnimationUrl = cachedVideo.url;
+            idleAnimationBlob = cachedVideo.blob;
+            
+            setButtonCompleted('generateIdleBtn', 'Idle Ready (Cached) ✓');
+            document.getElementById('downloadIdleBtn').disabled = false;
+            updateAvatarStatus('Avatar ready with cached idle animation', 'success');
+            
+            if (isStreamConnected) {
+                startIdleMonitoring();
+            }
+            return true;
+        }
+        
+        // Check for pre-generated URL from scenario
+        if (window.preGeneratedIdleUrl) {
+            console.log('Found pre-generated idle URL, fetching...');
+            updateAvatarStatus('Loading pre-generated idle animation...', 'loading');
+            
+            try {
+                const response = await fetch(window.preGeneratedIdleUrl);
+                if (response.ok) {
+                    const videoBlob = await response.blob();
+                    
+                    // Cache it for this session
+                    const objectUrl = URL.createObjectURL(videoBlob);
+                    const videoData = {
+                        blob: videoBlob,
+                        url: objectUrl,
+                        source: 'pre_generated'
+                    };
+                    
+                    videoCache.storeInCache(cacheKey, videoData);
+                    idleAnimationUrl = objectUrl;
+                    idleAnimationBlob = videoBlob;
+                    
+                    setButtonCompleted('generateIdleBtn', 'Idle Ready (Pre-generated) ✓');
+                    document.getElementById('downloadIdleBtn').disabled = false;
+                    updateAvatarStatus('Avatar ready with pre-generated idle animation', 'success');
+                    
+                    if (isStreamConnected) {
+                        startIdleMonitoring();
+                    }
+                    return true;
+                }
+            } catch (error) {
+                console.warn('Failed to fetch pre-generated idle:', error);
+                updateAvatarStatus('Pre-generated idle failed to load', 'error');
+            }
+        }
+        
+        // No cached or pre-generated version available
+        console.log('No idle animation available - avatar will work without idle');
+        updateAvatarStatus('Avatar ready (no idle animation available)', 'success');
+        setButtonStatus('generateIdleBtn', 'pending', 'No Idle Available');
+        document.getElementById('downloadIdleBtn').disabled = true;
+        
+        return false; // No idle available, but don't fail initialization
+        
+    } catch (error) {
+        console.error('Idle setup error:', error);
+        updateAvatarStatus('Avatar ready (idle setup failed)', 'success');
+        setButtonStatus('generateIdleBtn', 'pending', 'Idle Setup Failed');
+        return false;
+    }
+}
+
+
+        
+
+// Download idle animation as MP4 file
+function downloadIdleAnimation() {
+    if (!idleAnimationBlob) {
+        showStatus('No idle animation to download. Generate one first.', 'error');
+        return;
+    }
+    
+    try {
+        // Create download URL
+        const url = window.URL.createObjectURL(idleAnimationBlob);
+        
+        // Create download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        
+        // Generate filename
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const scenarioName = currentScenario && currentScenario['Patient Name'] 
+            ? currentScenario['Patient Name'].replace(/[^a-zA-Z0-9]/g, '_') 
+            : 'Avatar';
+        
+        downloadLink.download = `Idle_Animation_${scenarioName}_${dateStr}_${timeStr}.mp4`;
+        
+        // Trigger download
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        // Clean up URL object
+        window.URL.revokeObjectURL(url);
+        
+        showStatus('✅ Idle animation downloaded successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        showStatus(`❌ Download failed: ${error.message}`, 'error');
+    }
+}
+
+// Debug function for idle animation
+function debugIdleAnimation() {
+    const idleVideo = document.getElementById('idleVideo');
+    console.log('=== IDLE ANIMATION DEBUG ===');
+    console.log('idleAnimationUrl:', idleAnimationUrl);
+    console.log('idleAnimationBlob:', idleAnimationBlob);
+    console.log('idleVideo element:', idleVideo);
+    if (idleVideo) {
+        console.log('idleVideo.src:', idleVideo.src);
+        console.log('idleVideo.style.opacity:', idleVideo.style.opacity);
+        console.log('idleVideo.paused:', idleVideo.paused);
+        console.log('idleVideo.readyState:', idleVideo.readyState);
+        console.log('idleVideo.videoWidth:', idleVideo.videoWidth);
+        console.log('idleVideo.videoHeight:', idleVideo.videoHeight);
+        console.log('idleVideo.currentTime:', idleVideo.currentTime);
+        console.log('idleVideo.duration:', idleVideo.duration);
+    }
+    console.log('isPlayingIdle:', isPlayingIdle);
+    console.log('==============================');
+}
+
+// Start idle animation (always running in background)
+function startIdleAnimation() {
+    if (!idleAnimationUrl || !idleAnimationBlob) {
+        console.log('No idle animation available');
+        return;
+    }
+    
+    const idleVideo = document.getElementById('idleVideo');
+    if (!idleVideo) {
+        console.error('Idle video element not found');
+        return;
+    }
+    
+    console.log('Starting background idle animation');
+    
+   // Force fresh source assignment
+    console.log('Setting idle video source to:', idleAnimationUrl);
+    idleVideo.src = '';
+    idleVideo.load();
+    idleVideo.src = idleAnimationUrl;
+    idleVideo.load();
+    
+    idleVideo.loop = true;
+    idleVideo.muted = true;
+    
+    // Add load event listener
+    idleVideo.addEventListener('loadeddata', function onLoadedData() {
+        console.log('Idle video loaded successfully');
+        idleVideo.removeEventListener('loadeddata', onLoadedData);
+    });
+    
+    idleVideo.addEventListener('error', function onError(e) {
+        console.error('Idle video load error:', e);
+        debugIdleAnimation();
+    });
+    idleVideo.play().then(() => {
+        console.log('Background idle animation started');
+        isPlayingIdle = true;
+        
+        // Debug after successful play
+        debugIdleAnimation();
+        
+        // Show idle layer, fade out avatar layer
+        showIdleLayer();
+        
+    }).catch(error => {
+        console.error('Idle animation play error:', error);
+        debugIdleAnimation();
+    });
+}
+
+// Show idle layer (fade in idle, fade out avatar)
+function showIdleLayer() {
+    const idleVideo = document.getElementById('idleVideo');
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (idleVideo && avatarVideo) {
+        console.log('Showing idle layer');
+        idleVideo.style.opacity = '1';
+        avatarVideo.style.opacity = '0';
+        updateAvatarStatus('Showing idle animation', 'info');
+    }
+}
+
+// Show avatar layer (fade in avatar, fade out idle)
+function showAvatarLayer() {
+    const idleVideo = document.getElementById('idleVideo');
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (idleVideo && avatarVideo) {
+        console.log('Showing avatar layer');
+        avatarVideo.style.opacity = '1';
+        idleVideo.style.opacity = '0'; // Completely hide idle when avatar is active
+        updateAvatarStatus('Avatar speaking', 'playing');
+    }
+}
+
+// Start monitoring for idle state with overlay system
+function startIdleMonitoring() {
+    if (idleCheckInterval) {
+        clearInterval(idleCheckInterval);
+    }
+
+      
+    // Start the idle animation running in background immediately
+    startIdleAnimation();
+    
+    lastActivityTime = Date.now();
+    
+    idleCheckInterval = setInterval(() => {
+        const timeSinceActivity = Date.now() - lastActivityTime;
+        const avatarVideo = document.getElementById('avatarVideo');
+        
+        // More comprehensive check for avatar activity
+        let isAvatarActive = false;
+        
+        if (avatarVideo && avatarVideo.srcObject) {
+            const stream = avatarVideo.srcObject;
+            const videoTracks = stream.getVideoTracks();
+            
+            // Check if we have active video tracks with data flowing
+            const hasActiveVideoTrack = videoTracks.some(track => 
+                track.enabled && 
+                track.readyState === 'live' && 
+                track.muted === false
+            );
+            
+            // Check if video element is actually receiving and playing content
+            const isVideoPlaying = !avatarVideo.paused && 
+                                 avatarVideo.currentTime > 0 && 
+                                 !avatarVideo.ended &&
+                                 avatarVideo.readyState > 2;
+            
+            isAvatarActive = hasActiveVideoTrack && isVideoPlaying;
+        }
+        
+        if (isAvatarActive) {
+            // Avatar is actively playing - show avatar layer and reset timer
+            showAvatarLayer();
+            lastActivityTime = Date.now();
+        } else if (timeSinceActivity > IDLE_DELAY) {
+            // No activity for the delay period - show idle layer
+            console.log(`No avatar activity for ${timeSinceActivity}ms, showing idle`);
+            showIdleLayer();
+        }
+        
+    }, 50); // Check every 500ms for responsive transitions
+    
+    console.log('Idle monitoring with overlay system started');
+}
+
+     // Set up avatar video event listeners for better activity detection
+function setupAvatarActivityListeners() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    
+    if (!avatarVideo) return;
+    
+    // When avatar starts playing
+    avatarVideo.addEventListener('playing', () => {
+        console.log('Avatar video playing event');
+        updateActivityTime();
+    });
+    
+    // When avatar receives new data
+    avatarVideo.addEventListener('loadeddata', () => {
+        console.log('Avatar video loaded new data');
+        updateActivityTime();
+    });
+    
+    // When avatar ends or pauses
+    avatarVideo.addEventListener('ended', () => {
+        console.log('Avatar video ended');
+        // Don't call updateActivityTime here - let idle timer handle it
+    });
+    
+    avatarVideo.addEventListener('pause', () => {
+        console.log('Avatar video paused');
+        // Don't call updateActivityTime here - let idle timer handle it
+    });
+}   
+
+// Stop idle monitoring
+function stopIdleMonitoring() {
+    if (idleCheckInterval) {
+        clearInterval(idleCheckInterval);
+        idleCheckInterval = null;
+    }
+    
+    const idleVideo = document.getElementById('idleVideo');
+    if (idleVideo) {
+        idleVideo.pause();
+        idleVideo.src = '';
+    }
+    
+    isPlayingIdle = false;
+    console.log('Idle monitoring stopped');
+}
+
+// Enhanced activity detection with opacity control
+function updateActivityTime() {
+    lastActivityTime = Date.now();
+    console.log('Activity detected - showing avatar layer');
+    
+    // Show avatar layer immediately when activity detected
+    showAvatarLayer();
+}
+        
 
         // NEW: Function to get available drivers for a presenter
 async function getPresenterDrivers(presenterId) {
@@ -4819,6 +6374,12 @@ clearChat();
     // Add initial message
     addMessage('Scenario loaded. Press the start recoding button to start the consultation.', 'ai');
 }     
+
+        // Update avatar button tooltip now that scenario is selected
+    const avatarBtn = document.getElementById('initializeAvatarBtn');
+    if (avatarBtn && !isAvatarInitialized) {
+        avatarBtn.title = 'Initialize avatar with current scenario settings';
+    }
         
         // ===== MULTI-IMAGE PATIENT GALLERY =====
 // Global variables for image gallery
@@ -5306,49 +6867,56 @@ async function loadChatbotConfigurations() {
                 const row = data.values[i];
                 if (row.length >= 3 && row[0] && row[1] && row[2]) {
                     chatbotConfigurations.push({
-                        name: row[0].trim(),
-                        webhookUrl: row[1].trim(),
-                        submitWebhookUrl: row[2].trim(),
-                        description: row[3] ? row[3].trim() : '',
-                        deepgramApiKey: row[4] ? row[4].trim() : '', // Column E
-                        didApiKey: row[6] ? row[6].trim() : ''       // Column G
-                    });
+    name: row[0].trim(),                           // Column A: Chatbot Name
+    webhookUrl: row[1].trim(),                     // Column B: Webhook URL
+    submitWebhookUrl: row[2].trim(),               // Column C: Submit Webhook URL
+    feedbackWebhookUrl: row[3] ? row[3].trim() : '', // Column D: Feedback Webhook URL
+    description: row[4] ? row[4].trim() : '',      // Column E: Description
+    deepgramApiKey: row[5] ? row[5].trim() : '',   // Column F: Deepgram API Key
+    didApiKey: row[7] ? row[7].trim() : ''         // Column H: D-ID API Key
+});
                 }
             }
+
+            
             
             // AUTO-POPULATE API KEYS FROM FIRST CONFIGURATION
-            if (chatbotConfigurations.length > 0) {
-                const firstConfig = chatbotConfigurations[0];
-                
-                // Auto-populate Deepgram API key if present
-                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
-                    document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
-                    console.log('Auto-populated Deepgram API key from first configuration');
-                }
-                
-                // Auto-populate D-ID API key if present
-                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
-                    document.getElementById('didApiKey').value = firstConfig.didApiKey;
-                    console.log('Auto-populated D-ID API key from first configuration');
-                }
-                
-                // Save the auto-populated keys
-                saveConfig();
-            }
+if (chatbotConfigurations.length > 0) {
+    const firstConfig = chatbotConfigurations[0];
+    
+    // Auto-populate Deepgram API key if present
+    if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+        document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
+        console.log('Auto-populated Deepgram API key from first configuration');
+    }
+    
+    // Auto-populate D-ID API key if present
+    if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+        document.getElementById('didApiKey').value = firstConfig.didApiKey;
+        console.log('Auto-populated D-ID API key from first configuration');
+    }
+    
+    // Save the auto-populated keys
+    saveConfig();
+}
             
             populateChatbotDropdown();
-            
+
+                    
             // Enhanced status message showing what was auto-populated
-            let statusParts = [`Loaded ${chatbotConfigurations.length} configurations`];
-            if (chatbotConfigurations.length > 0) {
-                const firstConfig = chatbotConfigurations[0];
-                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
-                    statusParts.push('Auto-filled Deepgram key');
-                }
-                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
-                    statusParts.push('Auto-filled D-ID key');
-                }
-            }
+let statusParts = [`Loaded ${chatbotConfigurations.length} configurations`];
+if (chatbotConfigurations.length > 0) {
+    const firstConfig = chatbotConfigurations[0];
+    if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+        statusParts.push('Auto-filled Deepgram key');
+    }
+    if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+        statusParts.push('Auto-filled D-ID key');
+    }
+    if (firstConfig.feedbackWebhookUrl && firstConfig.feedbackWebhookUrl.trim() !== '') {
+        statusParts.push('Feedback webhook available');
+    }
+}
             
             showStatus(`✅ ${statusParts.join(', ')}`, 'success');
 
@@ -6157,7 +7725,46 @@ function forceScrollToBottom() {
     button.disabled = true;
     button.title = 'No Scenario Selected';
 }
+           // Update avatar button tooltip if no scenario
+    const avatarBtn = document.getElementById('initializeAvatarBtn');
+    if (avatarBtn && !currentScenario) {
+        avatarBtn.title = 'Select a scenario first, then initialize avatar';
+    }
 }
+
+// ===== CORS PROXY FUNCTION =====
+async function fetchVideoViaN8nProxy(videoUrl) {
+    try {
+        const n8nProxyUrl = 'http://localhost:5678/webhook-test/fetch-video'; // ⚠️ REPLACE WITH YOUR n8n WEBHOOK URL
+        
+        const response = await fetch(n8nProxyUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                video_url: videoUrl,
+                request_id: `${sessionId}_${Date.now()}`
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`n8n proxy failed: ${response.status}`);
+        }
+        
+        const videoBlob = await response.blob();
+        console.log('Video fetched via n8n proxy:', videoBlob.size, 'bytes');
+        return videoBlob;
+        
+    } catch (error) {
+        console.error('n8n proxy error:', error);
+        throw new Error(`Failed to fetch video: ${error.message}`);
+    }
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+// ===== UTILITY FUNCTIONS =====
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
@@ -6280,6 +7887,10 @@ function handleFullscreenChange() {
         videoWrapper.classList.add('video-fullscreen-active');
     }
     
+    
+    // Let CSS handle all fullscreen video sizing
+ 
+    
     // Force overlays to be visible
     const timerDisplay = document.getElementById('timerDisplay');
     const patientBtn = document.getElementById('patientImageBtn');
@@ -6311,7 +7922,7 @@ if (reviewOverlay) {
     // Sync review sections
     syncReviewSections();
         
-    } else {
+   } else {
     console.log('Exited fullscreen mode');
     
     // Remove fullscreen class
@@ -6319,6 +7930,8 @@ if (reviewOverlay) {
         videoWrapper.classList.remove('video-fullscreen-active');
     }
     
+            // CSS will handle restoration automatically
+   
     // Reset overlay styles
     const timerDisplay = document.getElementById('timerDisplay');
     const patientBtn = document.getElementById('patientImageBtn');
@@ -6633,6 +8246,30 @@ function updateAvatarFromScenario() {
         }
     }
     
+    // NEW: Handle idle animation URL
+    const idleAnimationUrl = currentScenario['Idle Animation URL'] || 
+                            currentScenario['Idle Video URL'] || 
+                            currentScenario['Idle Animation'] ||
+                            currentScenario['Pre-generated Idle'];
+    
+    if (idleAnimationUrl && idleAnimationUrl.trim() !== '') {
+        const convertedUrl = convertGoogleDriveUrl(idleAnimationUrl.trim());
+        // Always set the URL, even if it's the same - this ensures proper reset
+        window.preGeneratedIdleUrl = convertedUrl;
+        console.log('Pre-generated idle URL set:', window.preGeneratedIdleUrl);
+        hasChanges = true;
+        
+        // Reset idle button state when scenario changes
+        const generateBtn = document.getElementById('generateIdleBtn');
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = 'Check for Idle';
+            setButtonStatus('generateIdleBtn', 'pending', 'Check for Idle');
+        }
+    } else {
+        window.preGeneratedIdleUrl = null;
+    }
+    
     // Save configuration if changes were made
     if (hasChanges) {
         saveConfig();
@@ -6644,6 +8281,9 @@ function updateAvatarFromScenario() {
         }
         if (voiceSelection && voiceSelection.trim() !== '') {
             statusParts.push(`Voice: ${voiceSelection.trim()}`);
+        }
+        if (window.preGeneratedIdleUrl) {
+            statusParts.push(`Pre-gen Idle: Available`);
         }
         
         showStatus(`Loaded from scenario - ${statusParts.join(', ')}`, 'success');
@@ -6939,7 +8579,7 @@ function startResponseTimer() {
                 }
             }
         }
-        // Timer expired
+    // Timer expired
         if (remaining <= 0) {
             clearInterval(responseTimer);
             responseTimer = null;
@@ -6947,8 +8587,38 @@ function startResponseTimer() {
             // Show timeout message
             showStatus('⏰ 2-minute response window expired!', 'error');
             
+            // Check D-ID connection status and add appropriate message
+            let timeoutMessage = '⏰ Response timer expired (2 minutes). Consider if you need more information or should take action.';
+            
+            // Check if D-ID connection is still active
+            if (!isStreamConnected || !streamId || !didSessionId) {
+                timeoutMessage += '\n\n🔌 D-ID avatar connection has been lost. You may need to re-initialize the avatar to continue with video responses.';
+                
+                // Update avatar status
+                updateAvatarStatus('Connection lost - Re-initialize avatar to reconnect', 'error');
+                
+                // Reset avatar initialization status
+                if (isAvatarInitialized) {
+                    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+                    isAvatarInitialized = false;
+                    isStreamConnected = false;
+                }
+            } else {
+                // Connection appears to be active, but check peer connection state
+                if (peerConnection) {
+                    const connectionState = peerConnection.connectionState;
+                    const iceConnectionState = peerConnection.iceConnectionState;
+                    
+                    if (connectionState === 'failed' || connectionState === 'closed' || 
+                        iceConnectionState === 'failed' || iceConnectionState === 'closed') {
+                        timeoutMessage += '\n\n🔌 D-ID avatar connection appears unstable. You may need to re-initialize the avatar for reliable video responses.';
+                        updateAvatarStatus('Connection unstable - Consider re-initializing', 'error');
+                    }
+                }
+            }
+            
             // Add timeout message to chat
-            addMessage('⏰ Response timer expired (2 minutes). Consider if you need more information or should take action.', 'system');
+            addMessage(timeoutMessage, 'system');
             
             // Hide timer
             hideResponseTimer();
@@ -7137,10 +8807,241 @@ function forceTimerStyling() {
         timerDisplay.classList.remove('fullscreen-critical-pulse');
     }
 }
-      
+
+// ===== FEEDBACK MODAL FUNCTIONS =====
+
+function showFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    modal.classList.add('show');
+    
+    // Focus on the first input
+    setTimeout(() => {
+        document.getElementById('feedbackName').focus();
+    }, 300);
+}
+
+function closeFeedbackModal(event) {
+    // If event is passed and it's not the backdrop click, ignore
+    if (event && event.target !== event.currentTarget && event.type === 'click') {
+        return;
+    }
+    
+    const modal = document.getElementById('feedbackModal');
+    modal.classList.remove('show');
+    
+    // Reset form
+    document.getElementById('feedbackForm').reset();
+    
+    // Reset submit button
+    const submitBtn = document.getElementById('feedbackSubmitBtn');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Feedback';
+}
+
+async function submitFeedback(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('feedbackSubmitBtn');
+    
+    // Disable submit button and show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+        // Collect form data
+        const feedbackData = {
+            name: document.getElementById('feedbackName').value.trim(),
+            email: document.getElementById('feedbackEmail').value.trim(),
+            ratings: {
+                realistic_responses: getRadioValue('realistic_responses'),
+                user_friendly: getRadioValue('user_friendly'),
+                appropriate_responses: getRadioValue('appropriate_responses'),
+                communication_skills: getRadioValue('communication_skills'),
+                pharma_knowledge: getRadioValue('pharma_knowledge'),
+                confidence: getRadioValue('confidence'),
+                learning_value: getRadioValue('learning_value'),
+                recommend: getRadioValue('recommend')
+            },
+            additional_comments: document.getElementById('feedbackMessage').value.trim(),
+            timestamp: new Date().toISOString(),
+            sessionId: sessionId,
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            currentScenario: currentScenario ? {
+                name: currentScenario['Patient Name'] || currentScenario['Scenario Name'] || 'Unknown',
+                id: currentScenario.id || 'Unknown'
+            } : null,
+            systemInfo: {
+                chatbotConfig: currentChatbotConfig ? currentChatbotConfig.name : 'None',
+                scenarioSet: currentScenarioSet ? currentScenarioSet.name : 'None',
+                messageCount: conversationHistory.length
+            }
+        };
+
+        // Create CSV formatted data
+        const csvData = formatFeedbackAsCSV(feedbackData);
+        
+        // Add CSV data to the payload
+        feedbackData.csvFormatted = csvData;
+        
+        console.log('Submitting feedback:', feedbackData);
+        
+       // Use the feedback webhook URL from the current chatbot configuration
+const webhookUrl = currentChatbotConfig && currentChatbotConfig.feedbackWebhookUrl 
+    ? currentChatbotConfig.feedbackWebhookUrl 
+    : null;
+
+if (!webhookUrl) {
+    throw new Error('No feedback webhook URL configured in the selected chatbot configuration');
+}
+        
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            mode: 'cors',
+            body: JSON.stringify(feedbackData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Success
+        submitBtn.textContent = '✅ Sent!';
+        submitBtn.style.backgroundColor = 'var(--success-color)';
+        
+        showStatus('✅ Feedback submitted successfully! Thank you for your input.', 'success');
+        
+        // Close modal after short delay
+        setTimeout(() => {
+            closeFeedbackModal();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Feedback submission error:', error);
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Retry Submission';
+        submitBtn.style.backgroundColor = 'var(--danger-color)';
+        
+        if (error.message.includes('Failed to fetch')) {
+            showStatus('❌ Cannot reach feedback server. Please check your connection.', 'error');
+        } else {
+            showStatus(`❌ Feedback submission failed: ${error.message}`, 'error');
+        }
+        
+        // Reset button color after 3 seconds
+        setTimeout(() => {
+            submitBtn.style.backgroundColor = 'var(--warning-color)';
+            submitBtn.textContent = 'Submit Feedback';
+        }, 3000);
+    }
+}
+
+// Helper function to get radio button values
+function getRadioValue(name) {
+    const radio = document.querySelector(`input[name="${name}"]:checked`);
+    return radio ? parseInt(radio.value) : null;
+}
+
+// Helper function to format feedback data as CSV
+function formatFeedbackAsCSV(data) {
+    const headers = [
+        'Timestamp',
+        'Session ID',
+        'Name',
+        'Email',
+        'Scenario Name',
+        'Chatbot Config',
+        'Realistic Responses (1-10)',
+        'User Friendly Interface (1-10)',
+        'Appropriate Responses (1-10)',
+        'Communication Skills Practice (1-10)',
+        'Pharmaceutical Knowledge Application (1-10)',
+        'Confidence Building (1-10)',
+        'Learning Value (1-10)',
+        'Would Recommend (1-10)',
+        'Additional Comments',
+        'Message Count',
+        'User Agent'
+    ];
+    
+    const values = [
+        data.timestamp,
+        data.sessionId,
+        `"${data.name || ''}"`,
+        `"${data.email || ''}"`,
+        `"${data.currentScenario ? data.currentScenario.name : ''}"`,
+        `"${data.systemInfo.chatbotConfig}"`,
+        data.ratings.realistic_responses || '',
+        data.ratings.user_friendly || '',
+        data.ratings.appropriate_responses || '',
+        data.ratings.communication_skills || '',
+        data.ratings.pharma_knowledge || '',
+        data.ratings.confidence || '',
+        data.ratings.learning_value || '',
+        data.ratings.recommend || '',
+        `"${data.additional_comments.replace(/"/g, '""')}"`, // Escape quotes in comments
+        data.systemInfo.messageCount,
+        `"${data.userAgent}"`
+    ];
+    
+    return {
+        headers: headers.join(','),
+        row: values.join(','),
+        fullCSV: headers.join(',') + '\n' + values.join(',')
+    };
+}
+
+// ===== HELP MODAL FUNCTIONS =====
+
+function showHelpModal() {
+    const modal = document.getElementById('helpModal');
+    modal.classList.add('show');
+}
+
+function closeHelpModal(event) {
+    // If event is passed and it's not the backdrop click, ignore
+    if (event && event.target !== event.currentTarget && event.type === 'click') {
+        return;
+    }
+    
+    const modal = document.getElementById('helpModal');
+    modal.classList.remove('show');
+}
+
+// Add event listener for feedback form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const feedbackForm = document.getElementById('feedbackForm');
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', submitFeedback);
+    }
+});
+
+// Add keyboard support for closing modals with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const feedbackModal = document.getElementById('feedbackModal');
+        const helpModal = document.getElementById('helpModal');
+        
+        if (feedbackModal && feedbackModal.classList.contains('show')) {
+            closeFeedbackModal();
+        }
+        
+        if (helpModal && helpModal.classList.contains('show')) {
+            closeHelpModal();
+        }
+    }
+});
+        
     </script>
 </body>
-</html>                     
+</html>               
+
 
 
 
