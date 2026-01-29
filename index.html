@@ -5225,14 +5225,15 @@ session_id: didSessionId
 // Add driver URL for both service types
 scriptPayload.driver_url = 'bank://lively/';
 
-// Don't update activity time immediately - wait for actual playback
-// updateActivityTime(); // REMOVE THIS LINE
+// IMMEDIATELY show avatar layer when sending speech (before video plays)
+showAvatarLayer();
+console.log('🎬 Switched to avatar layer (speech sent)');
 
 // Set up monitoring for when speech actually starts playing
 if (avatarVideo) {
     const handleSpeechStart = () => {
         console.log('Avatar video actually started playing');
-        updateActivityTime(); // Only update when video actually plays
+        updateActivityTime(); // Update timing when video actually plays
         avatarVideo.removeEventListener('playing', handleSpeechStart);
         avatarVideo.removeEventListener('loadeddata', handleSpeechStart);
     };
@@ -9072,6 +9073,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>               
+
 
 
 
