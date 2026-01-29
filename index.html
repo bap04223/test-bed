@@ -3359,7 +3359,7 @@ let idleAnimationBlob = null;     // Cached idle animation as blob for download
 let isPlayingIdle = false;        // Track if idle animation is currently playing
 let idleCheckInterval = null;     // Interval for checking when to show idle
 let lastActivityTime = Date.now(); // Last time there was avatar activity
-const IDLE_DELAY = 2000;         // Show idle after 1 seconds of inactivity
+const IDLE_DELAY = 1000;         // Show idle after 1 seconds of inactivity
 
         // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
 let serviceType = 'talks';        // Service type (talks or clips)
@@ -5225,15 +5225,16 @@ session_id: didSessionId
 // Add driver URL for both service types
 scriptPayload.driver_url = 'bank://lively/';
 
-// IMMEDIATELY show avatar layer when sending speech (before video plays)
+// IMMEDIATELY show avatar layer AND update activity time when sending speech
+updateActivityTime(); // Tell monitoring we're expecting video NOW
 showAvatarLayer();
-console.log('🎬 Switched to avatar layer (speech sent)');
+console.log('🎬 Switched to avatar layer (speech sent, activity updated)');
 
 // Set up monitoring for when speech actually starts playing
 if (avatarVideo) {
     const handleSpeechStart = () => {
-        console.log('Avatar video actually started playing');
-        updateActivityTime(); // Update timing when video actually plays
+        console.log('▶️ Avatar video actually started playing');
+        updateActivityTime(); // Keep activity time fresh
         avatarVideo.removeEventListener('playing', handleSpeechStart);
         avatarVideo.removeEventListener('loadeddata', handleSpeechStart);
     };
@@ -9073,6 +9074,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>               
+
 
 
 
