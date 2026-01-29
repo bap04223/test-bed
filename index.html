@@ -4540,10 +4540,20 @@ setupAvatarActivityListeners(); // Add this line
 updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
 await connectStream();
 
+// Wait for connection to be established (give it a moment for async state updates)
+let connectionWaitAttempts = 0;
+while (!isStreamConnected && connectionWaitAttempts < 50) {
+    await new Promise(resolve => setTimeout(resolve, 100)); // Wait 100ms
+    connectionWaitAttempts++;
+}
+
 // AUTOMATICALLY HANDLE IDLE ANIMATION AFTER STREAM CONNECTION
 if (isStreamConnected) {
+    console.log('✅ Stream confirmed connected, setting up idle animation...');
     updateAvatarStatus('Stream connected, setting up idle animation...', 'loading');
     await handleIdleAnimationSetup();
+} else {
+    console.warn('⚠️ Stream connection timeout - idle animation setup skipped');
 }
 
 // Set button to completed status
@@ -9041,6 +9051,7 @@ document.addEventListener('keydown', function(event) {
     </script>
 </body>
 </html>               
+
 
 
 
